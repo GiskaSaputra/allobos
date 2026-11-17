@@ -5,6 +5,11 @@ namespace App\Services\Game;
 /** Data tetap permainan: jenis warung, tujuh babak, promosi, dan keputusan khusus tiap babak. */
 class GameRules
 {
+    /** Isi maksimal rak pajang per barang di mode 3D, dan isi satu peti dari gudang. */
+    public const SHELF_CAPACITY = 40;
+
+    public const CRATE_SIZE = 10;
+
     public const KINDS = [
         'singkong' => [
             'label' => 'Warung olahan singkong',

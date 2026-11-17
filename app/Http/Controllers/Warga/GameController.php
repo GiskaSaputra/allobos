@@ -71,6 +71,46 @@ class GameController extends Controller
         return $this->respond(fn () => $this->games->run($game, $data['promo'], $data['special']), $game);
     }
 
+    public function stock(Request $request, ShopGame $game): JsonResponse
+    {
+        Gate::authorize('play', $game);
+        $data = $request->validate(['item' => ['required', 'string', 'max:30'], 'qty' => ['required', 'integer', 'min:1', 'max:'.GameRules::CRATE_SIZE], 'rid' => ['required', 'string', 'max:64']]);
+
+        return $this->respond(fn () => ['moved' => $this->games->stock($game, $data['item'], $data['qty'], $data['rid'])], $game);
+    }
+
+    public function open(Request $request, ShopGame $game): JsonResponse
+    {
+        Gate::authorize('play', $game);
+        $data = $request->validate(['promo' => ['required', 'string'], 'special' => ['required', 'string'], 'rid' => ['required', 'string', 'max:64']], ['special.required' => 'Pilih salah satu keputusan babak ini di papan pengumuman.']);
+
+        return $this->respond(fn () => $this->games->open($game, $data['promo'], $data['special'], $data['rid']), $game);
+    }
+
+    public function serve(Request $request, ShopGame $game): JsonResponse
+    {
+        Gate::authorize('play', $game);
+        $data = $request->validate(['customer' => ['required', 'integer', 'min:0', 'max:20'], 'rid' => ['required', 'string', 'max:64']]);
+
+        return $this->respond(fn () => $this->games->serve($game, $data['customer'], $data['rid']), $game);
+    }
+
+    public function miss(Request $request, ShopGame $game): JsonResponse
+    {
+        Gate::authorize('play', $game);
+        $data = $request->validate(['customer' => ['required', 'integer', 'min:0', 'max:20'], 'rid' => ['required', 'string', 'max:64']]);
+
+        return $this->respond(fn () => $this->games->miss($game, $data['customer'], $data['rid']), $game);
+    }
+
+    public function close(Request $request, ShopGame $game): JsonResponse
+    {
+        Gate::authorize('play', $game);
+        $data = $request->validate(['rid' => ['required', 'string', 'max:64']]);
+
+        return $this->respond(fn () => $this->games->close($game, $data['rid']), $game);
+    }
+
     public function next(ShopGame $game): JsonResponse
     {
         Gate::authorize('play', $game);

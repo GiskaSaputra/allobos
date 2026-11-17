@@ -19,6 +19,8 @@ class GameEngine
             'satisfaction' => 60,
             'cost_multiplier' => 1.0,
             'stock' => array_map(fn () => ['qty' => 0, 'cost' => 0.0], $rules['items']),
+            'display' => array_map(fn () => 0, $rules['items']),
+            'day_plan' => null,
             'prices' => array_map(fn ($item) => $item['fair'], $rules['items']),
             'pending' => [],
             'total_profit' => 0,
@@ -90,14 +92,31 @@ class GameEngine
     }
 
     /**
-     * Menjalankan satu hari. Benih yang sama memberi hasil yang sama.
+     * Menjalankan satu hari sekaligus (Mode Ringan): semua permintaan dilayani sebanyak stok.
+     * Benih yang sama memberi hasil yang sama.
      *
      * @return array{0:array,1:array} keadaan baru dan hasil hari itu
      */
     public function run(array $state, int $day, string $promoKey, string $specialKey, int|string $seed): array
     {
+        [$state, $plan] = $this->plan($state, $day, $promoKey, $specialKey, $seed);
+        $sold = [];
+        foreach ($plan['items'] as $key => $line) {
+            $sold[$key] = min($line['demand'], $state['stock'][$key]['qty']);
+        }
+
+        return $this->settle($state, $plan, $sold);
+    }
+
+    /**
+     * Bagian pertama hari: menerapkan efek tertunda dan menghitung permintaan tiap barang.
+     *
+     * @return array{0:array,1:array} keadaan baru dan rencana hari itu
+     */
+    public function plan(array $state, int $day, string $promoKey, string $specialKey, int|string $seed): array
+    {
         $rules = GameRules::KINDS[$state['kind']];
-        $theme = GameRules::THEMES[$day] ?? throw new GameException('Hari permainan tidak valid.');
+        GameRules::THEMES[$day] ?? throw new GameException('Hari permainan tidak valid.');
         $promo = GameRules::PROMOS[$promoKey] ?? throw new GameException('Pilihan promosi tidak dikenal.');
         $special = GameRules::SPECIALS[$day]['options'][$specialKey] ?? throw new GameException('Pilih salah satu keputusan babak ini.');
         $event = $state['event'] ?? ['effect' => ['demand' => 1.0, 'cost' => 1.0, 'cash' => 0]];
@@ -119,6 +138,43 @@ class GameEngine
         $satFactor = $day === 6 ? 0.6 + $sat * 0.008 : 0.85 + $sat * 0.003;
         $dayFactor = (float) $event['effect']['demand'] * $promo['demand'] * $special['demand'] * $pendingDemand * $satFactor;
         $priceMultiplier = $promo['price'] * ($special['price'] ?? 1.0);
+
+        $items = [];
+        $priceRatio = 0;
+        foreach ($rules['items'] as $key => $item) {
+            $price = (int) round($state['prices'][$key] * $priceMultiplier / 100) * 100;
+            $priceFactor = $price <= $item['fair']
+                ? min(1.4, 1 + ($item['fair'] - $price) / $item['fair'] * 0.8)
+                : max(0.05, 1 - ($price - $item['fair']) / $item['fair'] * 1.6);
+            $noise = $rng->between(0.9, 1.1);
+            $items[$key] = ['price' => $price, 'demand' => (int) floor($item['demand'] * $dayFactor * $priceFactor * $noise)];
+            $priceRatio += $state['prices'][$key] * $priceMultiplier / $item['fair'];
+        }
+
+        return [$state, [
+            'day' => $day,
+            'promo' => $promoKey,
+            'special' => $specialKey,
+            'sat_before' => $satBefore,
+            'avg_price' => $priceRatio / count($rules['items']),
+            'items' => $items,
+        ]];
+    }
+
+    /**
+     * Bagian kedua hari: menutup buku dari jumlah yang benar-benar terjual.
+     *
+     * @param  array<string,int>  $sold
+     * @return array{0:array,1:array} keadaan baru dan hasil hari itu
+     */
+    public function settle(array $state, array $plan, array $sold): array
+    {
+        $rules = GameRules::KINDS[$state['kind']];
+        $day = $plan['day'];
+        $theme = GameRules::THEMES[$day];
+        $promo = GameRules::PROMOS[$plan['promo']];
+        $special = GameRules::SPECIALS[$day]['options'][$plan['special']];
+        $event = $state['event'] ?? ['effect' => ['demand' => 1.0, 'cost' => 1.0, 'cash' => 0]];
         $rain = $theme['rain'] ?? false;
 
         $lines = [];
@@ -127,39 +183,35 @@ class GameEngine
         $wasteValue = 0;
         $lostTotal = 0;
         $demandTotal = 0;
-        $priceRatio = 0;
         $rescued = 0;
 
         foreach ($rules['items'] as $key => $item) {
-            $price = (int) round($state['prices'][$key] * $priceMultiplier / 100) * 100;
-            $priceFactor = $price <= $item['fair']
-                ? min(1.4, 1 + ($item['fair'] - $price) / $item['fair'] * 0.8)
-                : max(0.05, 1 - ($price - $item['fair']) / $item['fair'] * 1.6);
-            $noise = $rng->between(0.9, 1.1);
-            $demand = (int) floor($item['demand'] * $dayFactor * $priceFactor * $noise);
+            ['price' => $price, 'demand' => $demand] = $plan['items'][$key];
             $stock = $state['stock'][$key];
-            $sold = min($demand, $stock['qty']);
-            $left = $stock['qty'] - $sold;
+            $sold[$key] = max(0, min((int) ($sold[$key] ?? 0), $demand, $stock['qty']));
+            $left = $stock['qty'] - $sold[$key];
             $unitCost = $stock['cost'] * ($special['cogs'] ?? 1.0);
 
             $spoilRate = max($item['spoil'], $rain ? $item['wet'] * ($special['wet'] ?? 1.0) : 0);
             $wasted = (int) round($left * $spoilRate);
             $rescue = isset($special['rescue']) ? (int) floor(($left - $wasted) * $special['rescue']) : 0;
 
-            $revenue += $sold * $price + $rescue * (int) $stock['cost'];
-            $cogs += $sold * $unitCost + $rescue * $stock['cost'];
+            $revenue += $sold[$key] * $price + $rescue * (int) $stock['cost'];
+            $cogs += $sold[$key] * $unitCost + $rescue * $stock['cost'];
             $wasteValue += $wasted * $stock['cost'];
             $rescued += $rescue;
-            $lostTotal += $demand - $sold;
+            $lostTotal += $demand - $sold[$key];
             $demandTotal += $demand;
-            $priceRatio += $state['prices'][$key] * $priceMultiplier / $item['fair'];
 
             $state['stock'][$key]['qty'] = $left - $wasted - $rescue;
             if ($state['stock'][$key]['qty'] === 0) {
                 $state['stock'][$key]['cost'] = 0.0;
             }
+            if (isset($state['display'][$key])) {
+                $state['display'][$key] = min($state['display'][$key], $state['stock'][$key]['qty']);
+            }
 
-            $lines[] = ['key' => $key, 'name' => $item['name'], 'unit' => $item['unit'], 'price' => $price, 'demand' => $demand, 'sold' => $sold, 'lost' => $demand - $sold, 'left' => $state['stock'][$key]['qty'], 'wasted' => $wasted, 'revenue' => $sold * $price];
+            $lines[] = ['key' => $key, 'name' => $item['name'], 'unit' => $item['unit'], 'price' => $price, 'demand' => $demand, 'sold' => $sold[$key], 'lost' => $demand - $sold[$key], 'left' => $state['stock'][$key]['qty'], 'wasted' => $wasted, 'revenue' => $sold[$key] * $price];
         }
 
         $fixed = (int) round($rules['fixed'] * ($special['fixed'] ?? 1.0));
@@ -168,7 +220,7 @@ class GameEngine
         $state['cash'] += (int) round($revenue - $promo['cost'] - $special['cost'] - $fixed + $eventCash);
 
         $lostRatio = $demandTotal ? $lostTotal / $demandTotal : 0;
-        $avgPrice = $priceRatio / count($rules['items']);
+        $avgPrice = $plan['avg_price'];
         $satDelta = $promo['sat'] + $special['sat']
             + ($lostRatio > 0.3 ? -8 : ($lostRatio > 0.1 ? -3 : 1))
             + ($avgPrice > 1.15 ? -6 : ($avgPrice < 0.95 ? 3 : 0));
@@ -206,15 +258,51 @@ class GameEngine
             'demand_total' => $demandTotal,
             'sold_total' => array_sum(array_column($lines, 'sold')),
             'rescued' => $rescued,
-            'satisfaction_before' => $satBefore,
+            'satisfaction_before' => $plan['sat_before'],
             'satisfaction_after' => $state['satisfaction'],
             'hit_target' => $profit >= $this->dailyTarget($state),
-            'promo' => $promoKey,
-            'special' => $specialKey,
+            'promo' => $plan['promo'],
+            'special' => $plan['special'],
         ];
         $state['last_result'] = $result;
 
         return [$state, $result];
+    }
+
+    /**
+     * Membagi permintaan hari itu menjadi paling banyak delapan pembeli 3D.
+     * Satu pembeli bisa mewakili beberapa orang supaya satu hari tetap singkat dimainkan.
+     *
+     * @return list<array{id:int,items:array<string,int>,status:string}>
+     */
+    public function customers(array $plan, int|string $seed): array
+    {
+        $units = [];
+        foreach ($plan['items'] as $key => $line) {
+            array_push($units, ...array_fill(0, $line['demand'], $key));
+        }
+        if ($units === []) {
+            return [];
+        }
+
+        $rng = new Rng($seed.'-pembeli-'.$plan['day']);
+        for ($i = count($units) - 1; $i > 0; $i--) {
+            $j = (int) floor($rng->float() * ($i + 1));
+            [$units[$i], $units[$j]] = [$units[$j], $units[$i]];
+        }
+
+        $count = (int) min(8, max(1, ceil(count($units) / 4)));
+        $customers = [];
+        for ($i = 0; $i < $count; $i++) {
+            $customers[$i] = ['id' => $i, 'items' => [], 'status' => 'menunggu'];
+        }
+        foreach ($units as $n => $key) {
+            $items = &$customers[$n % $count]['items'];
+            $items[$key] = ($items[$key] ?? 0) + 1;
+            unset($items);
+        }
+
+        return $customers;
     }
 
     public function dailyTarget(array $state): int

@@ -133,6 +133,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('{game}/belanja', 'buy')->whereNumber('game')->name('buy');
         Route::post('{game}/harga', 'price')->whereNumber('game')->name('price');
         Route::post('{game}/buka', 'run')->whereNumber('game')->middleware('throttle:30,1')->name('run');
+        Route::post('{game}/rak', 'stock')->whereNumber('game')->middleware('throttle:120,1')->name('stock');
+        Route::post('{game}/buka-warung', 'open')->whereNumber('game')->middleware('throttle:30,1')->name('open');
+        Route::post('{game}/layani', 'serve')->whereNumber('game')->middleware('throttle:120,1')->name('serve');
+        Route::post('{game}/pergi', 'miss')->whereNumber('game')->middleware('throttle:120,1')->name('miss');
+        Route::post('{game}/tutup', 'close')->whereNumber('game')->middleware('throttle:30,1')->name('close');
         Route::post('{game}/lanjut', 'next')->whereNumber('game')->middleware('throttle:30,1')->name('next');
         Route::get('{game}/rapor', 'report')->whereNumber('game')->name('report');
         Route::post('{game}/simpan', 'save')->whereNumber('game')->name('save');
