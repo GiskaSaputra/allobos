@@ -16,7 +16,7 @@ Fase mengikuti PRD bagian 10. Bila sesi terputus, lanjutkan dari fase pertama ya
 | 6 | Siniar Bos | Selesai |
 | 7 | Warung Bos 3D | Selesai |
 | 8 | Dashboard Pengelola dan Admin, CMS, wawasan | Selesai |
-| 9 | Beranda, data demo, uji manual, deploy, README, video | Belum |
+| 9 | Beranda, data demo, uji manual, deploy, README, video | Selesai kecuali video demo dan deploy ke VPS |
 
 ## Keputusan
 
@@ -33,7 +33,6 @@ Fase mengikuti PRD bagian 10. Bila sesi terputus, lanjutkan dari fase pertama ya
 
 ## Belum selesai atau perlu dicek
 
-- Docker daemon di komputer pengembang mati, jadi `docker compose up` diuji di Fase 9 bila daemon dapat dinyalakan.
 - Ruang Bos dengan Gemini sungguhan belum diuji karena `GEMINI_API_KEY` belum tersedia. Jalur cadangan (galat, Coba Lagi, catatan tanpa AI) sudah diuji di peramban dan tes.
 
 ### Fase 2
@@ -101,3 +100,23 @@ Fase mengikuti PRD bagian 10. Bila sesi terputus, lanjutkan dari fase pertama ya
 - Halaman CMS (tentang, bantuan, privasi, syarat, kontak) disimpan sebagai Markdown di tabel `pages` dan dirender dengan `html_input: escape`. Isi awal dari `PageSeeder`.
 - Wawasan: topik konsultasi, bidang minat, sebaran kapanewon, kehadiran kelas. Dapat diunduh XLSX dengan nama ditulis sebagai teks.
 - Pengaturan Admin: bobot Skor Siap Usaha (wajib berjumlah 100) dan batas sesi Ruang Bos per hari, disimpan di tabel `settings`.
+### Fase 9
+
+- Beranda: hero dengan judul muncul per kata, pita bidang usaha (satu-satunya marquee), lima tahap ekosistem bertumpuk dengan `position: sticky` dan animasi berbasis gulir CSS, seksi Bos Allo, kelas, siniar, lapak, sertifikat, ajakan untuk pengusaha, dan ajakan akhir. Angka beranda dihitung dari basis data tanpa data Demo (AB-15) dan hanya tampil bila ada.
+- `DemoSeeder`: empat akun demo dan skenario Bu Sri dari Profil Usaha sampai lapak terbit dan sertifikat Tercatat. Peluang, rencana, dan Warung Bos dihitung oleh service produksi (tanpa AI supaya hasil stabil). Skor naik dari 10 ke di atas 80. Riwayat skor disebar ke 20 hari terakhir supaya grafik Jejak Usaha bermakna. `tests/Feature/DemoSeederTest.php` menegaskan skor awal, skor akhir, kenaikan bertahap, dan keempat akun bisa masuk.
+- Perintah `php artisan allobos:demo --force` mengosongkan dan mengisi ulang data demo. Opsi `--jika-kosong` dipakai entrypoint Docker.
+- Dua episode siniar demo memakai video publik YouTube yang relevan (kanal kasisolusi dan Pojok Umkm). Ringkasan disusun dari keterangan video, berlabel Demo.
+- Sertifikat demo dicatat sungguhan ke jaringan Hardhat lokal saat seeding bila jaringan tersedia. Bila tidak, statusnya Menunggu Pencatatan dan seeding tetap berhasil.
+- `ChainClient` meneruskan `PATH` dan `SystemRoot` ke proses Node. Tanpa itu, di Windows proses Node yang dipanggil dari server web tidak bisa membuka koneksi jaringan dan halaman verifikasi kehabisan waktu.
+- Composer dikunci ke platform PHP 8.2 (`config.platform.php`). `endroid/qr-code` turun ke 5.1 dan `spatie/laravel-permission` ke 6.16 karena seri terbarunya butuh PHP 8.5, sementara image Docker memakai PHP 8.4 dan spesifikasi meminta PHP 8.2 ke atas.
+- Docker: image dibangun sekali di layanan `app`, dipakai juga oleh `queue` dan `scheduler`. Entry point menunggu MySQL, layanan `app` menjalankan migrasi, data acuan, data demo bila kosong, dan `optimize`.
+- GitHub Actions: `ci.yml` (tes Laravel, Pint, build aset, tes Hardhat) dan `deploy.yml` (SSH biasa dengan `known_hosts` terkunci, tanpa aksi pihak ketiga).
+- Daftar periksa rilis Design System 12: tidak ada nilai hex, em dash, `console.log`, `dd()` di kode tampilan dan aplikasi. Semua halaman publik dan halaman berlogin keempat peran diperiksa di lebar 360 px tanpa gulir mendatar.- `docker compose up -d --build` dari klon bersih dengan `.env` dari contoh lulus di Docker 29.7.2. Percobaan pertama gagal karena `endroid/qr-code` 6.2 butuh PHP 8.5, percobaan kedua gagal karena galat jaringan npm saat tiga layanan membangun image yang sama bersamaan. Keduanya sudah diperbaiki.
+
+## Belum selesai
+
+- Video demo 3 sampai 5 menit belum dibuat (perlu direkam pemilik proyek).
+- Deploy ke VPS belum dijalankan karena data VPS dan secret GitHub belum tersedia.
+- Kontrak belum di-deploy ke Polygon Amoy karena `ISSUER_PRIVATE_KEY` dan saldo POL uji belum tersedia. Setelah tersedia: `cd web3 && npm run deploy:amoy`, isi `CERT_CONTRACT_ADDRESS`, lalu di pengelola tekan Catat Ulang ke Blockchain untuk kelas demo.
+- Semua fitur AI baru teruji dengan jawaban Gemini dipalsukan dan jalur cadangan. Perlu uji ulang dengan `GEMINI_API_KEY` sungguhan, terutama Ruang Bos mode suara, Cek Produk dengan foto nyata, dan ringkasan siniar dari video.
+- Taksonomi 13 bidang usaha dan 5 bidang pendukung, nama program, dan pembicara IPI perlu dicocokkan dengan data resmi IPI. Saat ini semua kelas dan pembicara berlabel Demo.

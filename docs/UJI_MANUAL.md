@@ -90,5 +90,5 @@ Keterangan hasil: **Lulus** = dicoba dan sesuai. **Lulus (tes)** = dibuktikan te
 
 | No | Langkah | Harapan | Hasil |
 | --- | --- | --- | --- |
-| D1 | `docker compose up -d --build` dari klon bersih dengan `.env` dari contoh | Empat wadah berjalan, migrasi dan data demo otomatis, empat akun bisa masuk | Lihat docs/PROGRESS.md |
+| D1 | `docker compose up -d --build` dari klon bersih dengan `.env` dari contoh | Empat wadah berjalan, migrasi dan data demo otomatis, empat akun bisa masuk | Lulus (17 November 2026, Docker 29.7.2: app, mysql, queue, scheduler berjalan, keempat akun masuk ke dashboardnya, halaman publik 200. Sertifikat demo Menunggu Pencatatan karena jaringan belum diatur) |
 | D2 | Kontrak di Polygon Amoy dan QR sertifikat demo di jaringan uji publik | Penjelajah blok menampilkan transaksi | Belum: `ISSUER_PRIVATE_KEY` dan saldo POL uji belum tersedia |
