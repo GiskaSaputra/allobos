@@ -161,8 +161,8 @@ Fase mengikuti PRD bagian 10. Bila sesi terputus, lanjutkan dari fase pertama ya
 - Lingkungan lokal: PHP Windows tanpa daftar CA dijalankan dengan `-d curl.cainfo=<ca-bundle Git>` untuk server dan `queue:work` supaya AI, suara, dan Cek Produk berjalan.
 
 ## Belum selesai
-- SumoPod: `SUMOPOD_API_KEY` dan `SUMOPOD_WEBHOOK_TOKEN` (atau `SUMOPOD_WEBHOOK_SECRET`) belum diisi di server. Sampai diisi, tombol Bayar dengan QRIS menampilkan pesan bahwa pembayaran online belum diatur. Alamat webhook untuk diisi di SumoPod: `https://allobos.zite.my.id/webhook/sumopod`.
 
+- SumoPod: `SUMOPOD_API_KEY` dan `SUMOPOD_WEBHOOK_TOKEN` (atau `SUMOPOD_WEBHOOK_SECRET`) belum diisi di server. Sampai diisi, tombol Bayar dengan QRIS menampilkan pesan bahwa pembayaran online belum diatur. Alamat webhook untuk diisi di SumoPod: `https://allobos.zite.my.id/webhook/sumopod`.
 - Akun demo memakai sandi `password123`, termasuk Admin. Ganti sandi Admin dan Pengelola di server setelah penjurian.
 - Kirim otomatis saat tombol mikrofon dilepas belum dicoba dengan mikrofon sungguhan.
 - Video demo 3 sampai 5 menit belum dibuat (perlu direkam pemilik proyek).
