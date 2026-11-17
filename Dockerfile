@@ -12,7 +12,7 @@ RUN composer dump-autoload --no-dev --optimize --classmap-authoritative --no-scr
 FROM node:22-bookworm-slim AS assets
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm ci --no-audit --no-fund
+RUN npm ci --no-audit --no-fund --fetch-retries=5 --fetch-retry-mintimeout=20000
 COPY --from=vendor /app/vendor ./vendor
 COPY resources ./resources
 COPY public ./public
@@ -23,7 +23,7 @@ RUN npm run build
 FROM node:22-bookworm-slim AS web3
 WORKDIR /web3
 COPY web3/package.json web3/package-lock.json ./
-RUN npm ci --omit=dev --no-audit --no-fund
+RUN npm ci --omit=dev --no-audit --no-fund --fetch-retries=5 --fetch-retry-mintimeout=20000
 COPY web3/scripts ./scripts
 
 # 4. Aplikasi

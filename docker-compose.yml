@@ -1,6 +1,6 @@
 x-app: &app
-  build: .
   image: allobos-app
+  pull_policy: never
   env_file: .env
   environment:
     DB_HOST: mysql
@@ -16,6 +16,7 @@ x-app: &app
 services:
   app:
     <<: *app
+    build: .
     environment:
       CONTAINER_ROLE: app
       DB_HOST: mysql
@@ -25,6 +26,9 @@ services:
 
   queue:
     <<: *app
+    depends_on:
+      app:
+        condition: service_started
     environment:
       CONTAINER_ROLE: queue
       DB_HOST: mysql
@@ -32,6 +36,9 @@ services:
 
   scheduler:
     <<: *app
+    depends_on:
+      app:
+        condition: service_started
     environment:
       CONTAINER_ROLE: scheduler
       DB_HOST: mysql
