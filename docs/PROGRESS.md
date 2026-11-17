@@ -160,9 +160,15 @@ Fase mengikuti PRD bagian 10. Bila sesi terputus, lanjutkan dari fase pertama ya
 - Memesan dan melaporkan lapak wajib masuk. Halaman masuk menerima `?tujuan=` supaya kembali ke lapak.
 - Lingkungan lokal: PHP Windows tanpa daftar CA dijalankan dengan `-d curl.cainfo=<ca-bundle Git>` untuk server dan `queue:work` supaya AI, suara, dan Cek Produk berjalan.
 
+### Blockchain di server
+
+- Faucet Polygon Amoy (QuickNode, Alchemy) mensyaratkan saldo ETH di jaringan utama, jadi Amoy tidak bisa gratis untuk dompet baru. Dipakai Pilihan B: jaringan uji milik sendiri, layanan `chain` (Anvil v1.5.1) di docker-compose, chain id 31337, hanya bisa dijangkau dari jaringan Docker. Keadaan rantai disimpan ke volume `chain` tiap 30 detik dan saat berhenti, sudah diuji bertahan setelah restart.
+- Dompet penerbit dibuat di server, kuncinya hanya di `.env` server. Kontrak dipasang dengan `web3/scripts/deploy-ethers.mjs` (tanpa Hardhat, artefak dari mesin pengembang). Sertifikat demo berstatus Asli di halaman verifikasi.
+- RPC publik `rpc-amoy.polygon.technology` sudah mati, bawaan diganti ke PublicNode bila suatu saat pindah ke Amoy.
+
 ## Belum selesai
 
-- SumoPod: `SUMOPOD_API_KEY` dan `SUMOPOD_WEBHOOK_TOKEN` (atau `SUMOPOD_WEBHOOK_SECRET`) belum diisi di server. Sampai diisi, tombol Bayar dengan QRIS menampilkan pesan bahwa pembayaran online belum diatur. Alamat webhook untuk diisi di SumoPod: `https://allobos.zite.my.id/webhook/sumopod`.
+- SumoPod sudah diatur di server (kunci API, token, dan signing secret). Webhook diuji: token benar diterima, token salah ditolak. Uji bayar sandbox sampai lunas perlu dilakukan pemilik proyek dari halaman pembayaran SumoPod.
 - Akun demo memakai sandi `password123`, termasuk Admin. Ganti sandi Admin dan Pengelola di server setelah penjurian.
 - Kirim otomatis saat tombol mikrofon dilepas belum dicoba dengan mikrofon sungguhan.
 - Video demo 3 sampai 5 menit belum dibuat (perlu direkam pemilik proyek).

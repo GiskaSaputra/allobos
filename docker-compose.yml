@@ -44,6 +44,17 @@ services:
       DB_HOST: mysql
       DB_PORT: 3306
 
+  # Jaringan blockchain uji milik sendiri (Anvil). Hanya bisa dijangkau dari dalam jaringan Docker.
+  # Keadaan rantai disimpan ke volume tiap 30 detik dan saat berhenti, jadi sertifikat tetap tercatat walau server dinyalakan ulang.
+  chain:
+    image: ghcr.io/foundry-rs/foundry:v1.5.1
+    entrypoint: ["anvil"]
+    command: ["--host", "0.0.0.0", "--port", "8545", "--chain-id", "31337", "--state", "/data/anvil-state.json", "--state-interval", "30", "--silent"]
+    user: root
+    volumes:
+      - chain:/data
+    restart: unless-stopped
+
   mysql:
     image: mysql:8.4
     environment:
@@ -64,3 +75,4 @@ volumes:
   mysql:
   storage:
   logs:
+  chain:

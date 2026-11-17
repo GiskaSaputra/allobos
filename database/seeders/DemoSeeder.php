@@ -191,7 +191,7 @@ class DemoSeeder extends Seeder
         }
         $this->evidence($sri, 'lapak', 'Lapak terbit: Keripik Mbok Sri');
 
-        Announcement::query()->updateOrCreate(['title' => 'Pendaftaran Bootcamp Pemasaran dibuka'], ['body' => 'Contoh pengumuman: kuota terbatas, daftar lewat menu Belajar lalu Kelas.', 'audience' => 'warga', 'published_at' => now(), 'created_by' => $rani->id]);
+        Announcement::query()->updateOrCreate(['title' => 'Pendaftaran Bootcamp Pemasaran dibuka'], ['body' => 'Kuota terbatas, daftar lewat menu Belajar lalu Kelas.', 'audience' => 'warga', 'published_at' => now(), 'created_by' => $rani->id]);
 
         $this->catalog($rani);
 
@@ -230,7 +230,7 @@ class DemoSeeder extends Seeder
             $user = $person($email, $name, RoleName::Bos);
             BossProfile::query()->updateOrCreate(['user_id' => $user->id], [
                 'business_name' => $business, 'business_field_id' => $field($fieldSlug), 'district_id' => $district($districtSlug), 'years_running' => $years,
-                'business_desc' => 'Data contoh. '.$desc, 'track_record' => 'Data contoh. Aktif berbagi pengalaman di kelas dan pendampingan IPI.',
+                'business_desc' => $desc, 'track_record' => 'Aktif berbagi pengalaman di kelas dan pendampingan IPI.',
                 'status' => BossStatus::Aktif, 'checklist' => array_fill_keys(array_keys(BossProfile::STANDARDS), true), 'is_demo' => true,
             ]);
             $speakers[$fieldSlug] = Speaker::query()->updateOrCreate(['name' => $name], ['business' => $business, 'bio' => $desc, 'user_id' => $user->id, 'is_demo' => true]);
@@ -251,11 +251,14 @@ class DemoSeeder extends Seeder
         foreach ([
             ['lapak.batik@allobos.com', 'Siti Aminah', 'Batik Tulis Bu Siti', 'fesyen-dan-batik', 'gedangsari', 'Batik tulis motif alam Gedangsari, diwarnai dengan pewarna alami.', [['Kain batik tulis motif daun', 350000, 'lembar'], ['Selendang batik', 125000, 'helai'], ['Masker kain batik', 15000, 'buah']]],
             ['lapak.topeng@allobos.com', 'Sugeng Riyadi', 'Topeng Kayu Pak Sugeng', 'kerajinan-tangan', 'patuk', 'Topeng kayu pule dan gantungan kunci ukir, dibuat tangan di Bobung.', [['Topeng panji ukuran sedang', 85000, 'buah'], ['Gantungan kunci topeng', 10000, 'buah'], ['Hiasan dinding topeng', 150000, 'buah']]],
-            ['lapak.rumputlaut@allobos.com', 'Rina Wati', 'Rumput Laut Mbak Rina', 'kuliner-dan-makanan-olahan', 'tanjungsari', 'Olahan rumput laut dari pesisir Tanjungsari, renyah dan tanpa pengawet.', [['Keripik rumput laut', 12000, 'bungkus 150 g'], ['Dodol rumput laut', 15000, 'kotak'], ['Peyek rumput laut', 10000, 'bungkus']]],
-            ['lapak.gaplek@allobos.com', 'Painem', 'Gaplek dan Tiwul Semanu', 'kuliner-dan-makanan-olahan', 'semanu', 'Gaplek, tiwul, dan gatot dari singkong petani Semanu.', [['Tiwul instan gula jawa', 12000, 'bungkus 500 g'], ['Gatot kering', 9000, 'bungkus 250 g'], ['Gaplek iris', 8000, 'kg']]],
-            ['lapak.madu@allobos.com', 'Tukiman', 'Madu Klanceng Playen', 'peternakan-dan-perikanan', 'playen', 'Madu lebah klanceng dari kebun karst Playen, dipanen sendiri.', [['Madu klanceng botol kecil', 65000, 'botol 100 ml'], ['Madu klanceng botol besar', 175000, 'botol 300 ml'], ['Propolis mentah', 50000, 'wadah']]],
         ] as $i => [$email, $name, $shopName, $fieldSlug, $districtSlug, $desc, $products]) {
             $owner = $person($email, $name, RoleName::Warga);
+            // Profil lengkap supaya pemilik lapak bisa langsung masuk ke dashboard tanpa mengisi Profil Usaha.
+            $owner->profile()->updateOrCreate([], [
+                'district_id' => $district($districtSlug), 'business_status' => 'sudah', 'existing_business' => $shopName,
+                'interests' => [$field($fieldSlug)], 'capital_range' => '1-5', 'free_time' => '4-8',
+                'skills' => $desc, 'step' => 5, 'onboarded_at' => now()->subDays(10),
+            ]);
             [$from, $to] = $palettes[$i];
             $slug = Str::slug($shopName);
             $shop = Shop::query()->updateOrCreate(['user_id' => $owner->id], [
@@ -294,8 +297,8 @@ class DemoSeeder extends Seeder
         $boss = BossProfile::query()->updateOrCreate(['user_id' => $arif->id], [
             'business_name' => 'Homestay dan Warung Oleh-oleh Pantai', 'business_field_id' => $field,
             'district_id' => District::query()->where('slug', 'tepus')->value('id'), 'years_running' => 11,
-            'business_desc' => 'Data contoh. Menjalankan homestay enam kamar dan warung oleh-oleh di jalur pantai selatan. Bisa berbagi soal menjual ke wisatawan dan menitipkan produk ke toko.',
-            'track_record' => 'Data contoh. Melayani rombongan wisata sekolah dan keluarga setiap musim liburan.',
+            'business_desc' => 'Menjalankan homestay enam kamar dan warung oleh-oleh di jalur pantai selatan. Bisa berbagi soal menjual ke wisatawan dan menitipkan produk ke toko.',
+            'track_record' => 'Melayani rombongan wisata sekolah dan keluarga setiap musim liburan.',
             'status' => BossStatus::Aktif, 'checklist' => array_fill_keys(array_keys(BossProfile::STANDARDS), true), 'is_demo' => true,
         ]);
         $boss->slots()->delete();
@@ -307,7 +310,7 @@ class DemoSeeder extends Seeder
     {
         $program = Program::query()->updateOrCreate(['slug' => Str::slug($title)], [
             'title' => $title, 'kind' => $kind, 'business_field_id' => $field, 'status' => $status, 'quota' => 30, 'price' => $price,
-            'description' => "Data contoh untuk demonstrasi alloBos.\n\nPeserta belajar langsung dari pengusaha yang menjalankan usahanya sendiri, dengan praktik dan tanya jawab.",
+            'description' => "Peserta belajar langsung dari pengusaha yang menjalankan usahanya sendiri, dengan praktik dan tanya jawab.",
             'location' => 'Balai Kalurahan Ponjong, Gunungkidul', 'materials' => [['title' => 'Lembar kerja hitung HPP', 'url' => 'https://example.com/lembar-kerja']],
             'is_official' => false, 'is_demo' => true, 'created_by' => $creator->id, 'closed_at' => $status === ProgramStatus::Selesai ? now()->subDays(9) : null,
         ]);
