@@ -40,7 +40,7 @@ class SessionController extends Controller
     public function approve(Request $request, MentoringSession $session): RedirectResponse
     {
         Gate::authorize('viewAsBoss', $session);
-        $data = $request->validate(['meeting_link' => ['nullable', 'url', 'max:255'], 'address' => ['nullable', 'string', 'max:255']]);
+        $data = $request->validate(['meeting_link' => ['nullable', 'url:http,https', 'max:255'], 'address' => ['nullable', 'string', 'max:255']]);
 
         return $this->act(fn () => $this->mentoring->approve($session, $data['meeting_link'] ?? null, $data['address'] ?? null), 'Sesi disetujui. Warga sudah diberi tahu.');
     }

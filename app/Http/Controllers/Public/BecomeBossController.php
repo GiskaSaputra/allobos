@@ -40,7 +40,7 @@ class BecomeBossController extends Controller
             'district_id' => ['nullable', 'exists:districts,id'],
             'years_running' => ['required', 'integer', 'min:0', 'max:80'],
             'track_record' => ['nullable', 'string', 'max:2000'],
-            'trace_url' => ['nullable', 'url', 'max:255'],
+            'trace_url' => ['nullable', 'url:http,https', 'max:255'],
         ]), ['whatsapp.regex' => 'Nomor WhatsApp harus diawali 08 atau 62, contoh 081234567890.']);
 
         $user = $request->user() ?? User::query()->create([

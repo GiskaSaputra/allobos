@@ -43,7 +43,7 @@ class ProgramRequest extends FormRequest
     {
         return collect(preg_split('/\R/', (string) $this->input('materials')))
             ->map(fn ($line) => array_map('trim', explode('|', $line, 2)))
-            ->filter(fn ($parts) => count($parts) === 2 && filter_var($parts[1], FILTER_VALIDATE_URL))
+            ->filter(fn ($parts) => count($parts) === 2 && filter_var($parts[1], FILTER_VALIDATE_URL) && preg_match('#^https?://#i', $parts[1]))
             ->map(fn ($parts) => ['title' => $parts[0], 'url' => $parts[1]])->values()->all();
     }
 }

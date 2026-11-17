@@ -36,7 +36,7 @@ class ProfileController extends Controller
             'district_id' => ['nullable', 'exists:districts,id'],
             'years_running' => ['required', 'integer', 'min:0', 'max:80'],
             'track_record' => ['nullable', 'string', 'max:2000'],
-            'trace_url' => ['nullable', 'url', 'max:255'],
+            'trace_url' => ['nullable', 'url:http,https', 'max:255'],
             'photo' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ]);
 

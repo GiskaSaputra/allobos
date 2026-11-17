@@ -76,6 +76,15 @@ class AdminTest extends TestCase
         $this->assertSame(BossStatus::Diajukan, User::where('email', 'arif@contoh.id')->first()->bossProfile->status);
     }
 
+    public function test_tautan_bos_hanya_http_atau_https(): void
+    {
+        $this->post(route('become-boss.store'), [
+            'name' => 'Usil', 'email' => 'usil@contoh.id', 'whatsapp' => '081234567890', 'password' => 'sandi-panjang-1', 'password_confirmation' => 'sandi-panjang-1', 'consent' => 1,
+            'business_name' => 'Usaha', 'business_desc' => 'Deskripsi usaha yang cukup panjang.', 'business_field_id' => 6, 'years_running' => 1,
+            'trace_url' => 'javascript:alert(document.cookie)',
+        ])->assertSessionHasErrors('trace_url');
+    }
+
     public function test_bobot_skor_harus_100_dan_prompt_berversi(): void
     {
         $admin = $this->userWithRole(RoleName::Admin);

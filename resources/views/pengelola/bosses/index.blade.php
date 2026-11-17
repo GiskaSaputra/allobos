@@ -21,7 +21,7 @@
                         <p class="text-sm text-fg-muted">{{ $boss->business_name }}, {{ $boss->field?->name }}, {{ $boss->years_running }} tahun{{ $boss->district ? ', '.$boss->district->name : '' }}. {{ $boss->user->email }}</p>
                         <p class="text-fg-body">{{ $boss->business_desc }}</p>
                         @if ($boss->track_record)<p class="text-sm text-fg-body"><strong class="text-fg">Rekam jejak:</strong> {{ $boss->track_record }}</p>@endif
-                        @if ($boss->trace_url)<a href="{{ $boss->trace_url }}" target="_blank" rel="noopener nofollow" class="text-sm text-accent-text underline underline-offset-2">{{ $boss->trace_url }}</a>@endif
+                        @if ($boss->trace_url && preg_match('#^https?://#i', $boss->trace_url))<a href="{{ $boss->trace_url }}" target="_blank" rel="noopener nofollow" class="text-sm text-accent-text underline underline-offset-2">{{ $boss->trace_url }}</a>@endif
                         @if ($boss->reject_reason)<p class="text-sm text-danger">Alasan ditolak: {{ $boss->reject_reason }}</p>@endif
                     </div>
                     @if ($boss->status !== App\Enums\BossStatus::Aktif)
