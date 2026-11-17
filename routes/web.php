@@ -31,6 +31,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::middleware('onboarded')->group(function () {
             Route::get('/', Warga\DashboardController::class)->name('dashboard');
             Route::get('jejak', [Warga\DashboardController::class, 'journey'])->name('journey');
+
+            Route::get('peluang', [Warga\OpportunityController::class, 'index'])->name('opportunities.index');
+            Route::post('peluang', [Warga\OpportunityController::class, 'generate'])->middleware('throttle:ai')->name('opportunities.generate');
+            Route::post('peluang/{opportunity}/pilih', [Warga\OpportunityController::class, 'choose'])->name('opportunities.choose');
+
+            Route::get('rencana', [Warga\PlanController::class, 'show'])->name('plan.show');
+            Route::post('rencana', [Warga\PlanController::class, 'build'])->middleware('throttle:ai')->name('plan.build');
+            Route::patch('rencana', [Warga\PlanController::class, 'update'])->name('plan.update');
+            Route::get('rencana/pdf', [Warga\PlanController::class, 'pdf'])->name('plan.pdf');
+            Route::get('rencana/hpp', [Warga\PlanController::class, 'cost'])->name('plan.cost');
+
+            Route::get('langkah', [Warga\StepController::class, 'index'])->name('steps.index');
+            Route::post('langkah', [Warga\StepController::class, 'store'])->name('steps.store');
+            Route::patch('langkah/{step}', [Warga\StepController::class, 'update'])->name('steps.update');
+            Route::delete('langkah/{step}', [Warga\StepController::class, 'destroy'])->name('steps.destroy');
         });
     });
 

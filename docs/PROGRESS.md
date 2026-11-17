@@ -9,7 +9,7 @@ Fase mengikuti PRD bagian 10. Bila sesi terputus, lanjutkan dari fase pertama ya
 | 0 | Fondasi: proyek, autentikasi, peran, tata letak, token desain, klien AI | Selesai |
 | 1 | Profil Usaha dan Jejak Usaha | Selesai |
 | 2 | Ruang Bos | Selesai |
-| 3 | Peluang, Rencana, HPP, Langkah 30 Hari | Belum |
+| 3 | Peluang, Rencana, HPP, Langkah 30 Hari | Selesai |
 | 4 | Cek Produk dan Lapak | Belum |
 | 5 | Kelas Bos dan Temu Bos | Belum |
 | 5b | Sertifikat Terverifikasi | Belum |
@@ -46,3 +46,11 @@ Fase mengikuti PRD bagian 10. Bila sesi terputus, lanjutkan dari fase pertama ya
 - Perintah `allobos:ruang-bos-rapikan` tiap 5 menit menutup sesi diam lebih dari 30 menit dan menghapus transkrip lebih dari 180 hari (AB-16).
 - Zona waktu aplikasi diganti ke `Asia/Jakarta` supaya jam di antarmuka dan reset kuota tengah malam WIB (AB-11) benar.
 - PDF memakai dompdf. Karena dompdf tidak membaca variabel CSS, nilai token ditulis ulang sebagai `rgb()` di `resources/views/pdf/layout.blade.php`.
+### Fase 3
+
+- Rumus HPP: biaya bahan per sekali produksi dibagi hasil produksi, ditambah biaya tetap per bulan dibagi produksi sebulan. Titik impas per bulan adalah biaya tetap dibagi selisih harga jual dan biaya bahan per unit. Kolom `batches_per_month` ditambahkan lewat migrasi baru.
+- Cadangan Peluang tanpa AI mencocokkan bidang minat profil (bobot 5) dan kata kunci profil, keahlian, potensi kapanewon, serta Catatan Konsultasi terhadap kata kunci tiap bidang IPI. Alasan selalu menyebut data milik warga (PU-02).
+- Bila kuota AI habis, peluang dan rencana tidak memakai cadangan, tetapi menampilkan pesan kuota, supaya warga tahu kenapa hasilnya berbeda.
+- Menyusun ulang rencana mengganti langkah asal Rencana yang belum dikerjakan. Langkah yang sudah dicentang dan langkah dari sumber lain tetap.
+- Kalkulator HPP memakai Livewire (hasil berubah langsung). Langkah 30 Hari memakai formulir biasa dengan kotak centang yang langsung terkirim, agar tetap jalan tanpa skrip.
+- `.grid > * { min-width: 0 }` ditambahkan di CSS dasar setelah grafik Jejak Usaha melebarkan kolom di layar 360 px.

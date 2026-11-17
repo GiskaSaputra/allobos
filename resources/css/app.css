@@ -84,6 +84,9 @@
     }
 
     [x-cloak] { display: none !important; }
+
+    /* Isi panjang atau kanvas grafik tidak boleh melebarkan kolom grid di layar sempit. */
+    .grid > * { min-width: 0; }
 }
 
 @layer components {
