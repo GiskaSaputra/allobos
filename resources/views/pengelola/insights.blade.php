@@ -10,7 +10,7 @@
                     <p class="mt-3 text-sm text-fg-muted">Belum ada data.</p>
                 @else
                     <x-chart class="mt-4" :label="$section['title']" :config="['type' => 'bar', 'horizontal' => true, 'labels' => array_map(fn ($r) => Str::limit($r[0], 28), $section['rows']), 'series' => [['label' => 'Jumlah', 'data' => array_column($section['rows'], 1), 'color' => 'brand']]]" />
-                    <table class="sr-only"><caption>{{ $section['title'] }}</caption>@foreach ($section['rows'] as [$name, $value])<tr><th>{{ $name }}</th><td>{{ $value }}</td></tr>@endforeach</table>
+                    <div class="sr-only"><table><caption>{{ $section['title'] }}</caption>@foreach ($section['rows'] as [$name, $value])<tr><th>{{ $name }}</th><td>{{ $value }}</td></tr>@endforeach</table></div>
                 @endif
             </x-card>
         @endforeach
