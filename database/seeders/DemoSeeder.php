@@ -199,7 +199,7 @@ class DemoSeeder extends Seeder
     /** @return array{User, User, User} */
     private function accounts(): array
     {
-        $password = env('DEMO_PASSWORD', 'allobos-demo');
+        $password = config('features.demo_password');
         $users = [];
         foreach ([[RoleName::Warga, 'Sri Lestari', 'warga@allobos.test'], [RoleName::Bos, 'Arif Wibowo', 'bos@allobos.test'], [RoleName::Pengelola, 'Rani Pratiwi', 'pengelola@allobos.test'], [RoleName::Admin, 'Admin alloBos', 'admin@allobos.test']] as [$role, $name, $email]) {
             $user = User::query()->updateOrCreate(['email' => $email], [

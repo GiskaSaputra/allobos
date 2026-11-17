@@ -40,7 +40,7 @@ class DemoSeederTest extends TestCase
         $this->assertSame(ShopStatus::Terbit, $sri->shop->status);
 
         foreach (['warga', 'bos', 'pengelola', 'admin'] as $role) {
-            $this->post('/masuk', ['email' => $role.'@allobos.test', 'password' => env('DEMO_PASSWORD', 'allobos-demo')]);
+            $this->post('/masuk', ['email' => $role.'@allobos.test', 'password' => config('features.demo_password')]);
             $this->get(route('dashboard'))->assertRedirect();
             $this->followRedirects($this->get(route('dashboard')))->assertOk();
             $this->post('/keluar');
