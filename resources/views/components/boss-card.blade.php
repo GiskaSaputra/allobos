@@ -1,5 +1,5 @@
 @props(['boss', 'href'])
-<a href="{{ $href }}" class="card card-link group relative isolate flex flex-col gap-4 overflow-hidden">
+<a href="{{ $href }}" class="card card-link group relative isolate flex h-full flex-col gap-4 overflow-hidden">
     <x-logo-mark class="-right-5 -top-5 h-24 w-24" />
     <span class="flex items-center gap-4">
         @if ($boss->photo_path)

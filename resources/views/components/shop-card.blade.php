@@ -1,5 +1,5 @@
 @props(['shop'])
-<a href="{{ route('shops.show', $shop) }}" class="card card-link group isolate flex flex-col gap-3 overflow-hidden p-0 sm:p-0">
+<a href="{{ route('shops.show', $shop) }}" class="card card-link group isolate flex h-full flex-col gap-3 overflow-hidden p-0 sm:p-0">
     <span class="relative block aspect-[16/9] overflow-hidden bg-surface-alt">
         <x-logo-chip class="absolute left-3 top-3 z-10" />
         @if ($shop->coverUrl())

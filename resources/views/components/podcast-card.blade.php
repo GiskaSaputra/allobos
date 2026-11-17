@@ -1,5 +1,5 @@
 @props(['podcast', 'compact' => false, 'href' => null])
-<a href="{{ $href ?? route('podcasts.show', $podcast) }}" class="card card-link group flex flex-col gap-3 p-3 sm:p-3">
+<a href="{{ $href ?? route('podcasts.show', $podcast) }}" class="card card-link group flex h-full flex-col gap-3 p-3 sm:p-3">
     <span class="relative block overflow-hidden rounded-[20px]">
         <img src="{{ $podcast->thumbnail() }}" alt="" loading="lazy" width="480" height="270" class="aspect-video w-full object-cover transition duration-300 group-hover:scale-[1.03]">
         <x-logo-chip class="absolute left-2 top-2" />
