@@ -120,6 +120,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('{session}', 'show')->whereNumber('session')->name('show');
         Route::post('{session}/mulai', 'start')->whereNumber('session')->name('start');
         Route::post('{session}/kirim', 'send')->whereNumber('session')->middleware('throttle:ai')->name('send');
+        Route::post('{session}/suara', 'voice')->whereNumber('session')->middleware('throttle:ai')->name('voice');
         Route::post('{session}/akhiri', 'finish')->whereNumber('session')->name('finish');
         Route::get('{session}/catatan', 'note')->whereNumber('session')->name('note');
         Route::get('{session}/catatan/pdf', 'pdf')->whereNumber('session')->name('note.pdf');

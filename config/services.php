@@ -28,6 +28,14 @@ return [
         'key' => env('RESEND_KEY'),
     ],
 
+    // Suara Bos Allo (teks ke suara). Tanpa kunci, peramban membacakan dengan suaranya sendiri.
+    'speechify' => [
+        'key' => env('SPEECHIFY_API_KEY'),
+        'voice' => env('SPEECHIFY_VOICE', 'henry'),
+        'model' => env('SPEECHIFY_MODEL', 'simba-3.5'),
+        'language' => env('SPEECHIFY_LANGUAGE', 'id-ID'),
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),

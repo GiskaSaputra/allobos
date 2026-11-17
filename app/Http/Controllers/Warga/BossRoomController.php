@@ -9,6 +9,7 @@ use App\Http\Requests\Warga\BossSessionRequest;
 use App\Jobs\SummarizeBossSession;
 use App\Models\BossSession;
 use App\Services\Ai\AiException;
+use App\Services\Ai\VoiceClient;
 use App\Services\Boss\BossEngine;
 use App\Services\Boss\Modules;
 use App\Services\Plans\StepService;
@@ -101,6 +102,26 @@ class BossRoomController extends Controller
         }
 
         return response()->json($result + ['turns_left' => $this->engine->turnsLeft($session->user)]);
+    }
+
+    /** Suara jawaban Bos Allo terakhir di sesi ini. 404 berarti peramban membacakan sendiri. */
+    public function voice(BossSession $session, VoiceClient $voice): Response|JsonResponse
+    {
+        Gate::authorize('view', $session);
+        $turn = $session->turns()->where('role', 'bos')->latest('id')->first();
+        if (! $turn || ! $voice->configured()) {
+            return response()->json(['message' => 'Suara AI belum tersedia.'], Response::HTTP_NOT_FOUND);
+        }
+
+        $text = trim($turn->content.(isset($turn->meta['follow_up']) ? "\n\n".$turn->meta['follow_up'] : ''));
+
+        try {
+            $audio = $voice->speak($text);
+        } catch (AiException) {
+            return response()->json(['message' => 'Suara AI sedang tidak tersedia.'], Response::HTTP_SERVICE_UNAVAILABLE);
+        }
+
+        return response($audio, Response::HTTP_OK, ['Content-Type' => 'audio/mpeg', 'Cache-Control' => 'private, no-store']);
     }
 
     public function finish(BossSession $session): RedirectResponse
