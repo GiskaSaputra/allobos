@@ -61,6 +61,7 @@ class BossRoomController extends Controller
         return view('boss-room.show', [
             'session' => $session,
             'turns' => $session->turns()->get()->map(fn ($t) => [
+                'id' => $t->id,
                 'role' => $t->role,
                 'text' => $t->content,
                 'follow_up' => $t->meta['follow_up'] ?? null,
@@ -80,7 +81,7 @@ class BossRoomController extends Controller
             return response()->json(['message' => $e->getMessage()], Response::HTTP_TOO_MANY_REQUESTS);
         }
 
-        return response()->json(['greeting' => $greeting, 'status' => $session->fresh()->status->value]);
+        return response()->json(['greeting' => $greeting, 'status' => $session->fresh()->status->value, 'turn_id' => $this->lastBossTurn($session)]);
     }
 
     public function send(Request $request, BossSession $session): JsonResponse
@@ -101,14 +102,17 @@ class BossRoomController extends Controller
             ], $e->isQuota() ? Response::HTTP_TOO_MANY_REQUESTS : Response::HTTP_SERVICE_UNAVAILABLE);
         }
 
-        return response()->json($result + ['turns_left' => $this->engine->turnsLeft($session->user)]);
+        return response()->json($result + ['turns_left' => $this->engine->turnsLeft($session->user), 'turn_id' => $this->lastBossTurn($session)]);
     }
 
     /** Suara jawaban Bos Allo terakhir di sesi ini. 404 berarti peramban membacakan sendiri. */
-    public function voice(BossSession $session, VoiceClient $voice): Response|JsonResponse
+    public function voice(Request $request, BossSession $session, VoiceClient $voice): Response|JsonResponse
     {
         Gate::authorize('view', $session);
-        $turn = $session->turns()->where('role', 'bos')->latest('id')->first();
+        // Relasi turns sudah diurutkan naik, jadi urutan diganti dulu supaya yang terambil jawaban terbaru.
+        $turn = $session->turns()->where('role', 'bos')->reorder('id', 'desc')
+            ->when($request->integer('turn'), fn ($query, $id) => $query->whereKey($id))
+            ->first();
         if (! $turn || ! $voice->configured()) {
             return response()->json(['message' => 'Suara AI belum tersedia.'], Response::HTTP_NOT_FOUND);
         }
@@ -178,5 +182,10 @@ class BossRoomController extends Controller
         return view('boss-room.history', [
             'sessions' => BossSession::query()->where('user_id', $request->user()->id)->with('note')->latest()->paginate(15),
         ]);
+    }
+
+    private function lastBossTurn(BossSession $session): ?int
+    {
+        return $session->turns()->where('role', 'bos')->reorder('id', 'desc')->value('id');
     }
 }

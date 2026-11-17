@@ -44,6 +44,23 @@ class BossVoiceTest extends TestCase
         Http::assertSent(fn ($request) => $request['voice_id'] === 'bima' && $request['input'] === "Halo, saya Bos Allo.\n\nUsahamu apa?" && $request->hasHeader('Authorization', 'Bearer kunci-uji'));
     }
 
+    public function test_suara_memakai_jawaban_terbaru_atau_jawaban_yang_diminta(): void
+    {
+        Storage::fake('local');
+        config(['services.speechify.key' => 'kunci-uji']);
+        Http::fake(['api.speechify.ai/*' => Http::response(['audio_data' => base64_encode('MP3PALSU')])]);
+        $session = $this->bossSession();
+        $greeting = $session->turns()->first();
+        $session->turns()->create(['role' => 'warga', 'content' => 'Saya mau jualan keripik.']);
+        $session->turns()->create(['role' => 'bos', 'content' => 'Jawaban kedua.']);
+
+        $this->actingAs($session->user)->postJson(route('boss-room.voice', $session))->assertOk();
+        Http::assertSent(fn ($request) => $request['input'] === 'Jawaban kedua.');
+
+        $this->postJson(route('boss-room.voice', $session), ['turn' => $greeting->id])->assertOk();
+        Http::assertSent(fn ($request) => str_starts_with($request['input'], 'Halo, saya Bos Allo.'));
+    }
+
     public function test_warga_lain_tidak_bisa_mengambil_suara(): void
     {
         $session = $this->bossSession();

@@ -113,18 +113,19 @@ function initBossRoom(root) {
         return data.follow_up ? `${data.reply}\n\n${data.follow_up}` : data.reply;
     }
 
-    // Teks ditampilkan per kata selama GIF bicara bila suara tidak dipakai.
-    function typeOut(target, text) {
+    // Teks muncul per kata. Bila durasi suara diketahui, kecepatannya disamakan supaya teks dan suara selesai bersamaan.
+    function typeOut(target, text, seconds = 0) {
         return new Promise((resolve) => {
+            clearInterval(typingTimer);
             if (reduce) {
                 target.textContent = text;
                 resolve();
                 return;
             }
             const words = text.split(/(\s+)/);
+            const step = seconds ? Math.max(15, (seconds * 1000 * 0.95) / words.length) : 45;
             let i = 0;
             target.textContent = '';
-            clearInterval(typingTimer);
             typingTimer = setInterval(() => {
                 target.textContent += words[i] ?? '';
                 i += 1;
@@ -133,13 +134,19 @@ function initBossRoom(root) {
                     clearInterval(typingTimer);
                     resolve();
                 }
-            }, 45);
+            }, step);
+            typeOut.finish = () => {
+                clearInterval(typingTimer);
+                target.textContent = text;
+                resolve();
+            };
         });
     }
 
-    // Suara utama dari server (Speechify, suara Henry). Bila belum diatur atau gagal, peramban membacakan sendiri.
+    // Suara utama dari server (Speechify, suara Bima). Bila belum diatur atau gagal, peramban membacakan sendiri.
     let aiVoice = true;
     let audio = null;
+    let lastTurn = null;
 
     function stopVoice() {
         if (audio) {
@@ -149,40 +156,53 @@ function initBossRoom(root) {
         if (canSpeak) speechSynthesis.cancel();
     }
 
-    async function speak(text) {
-        if (muted) return false;
-        if (await speakAi()) return true;
-        return speakBrowser(text);
-    }
-
-    async function speakAi() {
-        if (!aiVoice) return false;
+    /** Mengambil suara jawaban tertentu dari server. null berarti pakai suara peramban. */
+    async function fetchVoice(turn) {
+        if (!aiVoice) return null;
         try {
             const res = await fetch(cfg.voiceUrl, {
                 method: 'POST',
-                headers: { Accept: 'audio/mpeg', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content ?? '' },
+                headers: { 'Content-Type': 'application/json', Accept: 'audio/mpeg', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content ?? '' },
+                body: JSON.stringify({ turn }),
             });
             if (res.status === 404) aiVoice = false;
-            if (!res.ok || muted) return false;
-            const url = URL.createObjectURL(await res.blob());
-            stopVoice();
-            const player = new Audio(url);
-            audio = player;
-            return await new Promise((resolve) => {
-                const done = (ok) => { URL.revokeObjectURL(url); if (audio === player) audio = null; resolve(ok); };
-                player.onplaying = () => setState('speaking');
-                player.onended = () => done(true);
-                player.onpause = () => done(true);
-                player.onerror = () => done(false);
-                player.play().catch(() => done(false));
-            });
+            if (!res.ok) return null;
+            return URL.createObjectURL(await res.blob());
         } catch (e) {
-            return false;
+            return null;
         }
     }
 
+    /** Memutar suara. onStart dipanggil tepat saat suara mulai terdengar, dengan durasinya dalam detik. */
+    function playUrl(url, onStart) {
+        stopVoice();
+        const player = new Audio(url);
+        audio = player;
+        return new Promise((resolve) => {
+            let started = false;
+            const done = (ok) => { URL.revokeObjectURL(url); if (audio === player) audio = null; resolve(ok || started); };
+            player.onplaying = () => {
+                if (started) return;
+                started = true;
+                setState('speaking');
+                onStart?.(Number.isFinite(player.duration) ? player.duration : 0);
+            };
+            player.onended = () => done(true);
+            player.onpause = () => done(true);
+            player.onerror = () => done(false);
+            player.play().catch(() => done(false));
+        });
+    }
+
+    async function speak(text, turn) {
+        if (muted) return false;
+        const url = await fetchVoice(turn);
+        if (url && !muted) return playUrl(url);
+        return speakBrowser(text);
+    }
+
     // Kalimat dibacakan bergiliran karena ujaran panjang sering terpotong di Chrome.
-    function speakBrowser(text) {
+    function speakBrowser(text, onStart) {
         return new Promise((resolve) => {
             if (muted || !canSpeak) {
                 resolve(false);
@@ -203,6 +223,7 @@ function initBossRoom(root) {
                 if (voice) u.voice = voice;
                 u.rate = 1;
                 u.onstart = () => {
+                    if (!started) onStart?.();
                     started = true;
                     setState('speaking');
                 };
@@ -220,22 +241,46 @@ function initBossRoom(root) {
     const mayPlay = () => !navigator.userActivation || navigator.userActivation.hasBeenActive;
     unlock.addEventListener('click', async () => {
         unlock.classList.add('hidden');
-        setState('speaking');
-        await speak(lastReply);
+        setState('thinking');
+        await speak(lastReply, lastTurn);
         setState('idle');
     });
 
-    async function present(text, modules) {
+    /**
+     * Menampilkan jawaban. Bila suara dipakai, status tetap "berpikir" sampai suara siap,
+     * lalu teks mulai muncul tepat saat suara terdengar dan kecepatannya mengikuti panjang suara.
+     */
+    async function present(text, modules, turn = null) {
         lastReply = text;
+        lastTurn = turn;
         els.replay.disabled = false;
-        const { box, body } = bubble('bos', '');
-        setState('speaking');
         const silent = !mayPlay() && !muted;
         if (silent) unlock.classList.remove('hidden');
-        const spoken = silent ? Promise.resolve(false) : speak(text);
-        await typeOut(body, text);
+
+        let typing = null;
+        let body = null;
+        let box = null;
+        const show = (seconds = 0) => {
+            ({ box, body } = bubble('bos', ''));
+            typing = typeOut(body, text, seconds);
+        };
+
+        if (!muted && !silent) {
+            const url = await fetchVoice(turn);
+            const spoken = url ? await playUrl(url, show) : await speakBrowser(text, () => show());
+            if (!typing) {
+                setState('speaking');
+                show();
+            } else if (spoken) {
+                typeOut.finish?.();
+            }
+        } else {
+            setState('speaking');
+            show();
+        }
+
+        await typing;
         addModules(box, modules);
-        await spoken;
         setState('idle');
     }
 
@@ -268,7 +313,7 @@ function initBossRoom(root) {
             if (data.turns_left !== null && data.turns_left !== undefined) {
                 els.left.textContent = `Sisa ${data.turns_left} giliran hari ini`;
             }
-            await present(composeReply(data), data.modules);
+            await present(composeReply(data), data.modules, data.turn_id);
         } catch (error) {
             if (error.status === 429 || error.status === 409) {
                 blocked = true;
@@ -400,8 +445,8 @@ function initBossRoom(root) {
             notice('Suara sedang dibisukan atau tidak tersedia di peramban ini. Jawaban tetap ada sebagai teks.');
             return;
         }
-        setState('speaking');
-        await speak(lastReply);
+        setState('thinking');
+        await speak(lastReply, lastTurn);
         setState('idle');
     });
     root.closest('body').querySelector('[data-finish]')?.addEventListener('submit', () => {
@@ -430,6 +475,7 @@ function initBossRoom(root) {
         if (turn.role === 'bos') {
             addModules(box, turn.modules);
             lastReply = turn.text;
+            lastTurn = turn.id;
             els.replay.disabled = false;
         }
     });
@@ -439,7 +485,7 @@ function initBossRoom(root) {
     if (cfg.status === 'disiapkan' || !cfg.turns.length) {
         setState('thinking');
         postJson(cfg.startUrl)
-            .then((data) => present(data.greeting, []))
+            .then((data) => present(data.greeting, [], data.turn_id))
             .catch((error) => {
                 blocked = true;
                 showError(error.message);
