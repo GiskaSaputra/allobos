@@ -14,6 +14,8 @@ class FeatureSchemas
 
         return match ($feature) {
             'boss_chat' => Schema::obj([
+                // Ringkasan maksud pesan warga, ditulis sebelum jawaban supaya jawaban terikat pada pertanyaannya.
+                'understood' => Schema::str(),
                 'reply' => Schema::str(),
                 'follow_up' => Schema::str(),
                 'suggested_modules' => Schema::arr(Schema::str($modules), 0, 2),

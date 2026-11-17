@@ -86,11 +86,15 @@ class BossEngine
      */
     public function reply(BossSession $session, string $message): array
     {
-        $history = $session->turns()->latest('id')->limit(10)->get()->reverse()
+        // Relasi turns sudah urut naik, jadi urutan dibalik dulu supaya yang terambil sepuluh giliran terakhir, bukan yang pertama.
+        $history = $session->turns()->reorder('id', 'desc')->limit(10)->get()->reverse()
             ->map(fn ($turn) => ($turn->role === 'bos' ? 'Bos Allo: ' : 'Warga: ').$turn->content)->implode("\n");
 
-        $content = "Profil warga:\n".($session->user->profile?->forAi() ?? '-')
-            ."\n\nTopik sesi: {$session->topic}\n\nPercakapan sebelumnya:\n{$history}\n\nPesan baru warga:\n{$message}";
+        $content = "LATAR BELAKANG (pakai hanya bila berkaitan dengan pesan baru)\n"
+            ."Profil warga:\n".($session->user->profile?->forAi() ?? '-')
+            ."\nTopik awal sesi: {$session->topic}"
+            ."\n\nPERCAKAPAN SEBELUMNYA\n".($history ?: '-')
+            ."\n\nPESAN BARU WARGA (ini yang harus dijawab)\n\"{$message}\"";
 
         $data = $this->ai->generateJson('boss_chat', $content, FeatureSchemas::for('boss_chat'), $session->user);
 
@@ -100,7 +104,7 @@ class BossEngine
         }
 
         $session->turns()->create(['role' => 'warga', 'content' => $message]);
-        $session->turns()->create(['role' => 'bos', 'content' => $data['reply'], 'meta' => ['follow_up' => $data['follow_up'], 'modules' => $modules]]);
+        $session->turns()->create(['role' => 'bos', 'content' => $data['reply'], 'meta' => ['follow_up' => $data['follow_up'], 'modules' => $modules, 'understood' => $data['understood']]]);
         $session->increment('turns_count');
         $session->update(['last_activity_at' => now()]);
 

@@ -28,7 +28,8 @@ class Schema
     /** Semua properti wajib. */
     public static function obj(array $properties): array
     {
-        return ['type' => 'OBJECT', 'properties' => $properties, 'required' => array_keys($properties)];
+        // propertyOrdering menjaga urutan isian sesuai kode. Tanpa itu Gemini menulis isian menurut abjad.
+        return ['type' => 'OBJECT', 'properties' => $properties, 'required' => array_keys($properties), 'propertyOrdering' => array_keys($properties)];
     }
 
     /** Mengembalikan pesan galat pertama, atau null bila data sesuai skema. */

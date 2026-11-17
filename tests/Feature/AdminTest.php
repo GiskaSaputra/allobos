@@ -97,7 +97,7 @@ class AdminTest extends TestCase
         $this->post(route('admin.ai.prompts.store', 'boss_chat'), ['prompt' => 'Kamu Bos Allo versi baru yang ramah dan lugas.'])->assertSessionHas('status');
         $this->assertSame('Kamu Bos Allo versi baru yang ramah dan lugas.', app(PromptRegistry::class)->active('boss_chat'));
 
-        $this->fakeGemini(['reply' => 'Halo', 'follow_up' => 'Apa kabar?', 'suggested_modules' => []]);
+        $this->fakeGemini(['understood' => 'Warga bertanya.', 'reply' => 'Halo', 'follow_up' => 'Apa kabar?', 'suggested_modules' => []]);
         $this->post(route('admin.ai.prompts.test', 'boss_chat'), ['prompt' => 'Kamu Bos Allo untuk uji coba prompt.', 'input' => 'Halo'])->assertSessionHas('test', fn ($t) => $t['ok'] === true);
 
         $this->patch(route('admin.ai.update', 'boss_chat'), ['enabled' => 0, 'temperature' => 0.5, 'quota' => 10])->assertSessionHas('status');

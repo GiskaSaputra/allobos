@@ -18,7 +18,7 @@ class BossRoomTest extends TestCase
     {
         $user = $this->onboardedWarga();
         $this->fakeGemini(
-            ['reply' => 'Harga jual sebaiknya dihitung dari biaya bahan dulu.', 'follow_up' => 'Berapa biaya bahan untuk satu kali goreng?', 'suggested_modules' => ['rencana']],
+            ['understood' => 'Warga bertanya.', 'reply' => 'Harga jual sebaiknya dihitung dari biaya bahan dulu.', 'follow_up' => 'Berapa biaya bahan untuk satu kali goreng?', 'suggested_modules' => ['rencana']],
             ['problem' => 'Belum tahu harga jual keripik.', 'advice' => ['Hitung HPP'], 'next_steps' => ['Catat biaya bahan', 'Hitung HPP di kalkulator'], 'modules' => ['rencana']],
         );
 
@@ -66,7 +66,7 @@ class BossRoomTest extends TestCase
     public function test_topik_pinjaman_menyarankan_temu_bos(): void
     {
         $user = $this->onboardedWarga();
-        $this->fakeGemini(['reply' => 'Soal pinjaman sebaiknya ditanyakan ke lembaga resmi.', 'follow_up' => 'Untuk apa modalnya?', 'suggested_modules' => []]);
+        $this->fakeGemini(['understood' => 'Warga bertanya.', 'reply' => 'Soal pinjaman sebaiknya ditanyakan ke lembaga resmi.', 'follow_up' => 'Untuk apa modalnya?', 'suggested_modules' => []]);
         $session = BossSession::create(['user_id' => $user->id, 'topic' => 'Modal', 'mode' => 'teks', 'status' => SessionStatus::Berjalan, 'started_at' => now()]);
 
         $this->actingAs($user)->postJson(route('boss-room.send', $session), ['message' => 'Apakah saya perlu pinjaman KUR?'])
@@ -102,5 +102,26 @@ class BossRoomTest extends TestCase
 
         $this->artisan('allobos:ruang-bos-rapikan')->assertSuccessful();
         $this->assertSame(SessionStatus::Selesai, $session->fresh()->status);
+    }
+
+    public function test_konteks_ai_memakai_giliran_terakhir_dan_pesan_baru(): void
+    {
+        $user = $this->onboardedWarga();
+        $this->fakeGemini(['understood' => 'Warga bertanya harga.', 'reply' => 'Hitung dulu biayanya.', 'follow_up' => 'Berapa biaya bahan?', 'suggested_modules' => []]);
+        $session = BossSession::create(['user_id' => $user->id, 'topic' => 'Modal', 'mode' => 'teks', 'status' => SessionStatus::Berjalan, 'started_at' => now()]);
+        for ($i = 1; $i <= 14; $i++) {
+            $session->turns()->create(['role' => $i % 2 ? 'warga' : 'bos', 'content' => "Giliran nomor {$i}."]);
+        }
+
+        $this->actingAs($user)->postJson(route('boss-room.send', $session), ['message' => 'Berapa harga jual tiwul?'])->assertOk();
+
+        Http::assertSent(function ($request) {
+            $text = $request['contents'][0]['parts'][0]['text'];
+
+            return str_contains($text, 'Giliran nomor 14.') && ! str_contains($text, 'Giliran nomor 1.')
+                && str_contains($text, 'PESAN BARU WARGA (ini yang harus dijawab)
+"Berapa harga jual tiwul?"');
+        });
+        $this->assertSame('Warga bertanya harga.', $session->turns()->where('role', 'bos')->reorder('id', 'desc')->first()->meta['understood']);
     }
 }
