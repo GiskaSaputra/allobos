@@ -18,7 +18,7 @@
         <p class="label-caps px-5 pb-2">{{ auth()->user()->active_role->label() }}</p>
         <nav class="flex-1 space-y-0.5 overflow-y-auto px-3 pb-6">
             @foreach ($menu as [$label, $route, $icon])
-                @php($active = request()->routeIs($route) || (! str_ends_with($route, 'dashboard') && request()->routeIs(Str::beforeLast($route, '.').'.*')))
+                @php($active = App\Support\Nav::active($route))
                 <a href="{{ route($route) }}" @class(['flex min-h-[44px] items-center gap-3 rounded-full px-4 text-sm font-medium transition', 'bg-brand text-brand-fg' => $active, 'text-fg-body hover:bg-fg/10' => ! $active]) @if ($active) aria-current="page" @endif>
                     <x-dynamic-component :component="$icon" class="h-5 w-5 shrink-0" aria-hidden="true" />{{ $label }}
                 </a>

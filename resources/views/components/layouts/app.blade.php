@@ -16,7 +16,7 @@
                 @foreach ($menu as [$label, $route, $icon, $children])
                     @if ($children)
                         <div class="relative" x-data="{ open: false }" @click.outside="open = false" @keydown.escape="open = false">
-                            <button type="button" @click="open = !open" :aria-expanded="open" @class(['flex items-center gap-1 rounded-full px-4 py-2 text-sm font-medium transition', 'bg-brand text-brand-fg' => collect($children)->contains(fn ($c) => request()->routeIs(Str::beforeLast($c[1], '.').'.*')), 'text-fg-body hover:bg-fg/10' => ! collect($children)->contains(fn ($c) => request()->routeIs(Str::beforeLast($c[1], '.').'.*'))])>
+                            <button type="button" @click="open = !open" :aria-expanded="open" @class(['flex items-center gap-1 rounded-full px-4 py-2 text-sm font-medium transition', 'bg-brand text-brand-fg' => collect($children)->contains(fn ($c) => App\Support\Nav::active($c[1])), 'text-fg-body hover:bg-fg/10' => ! collect($children)->contains(fn ($c) => App\Support\Nav::active($c[1]))])>
                                 {{ $label }} <x-phosphor-caret-down class="h-4 w-4" aria-hidden="true" />
                             </button>
                             <div x-cloak x-show="open" x-transition.origin.top class="absolute left-0 top-full z-drawer mt-2 w-56 rounded-[20px] border border-line bg-surface-raised p-2 shadow-float">
@@ -28,7 +28,7 @@
                             </div>
                         </div>
                     @elseif (Route::has($route))
-                        <a href="{{ route($route) }}" @class(['rounded-full px-4 py-2 text-sm font-medium transition', 'bg-brand text-brand-fg' => request()->routeIs(Str::beforeLast($route, '.').'.*') && $route !== 'warga.dashboard' || request()->routeIs($route), 'text-fg-body hover:bg-fg/10' => ! (request()->routeIs(Str::beforeLast($route, '.').'.*') && $route !== 'warga.dashboard' || request()->routeIs($route))])>{{ $label }}</a>
+                        <a href="{{ route($route) }}" @class(['rounded-full px-4 py-2 text-sm font-medium transition', 'bg-brand text-brand-fg' => App\Support\Nav::active($route), 'text-fg-body hover:bg-fg/10' => ! (App\Support\Nav::active($route))])>{{ $label }}</a>
                     @endif
                 @endforeach
             </nav>
@@ -49,7 +49,7 @@
     <nav aria-label="Navigasi bawah" class="pb-safe fixed inset-x-0 bottom-0 z-nav border-t border-line bg-surface-raised/95 backdrop-blur-md lg:hidden">
         <ul class="grid grid-cols-5">
             @foreach ($menu as [$label, $route, $icon, $children])
-                @php($active = request()->routeIs($route) || collect($children)->contains(fn ($c) => request()->routeIs($c[1])))
+                @php($active = App\Support\Nav::active($route) || collect($children)->contains(fn ($c) => App\Support\Nav::active($c[1])))
                 <li>
                     <a href="{{ Route::has($route) ? route($route) : '#' }}" @class(['flex min-h-[60px] flex-col items-center justify-center gap-0.5 text-[11px] font-medium', 'text-fg' => $active, 'text-fg-muted' => ! $active]) @if ($active) aria-current="page" @endif>
                         <span @class(['flex h-7 w-12 items-center justify-center rounded-full', 'bg-accent text-accent-fg' => $active])><x-dynamic-component :component="$icon" class="h-5 w-5" aria-hidden="true" /></span>
