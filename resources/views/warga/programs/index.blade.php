@@ -17,6 +17,12 @@
                         </div>
                         <div class="flex flex-wrap gap-2"><x-status-badge :status="$item['enrollment']->status" /><x-status-badge :status="$program->status" /></div>
                     </div>
+                    @if ($item['enrollment']->status === App\Enums\EnrollmentStatus::MenungguBayar)
+                        <div class="flex flex-col gap-3 rounded-[20px] bg-warning/15 p-4 sm:flex-row sm:items-center sm:justify-between">
+                            <p class="text-sm text-fg">Selesaikan pembayaran {{ $program->priceLabel() }} supaya kursimu tidak dilepas.</p>
+                            <x-button variant="primary" size="sm" :href="route('warga.programs.confirm', $program)" icon="phosphor-qr-code">Lanjutkan Pembayaran</x-button>
+                        </div>
+                    @endif
                     <div>
                         <div class="flex justify-between text-sm"><span class="text-fg-body">{{ $item['progress']['attended'] }} dari {{ $item['progress']['total'] }} sesi dihadiri, {{ $item['progress']['materials'] }} dari {{ $item['progress']['materials_total'] }} materi dibuka</span><span class="font-medium text-fg">{{ $item['progress']['percent'] }}%</span></div>
                         <div class="mt-2 h-2 overflow-hidden rounded-full bg-line"><div class="h-full rounded-full bg-accent-text" style="width: {{ $item['progress']['percent'] }}%"></div></div>

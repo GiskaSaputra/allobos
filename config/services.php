@@ -36,6 +36,15 @@ return [
         'language' => env('SPEECHIFY_LANGUAGE', 'id-ID'),
     ],
 
+    // Pembayaran kelas berbayar lewat SumoPod (QRIS). Bawaan memakai sandbox (uji coba).
+    'sumopod' => [
+        'key' => env('SUMOPOD_API_KEY'),
+        'base_url' => env('SUMOPOD_BASE_URL', 'https://api-pay-sandbox.sumopod.com'),
+        'webhook_token' => env('SUMOPOD_WEBHOOK_TOKEN'),
+        'webhook_secret' => env('SUMOPOD_WEBHOOK_SECRET'),
+        'expires_in_hours' => 1,
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),

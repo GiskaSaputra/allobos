@@ -11,6 +11,7 @@
                 <x-field label="Jenis" name="kind" required><x-select name="kind" :options="collect(App\Enums\ProgramKind::cases())->mapWithKeys(fn ($k) => [$k->value => $k->label()])" :value="$program->kind" /></x-field>
                 <x-field label="Bidang" name="business_field_id"><x-select name="business_field_id" :options="$fields" :value="$program->business_field_id" placeholder="Pilih bidang" /></x-field>
                 <x-field label="Kuota" name="quota" required><x-text-input name="quota" type="number" min="1" :value="$program->quota" required /></x-field>
+                <x-field label="Biaya (rupiah)" name="price" hint="Isi 0 untuk kelas gratis. Kelas berbayar dibayar warga lewat QRIS." required><x-text-input name="price" type="number" min="0" step="1000" :value="$program->price ?? 0" required /></x-field>
             </div>
             <x-field label="Lokasi" name="location" hint="Contoh: Resort Villa Satu Indonesia, Gunungkidul, atau Daring lewat Zoom" required><x-text-input name="location" :value="$program->location" maxlength="200" required /></x-field>
             <x-field label="Deskripsi" name="description" required><x-textarea name="description" :value="$program->description" rows="6" maxlength="3000" required /></x-field>

@@ -67,6 +67,10 @@ class ProgramService
             $this->syncStatus($program);
 
             $existing = Enrollment::query()->where('program_id', $program->id)->where('user_id', $user->id)->first();
+            // Pendaftar kelas berbayar yang belum membayar diarahkan ke pembayaran yang sama, bukan mendaftar ulang.
+            if ($existing?->status === EnrollmentStatus::MenungguBayar) {
+                return $existing;
+            }
             if ($existing && $existing->status !== EnrollmentStatus::Batal) {
                 throw new RuntimeException('Kamu sudah terdaftar di kelas ini.');
             }
@@ -78,23 +82,42 @@ class ProgramService
             }
 
             $enrollment = $existing ?? new Enrollment(['program_id' => $program->id, 'user_id' => $user->id]);
-            $enrollment->fill(['status' => EnrollmentStatus::Terdaftar])->save();
+            // Kelas berbayar menahan kursi dulu. Status menjadi Terdaftar setelah pembayaran lunas.
+            $enrollment->fill(['status' => $program->isPaid() ? EnrollmentStatus::MenungguBayar : EnrollmentStatus::Terdaftar])->save();
             $this->syncStatus($program);
 
             return $enrollment;
         });
 
-        $url = route('warga.programs.index');
-        $user->notify(new Pemberitahuan('Pendaftaran kelas berhasil', 'Kamu terdaftar di '.$program->title.'. Pengingat dikirim sehari sebelum sesi.', $url));
-        $this->readiness->record($user, 'kelas', 'Mendaftar kelas: '.$program->title, route('programs.show', $program));
+        if ($enrollment->status === EnrollmentStatus::Terdaftar) {
+            $this->confirmed($enrollment);
+        }
 
         return $enrollment;
+    }
+
+    /** Pemberitahuan dan Jejak Usaha saat pendaftaran sah (gratis langsung, berbayar setelah lunas). */
+    public function confirmed(Enrollment $enrollment): void
+    {
+        $program = $enrollment->program;
+        $enrollment->user->notify(new Pemberitahuan('Pendaftaran kelas berhasil', 'Kamu terdaftar di '.$program->title.'. Pengingat dikirim sehari sebelum sesi.', route('warga.programs.index')));
+        $this->readiness->record($enrollment->user, 'kelas', 'Mendaftar kelas: '.$program->title, route('programs.show', $program));
+    }
+
+    /** Melepas kursi pendaftar yang pembayarannya gagal atau kedaluwarsa. */
+    public function release(Enrollment $enrollment): void
+    {
+        if ($enrollment->status !== EnrollmentStatus::MenungguBayar) {
+            return;
+        }
+        $enrollment->update(['status' => EnrollmentStatus::Batal]);
+        $this->syncStatus($enrollment->program->fresh());
     }
 
     public function cancel(User $user, Program $program): void
     {
         $enrollment = Enrollment::query()->where('program_id', $program->id)->where('user_id', $user->id)
-            ->where('status', EnrollmentStatus::Terdaftar->value)->first()
+            ->whereIn('status', [EnrollmentStatus::Terdaftar->value, EnrollmentStatus::MenungguBayar->value])->first()
             ?? throw new RuntimeException('Kamu tidak terdaftar di kelas ini.');
 
         if ($program->load('sessions')->hasStarted()) {
@@ -117,7 +140,7 @@ class ProgramService
     public function attend(User $user, ProgramSession $session, string $code): void
     {
         $enrolled = Enrollment::query()->where('program_id', $session->program_id)->where('user_id', $user->id)
-            ->where('status', '!=', EnrollmentStatus::Batal->value)->exists();
+            ->whereIn('status', EnrollmentStatus::participating())->exists();
 
         if (! $enrolled) {
             throw new RuntimeException('Kamu belum terdaftar di kelas ini. Daftar kelas dulu sebelum mencatat hadir.');
@@ -210,7 +233,7 @@ class ProgramService
             $program->update(['status' => ProgramStatus::Selesai, 'closed_at' => now()]);
             $count = 0;
 
-            foreach ($program->enrollments()->with('user')->where('status', '!=', EnrollmentStatus::Batal->value)->get() as $enrollment) {
+            foreach ($program->enrollments()->with('user')->whereIn('status', EnrollmentStatus::participating())->get() as $enrollment) {
                 if (! $this->progress($enrollment->user, $program)['passed']) {
                     continue;
                 }

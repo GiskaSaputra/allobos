@@ -35,11 +35,11 @@ class ProgramTest extends TestCase
         $this->get(route('programs.show', $program))->assertOk()->assertSee('Daftar Kelas');
 
         $warga = $this->onboardedWarga();
-        $this->actingAs($warga)->post(route('warga.programs.enroll', $program))->assertRedirect(route('warga.programs.index'));
+        $this->actingAs($warga)->post(route('warga.programs.enroll', $program), ['agree' => 1])->assertRedirect(route('warga.programs.index'));
         $this->assertSame(ProgramStatus::Penuh, $program->fresh()->status);
-        $this->post(route('warga.programs.enroll', $program))->assertSessionHas('error');
+        $this->post(route('warga.programs.enroll', $program), ['agree' => 1])->assertSessionHas('error');
 
-        $this->actingAs($this->onboardedWarga())->post(route('warga.programs.enroll', $program))->assertSessionHas('error', 'Kuota kelas sudah penuh. Pilih kelas lain atau tunggu angkatan berikutnya.');
+        $this->actingAs($this->onboardedWarga())->post(route('warga.programs.enroll', $program), ['agree' => 1])->assertSessionHas('error', 'Kuota kelas sudah penuh. Pilih kelas lain atau tunggu angkatan berikutnya.');
 
         $this->actingAs($warga)->post(route('warga.programs.cancel', $program))->assertSessionHas('status');
         $this->assertSame(ProgramStatus::Dibuka, $program->fresh()->status);

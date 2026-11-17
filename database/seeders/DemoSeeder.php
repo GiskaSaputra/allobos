@@ -133,7 +133,7 @@ class DemoSeeder extends Seeder
             $this->command?->warn('Sertifikat demo belum tercatat di blockchain: '.$e->getMessage());
         }
 
-        $this->program('Bootcamp Pemasaran Lewat WhatsApp dan Lapak Online', ProgramKind::Bootcamp, $fieldOleh, ProgramStatus::Dibuka, 6, 3, $speaker, $rani);
+        $this->program('Bootcamp Pemasaran Lewat WhatsApp dan Lapak Online', ProgramKind::Bootcamp, $fieldOleh, ProgramStatus::Dibuka, 6, 3, $speaker, $rani, 50000);
         $this->program('Seminar Izin Usaha: NIB dan PIRT untuk Makanan Rumahan', ProgramKind::Seminar, $fieldKuliner, ProgramStatus::Dibuka, 9, 1, $speaker, $rani);
 
         foreach ($this->podcasts($fieldKuliner)->take(2) as $podcast) {
@@ -236,12 +236,12 @@ class DemoSeeder extends Seeder
 
         // Kelas tambahan yang sedang dibuka
         foreach ([
-            ['Kelas Batik Tulis untuk Pemula', ProgramKind::Workshop, 'fesyen-dan-batik', 12, 2],
-            ['Membuat Suvenir Kayu yang Laku di Toko Oleh-oleh', ProgramKind::Workshop, 'kerajinan-tangan', 15, 2],
-            ['Olahan Hasil Laut untuk Pasar Wisata', ProgramKind::Bootcamp, 'kuliner-dan-makanan-olahan', 18, 3],
-            ['Mengelola Stok dan Kas Warung Kelontong', ProgramKind::Seminar, 'perdagangan-dan-kelontong', 21, 1],
-        ] as [$title, $kind, $fieldSlug, $days, $sessions]) {
-            $this->program($title, $kind, $field($fieldSlug), ProgramStatus::Dibuka, $days, $sessions, $speakers[$fieldSlug], $rani);
+            ['Kelas Batik Tulis untuk Pemula', ProgramKind::Workshop, 'fesyen-dan-batik', 12, 2, 75000],
+            ['Membuat Suvenir Kayu yang Laku di Toko Oleh-oleh', ProgramKind::Workshop, 'kerajinan-tangan', 15, 2, 0],
+            ['Olahan Hasil Laut untuk Pasar Wisata', ProgramKind::Bootcamp, 'kuliner-dan-makanan-olahan', 18, 3, 60000],
+            ['Mengelola Stok dan Kas Warung Kelontong', ProgramKind::Seminar, 'perdagangan-dan-kelontong', 21, 1, 0],
+        ] as [$title, $kind, $fieldSlug, $days, $sessions, $price]) {
+            $this->program($title, $kind, $field($fieldSlug), ProgramStatus::Dibuka, $days, $sessions, $speakers[$fieldSlug], $rani, $price);
         }
 
         // Lapak warga tambahan
@@ -301,10 +301,10 @@ class DemoSeeder extends Seeder
         return $boss;
     }
 
-    private function program(string $title, ProgramKind $kind, int $field, ProgramStatus $status, int $startInDays, int $sessions, Speaker $speaker, User $creator): Program
+    private function program(string $title, ProgramKind $kind, int $field, ProgramStatus $status, int $startInDays, int $sessions, Speaker $speaker, User $creator, int $price = 0): Program
     {
         $program = Program::query()->updateOrCreate(['slug' => Str::slug($title)], [
-            'title' => $title, 'kind' => $kind, 'business_field_id' => $field, 'status' => $status, 'quota' => 30,
+            'title' => $title, 'kind' => $kind, 'business_field_id' => $field, 'status' => $status, 'quota' => 30, 'price' => $price,
             'description' => "Data contoh untuk demonstrasi alloBos.\n\nPeserta belajar langsung dari pengusaha yang menjalankan usahanya sendiri, dengan praktik dan tanya jawab.",
             'location' => 'Balai Kalurahan Ponjong, Gunungkidul', 'materials' => [['title' => 'Lembar kerja hitung HPP', 'url' => 'https://example.com/lembar-kerja']],
             'is_official' => false, 'is_demo' => true, 'created_by' => $creator->id, 'closed_at' => $status === ProgramStatus::Selesai ? now()->subDays(9) : null,

@@ -10,6 +10,7 @@ use App\Models\Certificate;
 use App\Models\Enrollment;
 use App\Models\Program;
 use App\Models\ProgramSession;
+use App\Services\Payments\PaymentService;
 use App\Services\Programs\ProgramService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -18,7 +19,10 @@ use RuntimeException;
 
 class ProgramController extends Controller
 {
-    public function __construct(private readonly ProgramService $programs) {}
+    public function __construct(
+        private readonly ProgramService $programs,
+        private readonly PaymentService $payments,
+    ) {}
 
     public function index(Request $request): View
     {
@@ -42,12 +46,40 @@ class ProgramController extends Controller
         ]);
     }
 
+    /** Halaman konfirmasi sebelum mendaftar: jadwal, lokasi, biaya, dan persetujuan. */
+    public function confirm(Request $request, Program $program): View|RedirectResponse
+    {
+        $enrollment = Enrollment::query()->where('program_id', $program->id)->where('user_id', $request->user()->id)->first();
+        if ($enrollment && in_array($enrollment->status->value, EnrollmentStatus::participating(), true)) {
+            return redirect()->route('programs.show', $program)->with('status', 'Kamu sudah terdaftar di kelas ini.');
+        }
+
+        return view('warga.programs.confirm', [
+            'program' => $program->load(['sessions', 'field', 'speakers']),
+            'pending' => $enrollment?->status === EnrollmentStatus::MenungguBayar ? $enrollment->latestPayment : null,
+        ]);
+    }
+
     public function enroll(Request $request, Program $program): RedirectResponse
     {
+        $request->validate(['agree' => ['accepted']], ['agree.accepted' => 'Centang konfirmasi dulu supaya pendaftaran bisa diproses.']);
+
         try {
-            $this->programs->enroll($request->user(), $program);
+            $enrollment = $this->programs->enroll($request->user(), $program);
         } catch (RuntimeException $e) {
             return back()->with('error', $e->getMessage());
+        }
+
+        if ($enrollment->status === EnrollmentStatus::MenungguBayar) {
+            try {
+                $payment = $this->payments->start($enrollment->load('program'));
+            } catch (RuntimeException $e) {
+                $this->programs->release($enrollment);
+
+                return back()->with('error', $e->getMessage());
+            }
+
+            return redirect()->away($payment->payment_url);
         }
 
         return redirect()->route('warga.programs.index')->with('status', 'Kamu terdaftar di '.$program->title.'.');

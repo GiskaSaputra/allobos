@@ -37,7 +37,7 @@ class ProgramController extends Controller
         $request->validate(['status' => ['nullable', Rule::enum(ProgramStatus::class)]]);
 
         return view('pengelola.programs.index', [
-            'programs' => Program::query()->with(['sessions', 'field'])->withCount(['enrollments' => fn ($q) => $q->where('status', '!=', EnrollmentStatus::Batal->value)])
+            'programs' => Program::query()->with(['sessions', 'field'])->withCount(['enrollments' => fn ($q) => $q->whereIn('status', EnrollmentStatus::participating())])
                 ->when($request->query('status'), fn ($q, $s) => $q->where('status', $s))
                 ->when($request->query('q'), fn ($q, $term) => $q->where('title', 'like', '%'.$term.'%'))
                 ->latest()->paginate(20)->withQueryString(),
@@ -72,7 +72,7 @@ class ProgramController extends Controller
 
         return view('pengelola.programs.show', [
             'program' => $program,
-            'enrolled' => $program->enrollments()->where('status', '!=', EnrollmentStatus::Batal->value)->count(),
+            'enrolled' => $program->enrollments()->whereIn('status', EnrollmentStatus::participating())->count(),
             'certificates' => $program->certificates()->selectRaw('status, count(*) as total')->groupBy('status')->pluck('total', 'status'),
             'signerOptions' => $this->signerOptions($program),
         ]);
@@ -196,6 +196,7 @@ class ProgramController extends Controller
     private function attributes(ProgramRequest $request): array
     {
         return $request->safe()->only(['title', 'kind', 'business_field_id', 'description', 'location', 'quota']) + [
+            'price' => (int) ($request->validated('price') ?? 0),
             'is_official' => $request->boolean('is_official'),
             'is_demo' => $request->boolean('is_demo'),
             'materials' => $request->materials(),

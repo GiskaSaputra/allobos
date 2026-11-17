@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Program extends Model
 {
-    protected $fillable = ['title', 'slug', 'kind', 'business_field_id', 'description', 'location', 'quota', 'status', 'materials', 'is_official', 'is_demo', 'closed_at', 'created_by'];
+    protected $fillable = ['title', 'slug', 'kind', 'business_field_id', 'description', 'location', 'quota', 'price', 'status', 'materials', 'is_official', 'is_demo', 'closed_at', 'created_by'];
 
     protected function casts(): array
     {
@@ -70,6 +70,16 @@ class Program extends Model
     public function activeEnrollmentCount(): int
     {
         return $this->enrollments()->where('status', '!=', 'batal')->count();
+    }
+
+    public function isPaid(): bool
+    {
+        return $this->price > 0;
+    }
+
+    public function priceLabel(): string
+    {
+        return $this->isPaid() ? 'Rp'.number_format($this->price, 0, ',', '.') : 'Gratis';
     }
 
     public function seatsLeft(): int

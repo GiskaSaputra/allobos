@@ -27,7 +27,7 @@ class DashboardController extends Controller
         $classSessions = ProgramSession::query()
             ->with('program')
             ->where('ends_at', '>=', now())
-            ->whereHas('program.enrollments', fn ($q) => $q->where('user_id', $user->id)->where('status', '!=', EnrollmentStatus::Batal->value))
+            ->whereHas('program.enrollments', fn ($q) => $q->where('user_id', $user->id)->whereIn('status', EnrollmentStatus::participating()))
             ->orderBy('starts_at')->limit(4)->get()
             ->map(fn ($s) => ['when' => $s->starts_at, 'title' => $s->program->title.', '.$s->title, 'kind' => 'Kelas', 'url' => route('warga.programs.index')]);
 

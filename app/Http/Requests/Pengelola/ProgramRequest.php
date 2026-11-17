@@ -17,6 +17,7 @@ class ProgramRequest extends FormRequest
             'description' => ['required', 'string', 'max:3000'],
             'location' => ['required', 'string', 'max:200'],
             'quota' => ['required', 'integer', 'min:1', 'max:5000'],
+            'price' => ['nullable', 'integer', 'min:0', 'max:10000000'],
             'is_official' => ['boolean'],
             'is_demo' => ['boolean'],
             'materials' => ['nullable', 'string', 'max:3000'],

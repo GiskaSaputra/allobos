@@ -10,11 +10,15 @@ use App\Http\Controllers\Pengelola;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Public;
 use App\Http\Controllers\Signing;
+use App\Http\Controllers\SumoPodWebhookController;
 use App\Http\Controllers\Warga;
 use App\Models\Page;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [Public\PageController::class, 'home'])->name('home');
+
+// Webhook pembayaran SumoPod. Tanpa CSRF, keasliannya diperiksa lewat token atau tanda tangan.
+Route::post('webhook/sumopod', SumoPodWebhookController::class)->middleware('throttle:60,1')->name('webhooks.sumopod');
 
 Route::get('lapak', [Public\ShopController::class, 'index'])->name('shops.index');
 Route::get('lapak/{shop:slug}', [Public\ShopController::class, 'show'])->name('shops.show');
@@ -90,7 +94,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::delete('lapak-saya/produk/{product}', [Warga\ProductController::class, 'destroy'])->name('products.destroy');
 
             Route::get('kelas', [Warga\ProgramController::class, 'index'])->name('programs.index');
-            Route::post('kelas/{program}/daftar', [Warga\ProgramController::class, 'enroll'])->name('programs.enroll');
+            Route::get('kelas/{program}/konfirmasi', [Warga\ProgramController::class, 'confirm'])->name('programs.confirm');
+            Route::post('kelas/{program}/daftar', [Warga\ProgramController::class, 'enroll'])->middleware('throttle:10,1')->name('programs.enroll');
+            Route::get('pembayaran/{payment}', [Warga\PaymentController::class, 'show'])->name('payments.show');
             Route::post('kelas/{program}/batal', [Warga\ProgramController::class, 'cancel'])->name('programs.cancel');
             Route::post('kelas/sesi/{session}/hadir', [Warga\ProgramController::class, 'attend'])->middleware('throttle:10,1')->name('programs.attend');
             Route::get('kelas/{program}/materi/{index}', [Warga\ProgramController::class, 'material'])->whereNumber('index')->name('programs.material');

@@ -66,6 +66,7 @@
             <aside class="lg:sticky lg:top-24 lg:self-start">
                 <div class="card space-y-4">
                     <dl class="space-y-3 text-sm">
+                        <div class="flex justify-between gap-4"><dt class="text-fg-muted">Biaya</dt><dd @class(['font-display text-lg font-semibold', 'text-success' => ! $program->isPaid(), 'text-fg' => $program->isPaid()])>{{ $program->priceLabel() }}</dd></div>
                         <div class="flex justify-between gap-4"><dt class="text-fg-muted">Lokasi</dt><dd class="text-right font-medium text-fg">{{ $program->location }}</dd></div>
                         <div class="flex justify-between gap-4"><dt class="text-fg-muted">Mulai</dt><dd class="text-right font-medium text-fg">{{ $program->startsAt()?->translatedFormat('d F Y, H:i') }} WIB</dd></div>
                         <div class="flex justify-between gap-4"><dt class="text-fg-muted">Sesi</dt><dd class="font-medium text-fg">{{ $program->sessions->count() }}</dd></div>
@@ -75,6 +76,9 @@
 
                     @if ($certificate)
                         <x-button variant="secondary" :href="route('warga.certificates.show', $certificate)" full>Lihat Sertifikat ({{ $certificate->status->label() }})</x-button>
+                    @elseif ($enrollment?->status === App\Enums\EnrollmentStatus::MenungguBayar)
+                        <p class="rounded-[20px] bg-warning/15 p-3 text-sm text-fg">Kursimu ditahan sampai pembayaran selesai.</p>
+                        <x-button variant="primary" size="lg" :href="route('warga.programs.confirm', $program)" icon="phosphor-qr-code" full>Lanjutkan Pembayaran</x-button>
                     @elseif ($enrollment)
                         <button class="btn btn-secondary btn-lg btn-full" disabled>Sudah Terdaftar</button>
                         @unless ($program->hasStarted())
@@ -89,10 +93,7 @@
                         <p class="text-sm text-fg-muted">Semua tempat sudah terisi. Pantau kelas lain di halaman Kelas Bos.</p>
                     @elseif ($program->status === App\Enums\ProgramStatus::Dibuka)
                         @auth
-                            <form method="POST" action="{{ route('warga.programs.enroll', $program) }}">
-                                @csrf
-                                <x-button variant="primary" size="lg" full loading="Mendaftar">Daftar Kelas</x-button>
-                            </form>
+                            <x-button variant="primary" size="lg" :href="route('warga.programs.confirm', $program)" icon-right="phosphor-arrow-right" full>{{ $program->isPaid() ? 'Daftar dan Bayar' : 'Daftar Kelas' }}</x-button>
                         @else
                             <x-button variant="primary" size="lg" full :href="route('register', ['tujuan' => '/kelas/'.$program->slug])">Daftar Kelas</x-button>
                             <p class="text-center text-sm text-fg-muted">Sudah punya akun? <a href="{{ route('login') }}" class="text-accent-text underline underline-offset-2">Masuk</a></p>

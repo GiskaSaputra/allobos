@@ -3,6 +3,7 @@
     <x-logo-mark class="-bottom-6 -right-6 h-28 w-28" />
     <span class="flex flex-wrap items-center gap-2">
         <span class="badge badge-brand">{{ $program->kind->label() }}</span>
+        <span @class(['badge', 'badge-success' => ! $program->isPaid(), 'badge-neutral' => $program->isPaid()])>{{ $program->priceLabel() }}</span>
         @if ($program->is_official)<x-official-badge />@endif
         <x-demo-badge :show="$program->is_demo" />
         <x-status-badge :status="$program->status" />

@@ -23,7 +23,7 @@ class SendReminders extends Command
         $classes = ProgramSession::query()->with('program')->whereNull('reminded_at')
             ->whereBetween('starts_at', [now(), now()->addDay()])->get();
         foreach ($classes as $session) {
-            $enrollments = $session->program->enrollments()->with('user')->where('status', '!=', EnrollmentStatus::Batal->value)->get();
+            $enrollments = $session->program->enrollments()->with('user')->whereIn('status', EnrollmentStatus::participating())->get();
             foreach ($enrollments as $enrollment) {
                 $enrollment->user->notify(new Pemberitahuan('Pengingat kelas', $session->program->title.', '.$session->title.', '.$session->starts_at->translatedFormat('l, d F H:i').' WIB di '.$session->program->location.'.', route('warga.programs.index'), mail: true));
             }

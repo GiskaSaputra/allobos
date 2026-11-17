@@ -25,6 +25,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->redirectGuestsTo(fn () => route('login'));
         $middleware->redirectUsersTo(fn () => route('dashboard'));
         $middleware->trustProxies(at: '*');
+        $middleware->validateCsrfTokens(except: ['webhook/sumopod']);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
