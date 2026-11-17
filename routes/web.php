@@ -8,6 +8,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Pengelola;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Public;
+use App\Http\Controllers\Signing;
 use App\Http\Controllers\Warga;
 use Illuminate\Support\Facades\Route;
 
@@ -17,6 +18,14 @@ Route::get('lapak', [Public\ShopController::class, 'index'])->name('shops.index'
 Route::get('lapak/{shop:slug}', [Public\ShopController::class, 'show'])->name('shops.show');
 Route::post('lapak/{shop:slug}/pesan/{product}', [Public\ShopController::class, 'order'])->name('shops.order');
 Route::post('lapak/{shop:slug}/lapor', [Public\ShopController::class, 'report'])->middleware('throttle:5,10')->name('shops.report');
+
+Route::get('kelas', [Public\ProgramController::class, 'index'])->name('programs.index');
+Route::get('kelas/{program:slug}', [Public\ProgramController::class, 'show'])->name('programs.show');
+Route::get('bos', [Public\PageController::class, 'bosses'])->name('bosses.index');
+
+Route::get('verifikasi', [Public\CertificateVerifyController::class, 'form'])->name('certificates.verify.form');
+Route::post('verifikasi', [Public\CertificateVerifyController::class, 'lookup'])->middleware('throttle:30,1')->name('certificates.verify.lookup');
+Route::get('verifikasi/{code}', [Public\CertificateVerifyController::class, 'show'])->middleware('throttle:60,1')->name('certificates.verify');
 
 require __DIR__.'/auth.php';
 
@@ -67,6 +76,25 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('lapak-saya/produk/{product}', [Warga\ProductController::class, 'edit'])->name('products.edit');
             Route::patch('lapak-saya/produk/{product}', [Warga\ProductController::class, 'update'])->name('products.update');
             Route::delete('lapak-saya/produk/{product}', [Warga\ProductController::class, 'destroy'])->name('products.destroy');
+
+            Route::get('kelas', [Warga\ProgramController::class, 'index'])->name('programs.index');
+            Route::post('kelas/{program}/daftar', [Warga\ProgramController::class, 'enroll'])->name('programs.enroll');
+            Route::post('kelas/{program}/batal', [Warga\ProgramController::class, 'cancel'])->name('programs.cancel');
+            Route::post('kelas/sesi/{session}/hadir', [Warga\ProgramController::class, 'attend'])->middleware('throttle:10,1')->name('programs.attend');
+            Route::get('kelas/{program}/materi/{index}', [Warga\ProgramController::class, 'material'])->whereNumber('index')->name('programs.material');
+
+            Route::get('sertifikat', [Warga\CertificateController::class, 'index'])->name('certificates.index');
+            Route::get('sertifikat/{certificate}', [Warga\CertificateController::class, 'show'])->name('certificates.show');
+            Route::get('sertifikat/{certificate}/pdf', [Warga\CertificateController::class, 'pdf'])->name('certificates.pdf');
+            Route::patch('sertifikat/{certificate}', [Warga\CertificateController::class, 'update'])->name('certificates.update');
+
+            Route::get('temu-bos', [Warga\MentoringController::class, 'index'])->name('mentoring.index');
+            Route::get('temu-bos/bos/{boss}', [Warga\MentoringController::class, 'boss'])->name('mentoring.boss');
+            Route::post('temu-bos/slot/{slot}', [Warga\MentoringController::class, 'book'])->name('mentoring.book');
+            Route::get('temu-bos/sesi/{session}', [Warga\MentoringController::class, 'show'])->name('mentoring.show');
+            Route::post('temu-bos/sesi/{session}/batal', [Warga\MentoringController::class, 'cancel'])->name('mentoring.cancel');
+            Route::post('temu-bos/sesi/{session}/nilai', [Warga\MentoringController::class, 'rate'])->name('mentoring.rate');
+            Route::post('temu-bos/sesi/{session}/langkah', [Warga\MentoringController::class, 'steps'])->name('mentoring.steps');
         });
     });
 
@@ -85,10 +113,50 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::middleware('role:bos')->prefix('bos-area')->name('bos.')->group(function () {
         Route::get('/', Bos\DashboardController::class)->name('dashboard');
+        Route::get('profil', [Bos\ProfileController::class, 'edit'])->name('profile.edit');
+        Route::patch('profil', [Bos\ProfileController::class, 'update'])->name('profile.update');
+
+        Route::middleware('boss.active')->group(function () {
+            Route::get('slot', [Bos\SlotController::class, 'index'])->name('slots.index');
+            Route::post('slot', [Bos\SlotController::class, 'store'])->name('slots.store');
+            Route::delete('slot/{slot}', [Bos\SlotController::class, 'destroy'])->name('slots.destroy');
+        });
+
+        Route::get('sesi', [Bos\SessionController::class, 'index'])->name('sessions.index');
+        Route::get('sesi/{session}', [Bos\SessionController::class, 'show'])->name('sessions.show');
+        Route::post('sesi/{session}/setujui', [Bos\SessionController::class, 'approve'])->name('sessions.approve');
+        Route::post('sesi/{session}/tolak', [Bos\SessionController::class, 'reject'])->name('sessions.reject');
+        Route::post('sesi/{session}/selesai', [Bos\SessionController::class, 'complete'])->name('sessions.complete');
+        Route::post('sesi/{session}/tidak-hadir', [Bos\SessionController::class, 'noShow'])->name('sessions.no-show');
+        Route::post('sesi/{session}/batal', [Bos\SessionController::class, 'cancel'])->name('sessions.cancel');
+    });
+
+    Route::middleware('role:bos,pengelola,admin')->prefix('tanda-tangan')->name('signing.')->group(function () {
+        Route::get('/', [Signing\SigningController::class, 'index'])->name('index');
+        Route::get('spesimen', [Signing\SpecimenController::class, 'edit'])->name('specimen.edit');
+        Route::post('spesimen', [Signing\SpecimenController::class, 'store'])->name('specimen.store');
+        Route::get('kelas/{program}', [Signing\SigningController::class, 'show'])->name('show');
+        Route::get('kelas/{program}/pratinjau/{certificate}', [Signing\SigningController::class, 'preview'])->name('preview');
+        Route::post('kelas/{program}/keluarkan/{certificate}', [Signing\SigningController::class, 'exclude'])->name('exclude');
+        Route::post('kelas/{program}', [Signing\SigningController::class, 'sign'])->middleware('throttle:10,1')->name('sign');
+        Route::post('kelas/{program}/dompet', [Signing\SigningController::class, 'wallet'])->name('wallet');
     });
 
     Route::middleware('role:pengelola,admin')->prefix('pengelola')->name('pengelola.')->group(function () {
         Route::get('/', Pengelola\DashboardController::class)->name('dashboard');
+
+        Route::resource('kelas', Pengelola\ProgramController::class)->parameters(['kelas' => 'program'])->names('programs');
+        Route::post('kelas/{program}/terbitkan', [Pengelola\ProgramController::class, 'publish'])->name('programs.publish');
+        Route::post('kelas/{program}/tutup', [Pengelola\ProgramController::class, 'close'])->name('programs.close');
+        Route::get('kelas/{program}/peserta', [Pengelola\ProgramController::class, 'participants'])->name('programs.participants');
+        Route::get('kelas/{program}/peserta/xlsx', [Pengelola\ProgramController::class, 'export'])->name('programs.export');
+        Route::post('kelas/sesi/{session}/kode', [Pengelola\ProgramController::class, 'code'])->name('programs.code');
+        Route::post('kelas/{program}/penanda-tangan', [Pengelola\ProgramController::class, 'signers'])->name('programs.signers');
+        Route::resource('pembicara', Pengelola\SpeakerController::class)->parameters(['pembicara' => 'speaker'])->except('show')->names('speakers');
+
+        Route::get('sertifikat', [Pengelola\CertificateController::class, 'index'])->name('certificates.index');
+        Route::post('sertifikat/kelas/{program}/catat-ulang', [Pengelola\CertificateController::class, 'retry'])->name('certificates.retry');
+        Route::post('sertifikat/{certificate}/cabut', [Pengelola\CertificateController::class, 'revoke'])->name('certificates.revoke');
 
         Route::get('lapak', [Pengelola\ShopModerationController::class, 'index'])->name('shops.index');
         Route::post('lapak/{shop}/setujui', [Pengelola\ShopModerationController::class, 'approve'])->name('shops.approve');

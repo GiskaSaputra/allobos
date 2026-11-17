@@ -11,8 +11,8 @@ Fase mengikuti PRD bagian 10. Bila sesi terputus, lanjutkan dari fase pertama ya
 | 2 | Ruang Bos | Selesai |
 | 3 | Peluang, Rencana, HPP, Langkah 30 Hari | Selesai |
 | 4 | Cek Produk dan Lapak | Selesai |
-| 5 | Kelas Bos dan Temu Bos | Belum |
-| 5b | Sertifikat Terverifikasi | Belum |
+| 5 | Kelas Bos dan Temu Bos | Selesai |
+| 5b | Sertifikat Terverifikasi | Selesai (jaringan Hardhat lokal) |
 | 6 | Siniar Bos | Belum |
 | 7 | Warung Bos 3D | Belum |
 | 8 | Dashboard Pengelola dan Admin, CMS, wawasan | Belum |
@@ -61,3 +61,21 @@ Fase mengikuti PRD bagian 10. Bila sesi terputus, lanjutkan dari fase pertama ya
 - Moderasi lapak (setujui, tolak, turunkan) dibuat di fase ini supaya alur Buka bisa diuji ujung ke ujung. Daftar Pengelola lain menyusul di Fase 8.
 - Tombol Laporkan Lapak membutuhkan rute tambahan `shops.report` (POST `/lapak/{slug}/lapor`, dibatasi 5 kali per 10 menit) yang tidak tertulis di Design System 3.1.
 - Pemilik, Pengelola, dan Admin dapat melihat pratinjau lapak yang belum terbit. Kunjungan pemilik tidak dihitung.
+### Fase 5
+
+- Status kelas Dibuka, Penuh, dan Berjalan disinkronkan saat kelas dibuka, saat pendaftaran, dan oleh perintah `allobos:pengingat` tiap 5 menit. Perintah yang sama mengirim pengingat kelas dan Temu Bos (H-1 dan sejam sebelum) serta menutup permintaan Temu Bos lebih dari 48 jam.
+- Progres kelas (KB-05) = sesi dihadiri ditambah materi dibuka, dibagi jumlah sesi dan materi. Materi dibuka lewat rute tambahan `warga.programs.material` yang mencatat lalu mengalihkan ke alamat materi.
+- Kode kehadiran 6 karakter dibuat ulang setiap Pengelola menekan Buka Kode Kehadiran dan hanya diterima di rentang waktu sesi (AB-06). Halaman kode memakai tata letak stage agar mudah diproyeksikan.
+- Menutup kelas (KB-09) langsung membuat draf sertifikat untuk peserta yang hadir minimal 75 persen dan memberi tahu penanda tangan. Penanda tangan wajib pembicara kelas yang punya akun Bos, atau akun Pengelola atau Admin sebagai pimpinan IPI.
+- Jadwal sesi kelas tidak ditulis ulang bila sudah ada catatan hadir, supaya kehadiran tidak hilang.
+- Temu Bos: rute tambahan `bos.sessions.cancel` (Bos membatalkan dengan alasan) dan `warga.mentoring.steps` (menyalin saran langkah Bos ke Langkah 30 Hari).
+
+### Fase 5b
+
+- Kontrak `AlloBosCertificate` (Solidity 0.8.24) dengan `issueBatch`, `revoke`, `verify`, `setIssuer`, `transferOwnership`, dan galat khusus. Enam tes Hardhat lulus (`cd web3 && npm test`).
+- Skrip ethers.js di `web3/scripts` dipanggil `ChainClient` lewat proses Node dengan masukan JSON dari stdin. Kunci privat hanya dikirim sebagai variabel lingkungan proses.
+- `anchor.mjs` aman diulang: sidik yang sudah tercatat tidak dikirim lagi, bukti transaksinya diambil dari peristiwa `CertificateIssued`.
+- Sidik digital dihitung dari JSON kanonik: kode, id kelas, tanggal terbit, nama penanda tangan berurutan, dan SHA-256 nama penerima bergaram `CERT_HASH_SALT`. Halaman verifikasi menghitung ulang sidik dari basis data dan membandingkannya dengan sidik tersimpan dan catatan kontrak. Beda di salah satunya berarti Tidak Cocok.
+- Konfirmasi kata sandi saat menandatangani memakai isian kata sandi di formulir yang sama (aturan `current_password`), bukan middleware `password.confirm`, karena middleware itu mengalihkan permintaan POST ke GET.
+- Pratinjau sertifikat untuk penanda tangan memakai rute tambahan `signing.preview` (halaman HTML tanpa tanda tangan dan QR).
+- Diuji nyata di jaringan Hardhat lokal (chain 31337): catat, verifikasi, cabut, dan catat ulang. Jaringan uji Polygon Amoy belum diuji karena `ISSUER_PRIVATE_KEY` dan saldo POL uji belum tersedia.
