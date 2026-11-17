@@ -26,7 +26,7 @@ class DemoSeederTest extends TestCase
 
         $this->seed(DemoSeeder::class);
 
-        $sri = User::where('email', 'warga@allobos.test')->firstOrFail();
+        $sri = User::where('email', 'warga@allobos.com')->firstOrFail();
         $snapshots = ReadinessSnapshot::where('user_id', $sri->id)->orderBy('created_at')->orderBy('id')->pluck('score');
 
         $this->assertSame(10, $snapshots->first(), 'Skor awal setelah Profil Usaha');
@@ -40,7 +40,7 @@ class DemoSeederTest extends TestCase
         $this->assertSame(ShopStatus::Terbit, $sri->shop->status);
 
         foreach (['warga', 'bos', 'pengelola', 'admin'] as $role) {
-            $this->post('/masuk', ['email' => $role.'@allobos.test', 'password' => config('features.demo_password')]);
+            $this->post('/masuk', ['email' => $role.'@allobos.com', 'password' => config('features.demo_password')]);
             $this->get(route('dashboard'))->assertRedirect();
             $this->followRedirects($this->get(route('dashboard')))->assertOk();
             $this->post('/keluar');

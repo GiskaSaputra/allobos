@@ -8,7 +8,7 @@ return [
     'verify_email' => (bool) env('REQUIRE_EMAIL_VERIFICATION', true),
 
     // Kata sandi empat akun demo. Dibaca lewat config supaya tetap jalan setelah config:cache.
-    'demo_password' => env('DEMO_PASSWORD') ?: 'allobos-demo',
+    'demo_password' => env('DEMO_PASSWORD') ?: 'password123',
 
     'boss_sessions_per_day' => (int) env('BOSS_SESSIONS_PER_DAY', 5),
     'transcript_days' => 180,

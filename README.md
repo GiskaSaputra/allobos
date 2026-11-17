@@ -49,14 +49,14 @@ Status: **Jalan** = berfungsi dan teruji. **Jalan, cadangan** = teruji dengan ja
 
 ## Akun demo
 
-Sandi keempat akun sama dengan nilai `DEMO_PASSWORD` di `.env` (bawaan `allobos-demo`).
+Sandi keempat akun sama dengan nilai `DEMO_PASSWORD` di `.env` (bawaan `password123`).
 
 | Peran | Email | Isi |
 | --- | --- | --- |
-| Warga | warga@allobos.test | Bu Sri, keripik singkong Ponjong. Skor Siap Usaha naik dari 10 sampai di atas 80, punya lapak terbit dan sertifikat tercatat |
-| Bos | bos@allobos.test | Pak Arif, Bos aktif dengan slot, sesi selesai, dan penanda tangan kelas |
-| Pengelola IPI | pengelola@allobos.test | Mbak Rani, kelas, siniar, moderasi, sertifikat |
-| Admin | admin@allobos.test | Pengguna, AI, blockchain, audit |
+| Warga | warga@allobos.com | Bu Sri, keripik singkong Ponjong. Skor Siap Usaha naik dari 10 sampai di atas 80, punya lapak terbit dan sertifikat tercatat |
+| Bos | bos@allobos.com | Pak Arif, Bos aktif dengan slot, sesi selesai, dan penanda tangan kelas |
+| Pengelola IPI | pengelola@allobos.com | Mbak Rani, kelas, siniar, moderasi, sertifikat |
+| Admin | admin@allobos.com | Pengguna, AI, blockchain, audit |
 
 Semua data contoh berlabel **Demo** dan tidak dihitung di statistik beranda. Isi ulang data demo dengan satu perintah:
 

@@ -1,13 +1,13 @@
 # Uji manual alloBos
 
-Langkah uji per peran untuk penjurian dan sebelum rilis. Data awal: `php artisan allobos:demo --force` (atau `SEED_DEMO=true` di Docker). Sandi keempat akun demo sama dengan `DEMO_PASSWORD` (bawaan `allobos-demo`).
+Langkah uji per peran untuk penjurian dan sebelum rilis. Data awal: `php artisan allobos:demo --force` (atau `SEED_DEMO=true` di Docker). Sandi keempat akun demo sama dengan `DEMO_PASSWORD` (bawaan `password123`).
 
 | Akun | Email |
 | --- | --- |
-| Warga (Bu Sri) | warga@allobos.test |
-| Bos (Pak Arif) | bos@allobos.test |
-| Pengelola IPI (Mbak Rani) | pengelola@allobos.test |
-| Admin | admin@allobos.test |
+| Warga (Bu Sri) | warga@allobos.com |
+| Bos (Pak Arif) | bos@allobos.com |
+| Pengelola IPI (Mbak Rani) | pengelola@allobos.com |
+| Admin | admin@allobos.com |
 
 Kolom Hasil diisi saat uji dijalankan. Lingkungan uji 17 November 2026: Windows 11, PHP 8.5, MySQL 8.0 Laragon, `php artisan serve`, Chrome desktop, lebar 360 px ditiru lewat iframe, jaringan Hardhat lokal (chain 31337), tanpa `GEMINI_API_KEY`.
 

@@ -136,7 +136,7 @@ class DemoSeeder extends Seeder
         $this->program('Bootcamp Pemasaran Lewat WhatsApp dan Lapak Online', ProgramKind::Bootcamp, $fieldOleh, ProgramStatus::Dibuka, 6, 3, $speaker, $rani);
         $this->program('Seminar Izin Usaha: NIB dan PIRT untuk Makanan Rumahan', ProgramKind::Seminar, $fieldKuliner, ProgramStatus::Dibuka, 9, 1, $speaker, $rani);
 
-        foreach ($this->podcasts($fieldKuliner) as $podcast) {
+        foreach ($this->podcasts($fieldKuliner)->take(2) as $podcast) {
             $podcast->listens()->updateOrCreate(['user_id' => $sri->id], ['listened_at' => now()->subDays(9), 'note' => 'Coba kemasan berlabel seperti contoh di episode.']);
         }
         $this->evidence($sri, 'siniar', 'Mendengar siniar tentang usaha keripik');
@@ -191,9 +191,83 @@ class DemoSeeder extends Seeder
 
         Announcement::query()->updateOrCreate(['title' => 'Pendaftaran Bootcamp Pemasaran dibuka'], ['body' => 'Contoh pengumuman: kuota terbatas, daftar lewat menu Belajar lalu Kelas.', 'audience' => 'warga', 'published_at' => now(), 'created_by' => $rani->id]);
 
+        $this->catalog($rani);
+
         $score = $this->readiness->refresh($sri->fresh());
         $this->spreadHistory($sri);
         $this->command?->info('Data demo siap. Skor Siap Usaha Bu Sri: '.$score.'. Status sertifikat: '.$certificate->fresh()->status->label().'.');
+    }
+
+    /**
+     * Isi tambahan supaya katalog publik terasa hidup: bos pendamping, kelas, lapak warga, dan episode siniar.
+     * Semua berlabel data contoh (is_demo). Episode siniar memakai video publik YouTube yang sudah dicek lewat oEmbed.
+     */
+    private function catalog(User $rani): void
+    {
+        $field = fn (string $slug) => BusinessField::query()->where('slug', $slug)->value('id');
+        $district = fn (string $slug) => District::query()->where('slug', $slug)->value('id');
+        $password = config('features.demo_password');
+        $person = function (string $email, string $name, RoleName $role) use ($password): User {
+            $user = User::query()->updateOrCreate(['email' => $email], [
+                'name' => $name, 'whatsapp' => '6281200000000', 'password' => $password, 'email_verified_at' => now(),
+                'active_role' => $role, 'is_active' => true, 'is_demo' => true,
+            ]);
+            $user->syncRoles([$role->value]);
+
+            return $user;
+        };
+
+        // Bos pendamping tambahan
+        $speakers = [];
+        foreach ([
+            ['bos.ratna@allobos.com', 'Ratna Kusuma', 'Batik Tulis Sekar Gedangsari', 'fesyen-dan-batik', 'gedangsari', 9, 'Membina dua puluh perajin batik tulis rumahan dan memasok butik di Yogyakarta.'],
+            ['bos.hendra@allobos.com', 'Hendra Saputro', 'Kerajinan Topeng Kayu Bobung', 'kerajinan-tangan', 'patuk', 14, 'Menjual topeng dan suvenir kayu ke toko oleh-oleh dan pembeli luar negeri.'],
+            ['bos.wulan@allobos.com', 'Wulandari', 'Olahan Rumput Laut Pantai Selatan', 'kuliner-dan-makanan-olahan', 'tanjungsari', 7, 'Mengolah rumput laut menjadi keripik dan dodol untuk pasar wisata pantai.'],
+            ['bos.bayu@allobos.com', 'Bayu Prasetyo', 'Toko Kelontong dan Agen Sembako', 'perdagangan-dan-kelontong', 'wonosari', 12, 'Mengelola toko kelontong dan agen sembako yang memasok warung di tiga kalurahan.'],
+        ] as [$email, $name, $business, $fieldSlug, $districtSlug, $years, $desc]) {
+            $user = $person($email, $name, RoleName::Bos);
+            BossProfile::query()->updateOrCreate(['user_id' => $user->id], [
+                'business_name' => $business, 'business_field_id' => $field($fieldSlug), 'district_id' => $district($districtSlug), 'years_running' => $years,
+                'business_desc' => 'Data contoh. '.$desc, 'track_record' => 'Data contoh. Aktif berbagi pengalaman di kelas dan pendampingan IPI.',
+                'status' => BossStatus::Aktif, 'checklist' => array_fill_keys(array_keys(BossProfile::STANDARDS), true), 'is_demo' => true,
+            ]);
+            $speakers[$fieldSlug] = Speaker::query()->updateOrCreate(['name' => $name], ['business' => $business, 'bio' => $desc, 'user_id' => $user->id, 'is_demo' => true]);
+        }
+
+        // Kelas tambahan yang sedang dibuka
+        foreach ([
+            ['Kelas Batik Tulis untuk Pemula', ProgramKind::Workshop, 'fesyen-dan-batik', 12, 2],
+            ['Membuat Suvenir Kayu yang Laku di Toko Oleh-oleh', ProgramKind::Workshop, 'kerajinan-tangan', 15, 2],
+            ['Olahan Hasil Laut untuk Pasar Wisata', ProgramKind::Bootcamp, 'kuliner-dan-makanan-olahan', 18, 3],
+            ['Mengelola Stok dan Kas Warung Kelontong', ProgramKind::Seminar, 'perdagangan-dan-kelontong', 21, 1],
+        ] as [$title, $kind, $fieldSlug, $days, $sessions]) {
+            $this->program($title, $kind, $field($fieldSlug), ProgramStatus::Dibuka, $days, $sessions, $speakers[$fieldSlug], $rani);
+        }
+
+        // Lapak warga tambahan
+        $palettes = [[[139, 161, 58], [199, 185, 46]], [[116, 184, 140], [190, 222, 140]], [[150, 110, 70], [214, 170, 96]], [[62, 77, 30], [139, 161, 58]], [[180, 120, 80], [232, 196, 110]]];
+        foreach ([
+            ['lapak.batik@allobos.com', 'Siti Aminah', 'Batik Tulis Bu Siti', 'fesyen-dan-batik', 'gedangsari', 'Batik tulis motif alam Gedangsari, diwarnai dengan pewarna alami.', [['Kain batik tulis motif daun', 350000, 'lembar'], ['Selendang batik', 125000, 'helai'], ['Masker kain batik', 15000, 'buah']]],
+            ['lapak.topeng@allobos.com', 'Sugeng Riyadi', 'Topeng Kayu Pak Sugeng', 'kerajinan-tangan', 'patuk', 'Topeng kayu pule dan gantungan kunci ukir, dibuat tangan di Bobung.', [['Topeng panji ukuran sedang', 85000, 'buah'], ['Gantungan kunci topeng', 10000, 'buah'], ['Hiasan dinding topeng', 150000, 'buah']]],
+            ['lapak.rumputlaut@allobos.com', 'Rina Wati', 'Rumput Laut Mbak Rina', 'kuliner-dan-makanan-olahan', 'tanjungsari', 'Olahan rumput laut dari pesisir Tanjungsari, renyah dan tanpa pengawet.', [['Keripik rumput laut', 12000, 'bungkus 150 g'], ['Dodol rumput laut', 15000, 'kotak'], ['Peyek rumput laut', 10000, 'bungkus']]],
+            ['lapak.gaplek@allobos.com', 'Painem', 'Gaplek dan Tiwul Semanu', 'kuliner-dan-makanan-olahan', 'semanu', 'Gaplek, tiwul, dan gatot dari singkong petani Semanu.', [['Tiwul instan gula jawa', 12000, 'bungkus 500 g'], ['Gatot kering', 9000, 'bungkus 250 g'], ['Gaplek iris', 8000, 'kg']]],
+            ['lapak.madu@allobos.com', 'Tukiman', 'Madu Klanceng Playen', 'peternakan-dan-perikanan', 'playen', 'Madu lebah klanceng dari kebun karst Playen, dipanen sendiri.', [['Madu klanceng botol kecil', 65000, 'botol 100 ml'], ['Madu klanceng botol besar', 175000, 'botol 300 ml'], ['Propolis mentah', 50000, 'wadah']]],
+        ] as $i => [$email, $name, $shopName, $fieldSlug, $districtSlug, $desc, $products]) {
+            $owner = $person($email, $name, RoleName::Warga);
+            [$from, $to] = $palettes[$i];
+            $slug = Str::slug($shopName);
+            $shop = Shop::query()->updateOrCreate(['user_id' => $owner->id], [
+                'name' => $shopName, 'slug' => $slug, 'district_id' => $district($districtSlug), 'business_field_id' => $field($fieldSlug),
+                'description' => $desc."\nPesan lewat WhatsApp untuk ambil di tempat atau kirim.", 'whatsapp' => '6281200000000',
+                'cover_path' => $this->image("demo/sampul-{$slug}.webp", $from, $to, 1600, 600),
+                'status' => ShopStatus::Terbit, 'published_at' => now()->subDays(3 + $i), 'is_demo' => true,
+            ]);
+            $shop->products()->delete();
+            foreach ($products as $n => [$productName, $price, $unit]) {
+                $path = $this->image('demo/'.Str::slug($productName).'.webp', $to, $from);
+                $shop->products()->create(['name' => $productName, 'price' => $price, 'unit' => $unit, 'photo_path' => $path, 'description' => $desc, 'sort' => $n]);
+            }
+        }
     }
 
     /** @return array{User, User, User} */
@@ -201,7 +275,7 @@ class DemoSeeder extends Seeder
     {
         $password = config('features.demo_password');
         $users = [];
-        foreach ([[RoleName::Warga, 'Sri Lestari', 'warga@allobos.test'], [RoleName::Bos, 'Arif Wibowo', 'bos@allobos.test'], [RoleName::Pengelola, 'Rani Pratiwi', 'pengelola@allobos.test'], [RoleName::Admin, 'Admin alloBos', 'admin@allobos.test']] as [$role, $name, $email]) {
+        foreach ([[RoleName::Warga, 'Sri Lestari', 'warga@allobos.com'], [RoleName::Bos, 'Arif Wibowo', 'bos@allobos.com'], [RoleName::Pengelola, 'Rani Pratiwi', 'pengelola@allobos.com'], [RoleName::Admin, 'Admin alloBos', 'admin@allobos.com']] as [$role, $name, $email]) {
             $user = User::query()->updateOrCreate(['email' => $email], [
                 'name' => $name, 'whatsapp' => '6281200000000', 'password' => $password, 'email_verified_at' => now(),
                 'active_role' => $role, 'is_active' => true, 'is_demo' => true,
@@ -245,22 +319,32 @@ class DemoSeeder extends Seeder
         return $program->load('sessions');
     }
 
-    /** Dua episode publik dari YouTube. Ringkasan disusun dari keterangan video, berlabel Demo. */
+    /**
+     * Episode publik dari YouTube, dicek lewat oEmbed. Dua episode pertama diringkas dari keterangan video.
+     * Episode lainnya diberi ringkasan pendek dari judul, lalu di server bisa diringkas ulang oleh Gemini yang menonton videonya.
+     */
     private function podcasts(int $field)
     {
+        $slug = fn (string $s) => BusinessField::query()->where('slug', $s)->value('id') ?? $field;
         $items = [
-            ['O9T5PZyfBIU', 'Bongkar kisah keripik pedas dari nol', 'Pendiri merek keripik singkong pedas bercerita tentang membangun usaha dari nol: memasarkan lewat jaringan agen, menghadapi persaingan, mengikuti selera pembeli, dan menjaga rasa tetap sama dari waktu ke waktu.', ['Cari cara jualan yang membuat pembeli penasaran, bukan hanya harga murah', 'Jaga rasa dan mutu tetap sama di setiap bungkus', 'Siapkan diri menghadapi pesaing yang meniru produkmu'], 38],
-            ['rPyxzXfWoDI', 'Usaha keripik singkong rumahan sampai satu ton sebulan', 'Kunjungan ke usaha keripik singkong rumahan yang dirintis sejak 2018. Pemilik memilih singkong dari daerah tertentu supaya hasil gorengan renyah, lalu menambah produksi sedikit demi sedikit.', ['Mutu bahan baku menentukan rasa dan kerenyahan', 'Naikkan jumlah produksi bertahap mengikuti pesanan', 'Catat asal bahan supaya hasilnya bisa diulang'], 12],
+            ['O9T5PZyfBIU', 'Bongkar kisah keripik pedas dari nol', 'Pendiri merek keripik singkong pedas bercerita tentang membangun usaha dari nol: memasarkan lewat jaringan agen, menghadapi persaingan, mengikuti selera pembeli, dan menjaga rasa tetap sama dari waktu ke waktu.', ['Cari cara jualan yang membuat pembeli penasaran, bukan hanya harga murah', 'Jaga rasa dan mutu tetap sama di setiap bungkus', 'Siapkan diri menghadapi pesaing yang meniru produkmu'], 38, 'kuliner-dan-makanan-olahan'],
+            ['rPyxzXfWoDI', 'Usaha keripik singkong rumahan sampai satu ton sebulan', 'Kunjungan ke usaha keripik singkong rumahan yang dirintis sejak 2018. Pemilik memilih singkong dari daerah tertentu supaya hasil gorengan renyah, lalu menambah produksi sedikit demi sedikit.', ['Mutu bahan baku menentukan rasa dan kerenyahan', 'Naikkan jumlah produksi bertahap mengikuti pesanan', 'Catat asal bahan supaya hasilnya bisa diulang'], 12, 'kuliner-dan-makanan-olahan'],
+            ['4hetkoW8MPw', 'Opak singkong rumahan yang tembus pasar luar daerah', 'Liputan Tribunnews tentang usaha opak singkong rumahan milik Onih di Tangerang yang produknya kini dijual sampai ke luar daerah.', ['Olahan singkong sederhana bisa dijual lebih jauh bila kemasannya rapi', 'Pelanggan pertama biasanya datang dari lingkungan terdekat', 'Jaga pasokan bahan supaya pesanan besar bisa dipenuhi'], null, 'kuliner-dan-makanan-olahan'],
+            ['1QSZR5GRJkI', 'Cara keripik masuk ratusan swalayan', 'Episode TVBisnis tentang langkah yang perlu disiapkan supaya produk keripik bisa dijual di swalayan.', ['Siapkan izin edar dan label yang lengkap sebelum menawarkan ke toko', 'Hitung harga grosir yang masih menyisakan untung', 'Pastikan bisa memasok dengan jumlah dan mutu yang tetap'], null, 'kuliner-dan-makanan-olahan'],
+            ['-KEXKkyoadY', 'Bisnis kuliner keluarga dari resep nenek', 'Obrolan di kanal Gue Mau Tau tentang awal mula bisnis kuliner keluarga yang dimulai dari resep turun-temurun.', ['Resep keluarga bisa menjadi pembeda produk', 'Catat takaran resep supaya rasanya bisa dijaga', 'Libatkan keluarga dengan pembagian tugas yang jelas'], null, 'kuliner-dan-makanan-olahan'],
+            ['177VhJBHHdk', 'Bisnis kuliner bukan hanya soal masak enak', 'Episode PecahTelur tentang pola pikir yang perlu dimiliki pengusaha kuliner selain kemampuan memasak.', ['Rasa enak perlu didukung hitungan biaya yang benar', 'Pelayanan dan kebersihan ikut menentukan pembeli kembali', 'Belajar dari angka penjualan, bukan dari perasaan'], null, 'kuliner-dan-makanan-olahan'],
+            ['2guEvk_aNRg', 'Kenapa banyak UMKM gagal saat mulai besar', 'Episode Grego Julius Podcast yang membahas penyebab usaha kecil kesulitan ketika mulai tumbuh.', ['Pisahkan uang usaha dan uang pribadi sejak awal', 'Tambah karyawan dan cabang setelah sistemnya rapi', 'Pantau arus kas setiap minggu'], null, 'kepemimpinan-dan-tim'],
+            ['1GXTw4HyUA8', 'Kerajinan topeng batik Gunungkidul', 'Video Pariwisata Gunungkidul tentang kerajinan topeng batik sebagai salah satu potensi subsektor kriya di Gunungkidul.', ['Kerajinan khas daerah punya nilai cerita yang bisa dijual', 'Wisatawan adalah pasar utama suvenir kriya', 'Jaga ciri khas motif supaya mudah dikenali'], null, 'kerajinan-tangan'],
+            ['6V_eVpHslYg', 'Usaha beras kecil yang menjadi pemasok andal', 'Obrolan UMKM di RRI Jogja tentang usaha beras yang berawal kecil lalu menjadi pemasok tetap.', ['Kepercayaan pembeli tumbuh dari pasokan yang tepat waktu', 'Mutu yang konsisten membuka pelanggan grosir', 'Kembangkan usaha sedikit demi sedikit sesuai kemampuan modal'], null, 'pertanian-dan-perkebunan'],
         ];
 
-        return collect($items)->map(fn ($p) => Podcast::query()->updateOrCreate(['youtube_id' => $p[0]], [
-            'title' => $p[1], 'slug' => Str::slug($p[1]), 'business_field_id' => $field, 'duration_seconds' => $p[4] * 60,
+        return collect($items)->map(fn ($p, $i) => Podcast::query()->updateOrCreate(['youtube_id' => $p[0]], [
+            'title' => $p[1], 'slug' => Str::slug($p[1]), 'business_field_id' => $slug($p[5]), 'duration_seconds' => $p[4] ? $p[4] * 60 : null,
             'summary' => $p[2], 'lessons' => $p[3], 'summary_is_ai' => false, 'summary_state' => 'disetujui',
-            'status' => ContentStatus::Terbit, 'published_at' => now()->subDays(10), 'is_demo' => true,
+            'status' => ContentStatus::Terbit, 'published_at' => now()->subDays(10 + $i), 'is_demo' => true,
         ]));
     }
 
-    /** Permainan tujuh hari dengan keputusan yang wajar, dihitung oleh mesin permainan sungguhan. */
     private function game(User $sri): void
     {
         $games = app(GameService::class);
@@ -334,11 +418,14 @@ class DemoSeeder extends Seeder
             $c = imagecolorallocate($img, ...array_map(fn ($a, $b) => (int) ($a + ($b - $a) * $t), $from, $to));
             imageline($img, 0, $y, $w, $y, $c);
         }
-        mt_srand(crc32($path));
-        for ($i = 0; $i < ($w * $h) / 18000; $i++) {
-            $shade = imagecolorallocatealpha($img, 250, 236, 196, mt_rand(20, 70));
-            imagefilledellipse($img, mt_rand(0, $w), mt_rand(0, $h), mt_rand(60, 140), mt_rand(36, 80), $shade);
-        }
+        // Lingkaran cahaya lembut dan ikon alloBos di tengah, supaya gambar contoh terlihat rapi dan bermerek.
+        imagealphablending($img, true);
+        $glow = imagecolorallocatealpha($img, 255, 250, 225, 96);
+        imagefilledellipse($img, (int) ($w * 0.5), (int) ($h * 0.5), (int) (min($w, $h) * 0.95), (int) (min($w, $h) * 0.95), $glow);
+        imagefilledellipse($img, (int) ($w * 0.5), (int) ($h * 0.5), (int) (min($w, $h) * 0.7), (int) (min($w, $h) * 0.7), $glow);
+        $icon = imagecreatefrompng(public_path('image/ikon-allobos-512.png'));
+        $size = (int) (min($w, $h) * 0.46);
+        imagecopyresampled($img, $icon, (int) (($w - $size) / 2), (int) (($h - $size) / 2), 0, 0, $size, $size, 512, 512);
         ob_start();
         imagewebp($img, null, 78);
         Storage::disk('public')->put($path, (string) ob_get_clean());
