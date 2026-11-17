@@ -31,7 +31,7 @@ return [
     // Suara Bos Allo (teks ke suara). Tanpa kunci, peramban membacakan dengan suaranya sendiri.
     'speechify' => [
         'key' => env('SPEECHIFY_API_KEY'),
-        'voice' => env('SPEECHIFY_VOICE', 'henry'),
+        'voice' => env('SPEECHIFY_VOICE', 'bima'),
         'model' => env('SPEECHIFY_MODEL', 'simba-3.5'),
         'language' => env('SPEECHIFY_LANGUAGE', 'id-ID'),
     ],

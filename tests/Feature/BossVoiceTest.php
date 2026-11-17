@@ -41,7 +41,7 @@ class BossVoiceTest extends TestCase
         $this->post(route('boss-room.voice', $session))->assertOk();
 
         Http::assertSentCount(1);
-        Http::assertSent(fn ($request) => $request['voice_id'] === 'henry' && $request['input'] === "Halo, saya Bos Allo.\n\nUsahamu apa?" && $request->hasHeader('Authorization', 'Bearer kunci-uji'));
+        Http::assertSent(fn ($request) => $request['voice_id'] === 'bima' && $request['input'] === "Halo, saya Bos Allo.\n\nUsahamu apa?" && $request->hasHeader('Authorization', 'Bearer kunci-uji'));
     }
 
     public function test_warga_lain_tidak_bisa_mengambil_suara(): void
