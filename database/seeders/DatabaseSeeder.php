@@ -9,6 +9,6 @@ class DatabaseSeeder extends Seeder
     /** Data acuan yang dibutuhkan aplikasi di semua lingkungan. */
     public function run(): void
     {
-        $this->call([RoleSeeder::class, ReferenceSeeder::class]);
+        $this->call([RoleSeeder::class, ReferenceSeeder::class, ShopEventSeeder::class]);
     }
 }
