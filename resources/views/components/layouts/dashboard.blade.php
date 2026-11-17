@@ -37,7 +37,7 @@
             </div>
         </header>
         <x-flash />
-        <main id="isi" class="mx-auto w-full max-w-[1200px] px-4 py-6 sm:px-6 sm:py-8">{{ $slot }}</main>
+        <main id="isi" class="mx-auto w-full max-w-[1440px] px-4 py-6 sm:px-6 sm:py-8 lg:px-10">{{ $slot }}</main>
     </div>
 
     @include('partials.confirm-dialog')

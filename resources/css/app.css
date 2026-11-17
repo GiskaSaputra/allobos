@@ -25,7 +25,7 @@
     --success: 38 122 68;
     --warning: 150 96 12;
     --danger: 180 52 36;
-    --info: 30 106 140;
+    --info: 32 108 88;
     --status-fg: 245 248 234;
     --ink: 10 12 7;
     --ink-raised: 24 27 18;
@@ -33,8 +33,8 @@
     --ink-muted: 170 180 140;
     --hero-from: 139 161 58;
     --hero-to: 199 185 46;
-    --mint-from: 94 196 182;
-    --mint-to: 143 221 184;
+    --mint-from: 116 184 140;
+    --mint-to: 190 222 140;
     --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
     color-scheme: light;
 }
@@ -53,7 +53,7 @@
     --success: 110 200 140;
     --warning: 232 180 80;
     --danger: 240 120 100;
-    --info: 110 190 225;
+    --info: 128 206 170;
     --status-fg: 12 14 9;
     color-scheme: dark;
 }
@@ -90,13 +90,17 @@
 }
 
 @layer components {
-    .container-page { @apply mx-auto w-full max-w-[1200px] px-4 sm:px-6; }
+    .container-page { @apply mx-auto w-full max-w-[1440px] px-4 sm:px-6 lg:px-10; }
 
     .label-caps { @apply text-xs font-medium uppercase tracking-[0.14em] text-fg-muted; }
 
     .card { @apply rounded-card border border-line bg-surface-raised p-5 shadow-card sm:p-6; }
-    .card-link { @apply transition duration-200 ease-out hover:-translate-y-0.5 hover:border-brand/50; }
-    .panel-ink { @apply rounded-[28px] bg-ink text-ink-fg sm:rounded-panel; }
+    .card-link { @apply transition duration-200 ease-out hover:-translate-y-1 hover:border-brand/50 hover:shadow-float; }
+    /* Tanda air ikon alloBos: samar, berputar tegak dan lebih jelas saat kartu disorot. */
+    .logo-mark { @apply pointer-events-none absolute -z-10 -rotate-12 select-none opacity-[0.09] transition duration-500 ease-out group-hover:rotate-0 group-hover:scale-110 group-hover:opacity-25 dark:opacity-[0.12] dark:group-hover:opacity-30; }
+    .logo-chip { @apply pointer-events-none inline-flex items-center gap-1.5 rounded-full bg-surface-raised/90 py-1 pl-1 pr-2.5 text-[11px] font-semibold text-fg shadow-card backdrop-blur-md; }
+    .panel-ink { @apply rounded-[28px] bg-ink text-ink-fg ring-1 ring-inset ring-ink-fg/10 sm:rounded-panel; }
+    .dark .panel-ink { @apply bg-ink-raised ring-ink-fg/15; }
 
     .btn {
         @apply inline-flex min-h-[44px] select-none items-center justify-center gap-2 whitespace-nowrap rounded-full px-5 text-sm font-medium transition duration-200 ease-out active:scale-[0.98] sm:text-base;
@@ -177,14 +181,16 @@
     .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
 }
 
-/* Gerak beranda. Kelas .js-motion dipasang home-scroll.js hanya bila gerak diizinkan. */
-.js-motion [data-reveal] {
+/* Gerak halaman publik. Kelas .js-motion dipasang motion.js hanya bila gerak diizinkan. */
+/* Memakai properti translate, bukan transform, supaya efek angkat saat disorot tetap berjalan. */
+.js-motion [data-reveal]:not(.is-in) {
     opacity: 0;
-    transform: translateY(16px);
-    transition: opacity 600ms var(--ease-out), transform 600ms var(--ease-out);
-    transition-delay: calc(var(--i, 0) * 60ms);
+    translate: 0 24px;
 }
-.js-motion [data-reveal].is-in { opacity: 1; transform: none; }
+.js-motion [data-reveal] {
+    transition: opacity 700ms var(--ease-out), translate 700ms var(--ease-out), transform 200ms var(--ease-out), border-color 200ms, box-shadow 200ms;
+    transition-delay: calc(var(--i, 0) * 80ms), calc(var(--i, 0) * 80ms), 0ms, 0ms, 0ms;
+}
 
 .js-motion [data-word] {
     display: inline-block;
