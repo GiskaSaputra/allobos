@@ -14,7 +14,7 @@ Fase mengikuti PRD bagian 10. Bila sesi terputus, lanjutkan dari fase pertama ya
 | 5 | Kelas Bos dan Temu Bos | Selesai |
 | 5b | Sertifikat Terverifikasi | Selesai (jaringan Hardhat lokal) |
 | 6 | Siniar Bos | Selesai |
-| 7 | Warung Bos 3D | Belum |
+| 7 | Warung Bos 3D | Selesai |
 | 8 | Dashboard Pengelola dan Admin, CMS, wawasan | Belum |
 | 9 | Beranda, data demo, uji manual, deploy, README, video | Belum |
 
@@ -85,3 +85,11 @@ Fase mengikuti PRD bagian 10. Bila sesi terputus, lanjutkan dari fase pertama ya
 - Ringkasan AI dicoba langsung dari video YouTube (bagian `fileData` Gemini). Bila gagal dan ada catatan pengelola, dicoba lagi dari judul dan catatan. Status ringkasan: kosong, memproses, draf, gagal, disetujui. Menerbitkan episode sama dengan menyetujui ringkasan (SB-02).
 - Pemutar memakai `youtube-nocookie.com` dan baru dimuat setelah tombol Putar ditekan (SB-04).
 - Ekspor XLSX peserta kelas menulis isian pengguna sebagai teks eksplisit supaya tidak bisa disisipi rumus (temuan tinjauan keamanan).
+### Fase 7
+
+- Mesin permainan di `app/Services/Game`: `GameRules` (tiga jenis warung, tujuh babak, promosi, keputusan khusus tiap babak), `GameEngine` (fungsi murni dengan pembangkit acak mulberry32 berbenih), `EventPicker` (kejadian AI dijepit ke rentang tema babak, cadangan dari 34 kejadian di `ShopEventSeeder`), `BossLines`, dan `GameService` (urutan tahap belanja, harga, buka, laporan).
+- Akibat tertunda: menaikkan harga di babak rombongan menurunkan kepuasan 12 poin di babak ulasan. Kenaikan harga bahan di babak 5 terbawa sampai hari 7. Hujan membuat sebagian stok basah terbuang. Kepuasan memengaruhi permintaan, terutama di babak ulasan.
+- Nilai akhir = laba (maks 50) + kepuasan (maks 25) + stok terbuang sedikit (maks 15) + pembeli terlayani (maks 10) dikurangi 5 per hari kas minus, dijepit 0 sampai 100. Akhir: ramai (75 ke atas), bertahan (45 sampai 74), belum (di bawah 45).
+- Skor Siap Usaha memakai nilai terbaik dari permainan yang sudah disimpan lewat Simpan Pelajaran ke Jejak Usaha (Alur Bisnis 3.7 langkah 8). Rute tambahan `game.save`.
+- Adegan 3D dibangun dari geometri di kode (tanpa model GLB), jadi tidak ada aset pihak ketiga yang perlu dicatat lisensinya. Paket Three.js dimuat terpisah lewat impor dinamis (sekitar 139 KB gzip).
+- Pemanggilan `initWarung` dipindah ke akhir berkas setelah galat urutan deklarasi ditemukan saat uji peramban.
