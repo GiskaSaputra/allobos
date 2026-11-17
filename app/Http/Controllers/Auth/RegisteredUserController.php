@@ -16,11 +16,14 @@ class RegisteredUserController extends Controller
 {
     public function create(Request $request): View
     {
-        if ($request->filled('tujuan')) {
-            session(['url.intended' => url($request->string('tujuan')->start('/')->toString())]);
+        // Hanya jalur internal satu tingkat seperti /ruang-bos, supaya tidak bisa dipakai mengalihkan ke situs lain.
+        $target = $request->string('tujuan')->toString();
+        $safe = preg_match('#^/[a-z0-9][a-z0-9/_-]*$#i', $target) === 1;
+        if ($safe) {
+            session(['url.intended' => url($target)]);
         }
 
-        return view('auth.register', ['purpose' => $request->string('tujuan')->toString()]);
+        return view('auth.register', ['purpose' => $safe ? $target : '']);
     }
 
     public function store(Request $request): RedirectResponse

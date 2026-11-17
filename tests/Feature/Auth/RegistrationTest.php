@@ -32,6 +32,12 @@ class RegistrationTest extends TestCase
         $this->assertAuthenticatedAs($user);
     }
 
+    public function test_tujuan_ke_situs_lain_diabaikan(): void
+    {
+        $this->get('/daftar?tujuan=//situs-lain.example')->assertOk()->assertSessionMissing('url.intended');
+        $this->get('/daftar?tujuan=/ruang-bos')->assertSessionHas('url.intended', url('/ruang-bos'));
+    }
+
     public function test_tanpa_persetujuan_ditolak(): void
     {
         $this->post('/daftar', [
