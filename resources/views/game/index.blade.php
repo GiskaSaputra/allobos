@@ -4,6 +4,7 @@
             <div class="max-w-xl rounded-[24px] bg-ink/45 p-6 text-ink-fg backdrop-blur-md sm:p-8">
                 <h1 class="text-3xl text-ink-fg sm:text-4xl">Warung Bos 3D</h1>
                 <p class="mt-3 text-ink-muted">Kamu mewarisi warung kecil milik simbah di pinggir jalan menuju pantai. Warung itu sepi dan hampir tutup. Kamu punya tujuh hari sebelum musim liburan untuk membuktikan warung itu bisa hidup.</p>
+                <p class="mt-3 text-sm text-ink-muted">Masuk ke warung dari sudut pandang orang pertama: belanja ke pemasok, pajang peti di rak, buka warung, lalu layani pembeli di kasir. Bisa dimainkan dengan papan ketik dan tetikus, gamepad, atau layar sentuh. Mode Ringan tersedia untuk perangkat yang berat menjalankan 3D.</p>
                 <div class="mt-6 flex flex-wrap gap-3">
                     @if ($running)
                         <x-button variant="accent" size="lg" :href="route('game.play', $running)" icon="phosphor-storefront">Lanjutkan Warung</x-button>
