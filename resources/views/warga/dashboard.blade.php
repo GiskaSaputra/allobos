@@ -1,8 +1,9 @@
 <x-layouts.app title="Beranda">
     <div class="grid gap-6 lg:grid-cols-[1fr_340px]">
         <div class="space-y-6">
-            <section class="bg-hero overflow-hidden rounded-[28px] p-5 sm:rounded-panel sm:p-8">
-                <div class="max-w-xl rounded-[24px] bg-ink/45 p-5 text-ink-fg backdrop-blur-md sm:p-7">
+            <section class="bg-hero relative isolate overflow-hidden rounded-[28px] p-5 sm:rounded-panel sm:p-8">
+                <img src="{{ asset('image/pose-5.webp') }}" alt="" width="720" height="965" aria-hidden="true" class="pointer-events-none absolute -bottom-10 right-4 -z-10 hidden h-[125%] w-auto object-contain object-bottom md:block lg:right-10">
+                <div class="max-w-xl rounded-[24px] md:max-w-[60%] bg-ink/45 p-5 text-ink-fg backdrop-blur-md sm:p-7">
                     <p class="text-sm text-ink-muted">Halo, {{ $user->firstName() }}. Langkah berikutnya:</p>
                     <h1 class="mt-2 text-2xl text-ink-fg sm:text-3xl">{{ $next['title'] }}</h1>
                     <p class="mt-2 text-ink-muted">{{ $next['body'] }}</p>

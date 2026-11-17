@@ -3,10 +3,10 @@
         $tanyaUrl = auth()->check() ? route('boss-room.setup') : route('register', ['tujuan' => '/ruang-bos']);
     @endphp
     <section class="container-page pt-4">
-        <div class="bg-hero relative isolate overflow-hidden rounded-[28px] px-5 pt-8 sm:rounded-panel sm:px-10 sm:pt-12 lg:min-h-[640px]">
+        <div class="bg-hero relative isolate overflow-hidden rounded-[28px] px-5 pt-8 sm:rounded-panel sm:px-10 sm:pt-12">
             <div aria-hidden="true" class="pointer-events-none absolute -right-24 top-10 -z-10 h-[520px] w-[520px] rounded-full bg-accent/45 blur-3xl"></div>
-            <div class="grid gap-6 lg:grid-cols-[1.15fr_1fr]">
-                <div class="space-y-6 lg:pb-14">
+            <div class="grid gap-6 lg:grid-cols-[1.1fr_1fr] lg:gap-10">
+                <div class="space-y-6 lg:self-center lg:pb-12">
                     <p class="inline-flex items-center gap-2 rounded-full bg-ink/25 px-3 py-1.5 text-sm font-medium text-ink-fg backdrop-blur-md"><x-phosphor-storefront class="h-4 w-4" aria-hidden="true" />Pendamping usaha warga Gunungkidul</p>
                     <h1 class="w-fit rounded-[24px] bg-ink/40 px-5 py-4 font-display text-[40px] font-semibold leading-[1.05] tracking-tight text-ink-fg backdrop-blur-md sm:text-6xl lg:text-[68px]" aria-label="Tanya bos, belajar, lalu buka usaha.">
                         <span aria-hidden="true">@foreach (['Tanya', 'bos,', 'belajar,', 'lalu'] as $i => $word)<span data-word style="--i: {{ $i }}">{{ $word }}</span> @endforeach<em class="font-bold text-accent"><span data-word style="--i: 4">buka</span> <span data-word style="--i: 5">usaha.</span></em></span>
@@ -17,9 +17,9 @@
                         <x-button variant="glass" size="lg" :href="route('programs.index')">Lihat Kelas</x-button>
                     </div>
                 </div>
-                <div class="relative mx-auto h-[360px] w-full max-w-[460px] sm:h-[460px] lg:absolute lg:bottom-0 lg:right-10 lg:h-[600px] lg:max-w-[520px]">
+                <div class="relative mx-auto h-[380px] w-full max-w-[460px] self-end sm:h-[460px] lg:mx-0 lg:h-[560px] lg:max-w-none xl:h-[620px]">
                     <img src="{{ asset('image/pose-3.webp') }}" alt="Bos Allo, maskot alloBos berjas, mempersilakan dengan tangan terbuka" width="720" height="965" fetchpriority="high" class="pose-rise absolute bottom-0 left-1/2 h-full w-auto max-w-none -translate-x-1/2 object-contain object-bottom drop-shadow-[0_30px_40px_rgb(var(--ink)/0.35)]">
-                    <div class="hero-float absolute right-0 top-4 max-w-[190px] rounded-[20px] rounded-bl-md border border-ink-fg/30 bg-ink/45 p-3 text-sm text-ink-fg shadow-float backdrop-blur-md sm:top-12 sm:max-w-[230px]" style="--i: 0">
+                    <div class="hero-float absolute left-0 top-[42%] z-10 max-w-[170px] rounded-[20px] rounded-br-md border border-ink-fg/30 bg-ink/45 p-3 text-sm text-ink-fg shadow-float backdrop-blur-md sm:max-w-[210px] lg:-left-4 lg:top-[30%] xl:max-w-[230px]" style="--i: 0">
                         <p class="text-xs text-ink-muted">Bos Allo</p>
                         <p class="font-medium">Mau mulai usaha apa? Ceritakan saja, aku dengarkan.</p>
                     </div>
@@ -103,23 +103,23 @@
         </section>
     @endif
 
-    <section class="container-page mt-20 grid gap-10 lg:grid-cols-2">
-        <div data-reveal>
-            <h2 class="text-3xl">Siniar Bos</h2>
-            <p class="mt-2 text-fg-muted">Obrolan bersama pengusaha, lengkap dengan ringkasan dan tiga pelajaran.</p>
-            @if ($podcasts->isNotEmpty())
-                <div class="mt-5 grid gap-3 sm:grid-cols-2">@foreach ($podcasts->take(2) as $podcast)<x-podcast-card :podcast="$podcast" compact />@endforeach</div>
-            @endif
-            <x-button variant="secondary" :href="route('podcasts.index')" class="mt-5">Lihat Semua Siniar</x-button>
-        </div>
-        <div data-reveal style="--i: 1">
-            <h2 class="text-3xl">Lapak warga</h2>
-            <p class="mt-2 text-fg-muted">Produk buatan warga Gunungkidul. Pesan langsung ke penjual lewat WhatsApp.</p>
-            @if ($shops->isNotEmpty())
-                <div class="mt-5 grid gap-3 sm:grid-cols-2">@foreach ($shops->take(2) as $shop)<x-shop-card :shop="$shop" />@endforeach</div>
-            @endif
-            <x-button variant="secondary" :href="route('shops.index')" class="mt-5">Lihat Semua Lapak</x-button>
-        </div>
+    {{-- Subgrid menyejajarkan judul, keterangan, kartu, dan tombol kedua kolom walau panjang teksnya berbeda --}}
+    <section class="container-page mt-20 grid gap-x-10 gap-y-12 lg:grid-cols-2 lg:grid-rows-[auto_auto_1fr_auto]">
+        @foreach ([
+            ['Siniar Bos', 'Obrolan bersama pengusaha, lengkap dengan ringkasan dan tiga pelajaran.', $podcasts->take(2), 'podcast', route('podcasts.index'), 'Lihat Semua Siniar'],
+            ['Lapak warga', 'Produk buatan warga Gunungkidul. Pesan langsung ke penjual lewat WhatsApp.', $shops->take(2), 'shop', route('shops.index'), 'Lihat Semua Lapak'],
+        ] as $i => [$heading, $intro, $items, $type, $url, $cta])
+            <div class="grid gap-y-5 lg:row-span-4 lg:grid-rows-subgrid" data-reveal style="--i: {{ $i }}">
+                <h2 class="text-3xl">{{ $heading }}</h2>
+                <p class="-mt-3 text-fg-muted">{{ $intro }}</p>
+                <div class="grid content-start gap-3 sm:grid-cols-2">
+                    @foreach ($items as $item)
+                        @if ($type === 'podcast')<x-podcast-card :podcast="$item" compact />@else<x-shop-card :shop="$item" />@endif
+                    @endforeach
+                </div>
+                <x-button variant="secondary" :href="$url" class="w-fit">{{ $cta }}</x-button>
+            </div>
+        @endforeach
     </section>
 
     <section class="container-page mt-20 grid gap-6 md:grid-cols-[1.2fr_1fr]">
@@ -154,7 +154,4 @@
         </div>
     </section>
 
-    @push('scripts')
-        @vite('resources/js/home-scroll.js')
-    @endpush
 </x-layouts.public>
