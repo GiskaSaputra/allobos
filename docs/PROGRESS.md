@@ -18,6 +18,7 @@ Fase mengikuti PRD bagian 10. Bila sesi terputus, lanjutkan dari fase pertama ya
 | 8 | Dashboard Pengelola dan Admin, CMS, wawasan | Selesai |
 | 9 | Beranda, data demo, uji manual, deploy, README, video | Selesai kecuali video demo |
 | 10 | Aset baru, halaman masuk, Gemini bergiliran, Resend, Warung Bos 3D orang pertama, deploy VPS | Selesai |
+| 11 | Kerapian responsif, animasi, palet, logo di kartu, data contoh, akun demo | Selesai |
 
 ## Keputusan
 
@@ -132,8 +133,20 @@ Fase mengikuti PRD bagian 10. Bila sesi terputus, lanjutkan dari fase pertama ya
 - Kepala halaman panggung memakai ikon logo saja di ponsel supaya tombol tidak bertabrakan.
 - Deploy ke VPS di `https://allobos.zite.my.id` (lihat bagian Deploy di README). Repositori privat, jadi kode dikirim dengan `git archive` lewat SSH, bukan `git clone` di server.
 
+### Fase 11: kerapian tampilan dan data
+
+- Wadah halaman dilebarkan ke 1440 px supaya saat diperkecil di laptop isi tidak menyempit ke tengah. Hero beranda memakai kolom grid untuk pose Bos Allo sehingga tidak menimpa judul di lebar 1024 sampai 1280, gelembung sapaan dipindah supaya tidak menutup wajah.
+- Kolom Siniar dan Lapak di beranda disejajarkan dengan subgrid. Panel hitam diberi garis tipis dan warna `ink-raised` di tema gelap supaya batasnya terlihat.
+- Warna `info` biru dan `mint` kebiruan diganti ke hijau sage supaya selaras dengan palet zaitun dan lime.
+- Animasi muncul saat digulir sekarang berjalan di semua halaman publik (`resources/js/motion.js`), memakai properti `translate` supaya efek angkat kartu saat disorot tidak tertimpa.
+- Kartu kelas, bos, lapak, dan siniar diberi tanda air atau pil logo alloBos. Gambar contoh produk dan sampul lapak memakai ikon alloBos.
+- Lencana Demo dan catatan lomba disembunyikan dari tampilan publik atas permintaan pemilik proyek. `APP_DEMO=true` menampilkannya lagi.
+- Data contoh: 9 episode siniar dari video publik YouTube yang dicek lewat oEmbed (ringkasan episode baru dibuat Gemini dari videonya di server), 7 kelas, 5 bos, 6 lapak dengan 3 produk masing-masing. Akun demo memakai `@allobos.com` dengan sandi `password123` atas permintaan pemilik proyek.
+- Data server diperbarui tanpa `allobos:demo --force`, karena perintah itu menjalankan `migrate:fresh` dan akan menghapus akun warga sungguhan yang sudah mendaftar.
+
 ## Belum selesai
 
+- Akun demo memakai sandi `password123`, termasuk Admin. Ganti sandi Admin dan Pengelola di server setelah penjurian.
 - Suara Henry dari Speechify sudah terpasang (`VoiceClient`, rute `ruang-bos/{sesi}/suara`, hasil disimpan per teks) tetapi `SPEECHIFY_API_KEY` belum diisi. Sampai diisi, Ruang Bos memakai suara Google Bahasa Indonesia dari peramban. Karena peramban menahan suara sebelum ada ketukan, sapaan pertama memunculkan tombol Dengarkan Bos Allo.
 - Kirim otomatis saat tombol mikrofon dilepas belum dicoba dengan mikrofon sungguhan.
 - Video demo 3 sampai 5 menit belum dibuat (perlu direkam pemilik proyek).
