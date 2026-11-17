@@ -19,7 +19,7 @@ class GeminiClient
     ) {}
 
     /**
-     * @param  array{image?:array{mime:string,data:string},prompt?:string,quota?:bool}  $options
+     * @param  array{image?:array{mime:string,data:string},video_url?:string,prompt?:string,quota?:bool}  $options
      * @return array<string,mixed> Data sesuai skema. Bila penelusuran web aktif, ditambah kunci _sources.
      *
      * @throws AiException
@@ -39,7 +39,7 @@ class GeminiClient
             throw AiException::quota($this->quotaResetsAt());
         }
 
-        $payload = $this->payload($config, $options['prompt'] ?? $this->prompts->active($feature), $this->redactor->redact($content, $user), $schema, $options['image'] ?? null);
+        $payload = $this->payload($config, $options['prompt'] ?? $this->prompts->active($feature), $this->redactor->redact($content, $user), $schema, $options['image'] ?? null, $options['video_url'] ?? null);
         $started = microtime(true);
         $tokens = 0;
 
@@ -81,11 +81,14 @@ class GeminiClient
         return CarbonImmutable::now()->addDay()->startOfDay();
     }
 
-    private function payload(array $config, string $system, string $content, array $schema, ?array $image): array
+    private function payload(array $config, string $system, string $content, array $schema, ?array $image, ?string $videoUrl = null): array
     {
         $parts = [['text' => $content]];
         if ($image) {
             $parts[] = ['inlineData' => ['mimeType' => $image['mime'], 'data' => $image['data']]];
+        }
+        if ($videoUrl) {
+            $parts[] = ['fileData' => ['fileUri' => $videoUrl]];
         }
 
         $payload = [

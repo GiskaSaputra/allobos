@@ -22,6 +22,8 @@ Route::post('lapak/{shop:slug}/lapor', [Public\ShopController::class, 'report'])
 Route::get('kelas', [Public\ProgramController::class, 'index'])->name('programs.index');
 Route::get('kelas/{program:slug}', [Public\ProgramController::class, 'show'])->name('programs.show');
 Route::get('bos', [Public\PageController::class, 'bosses'])->name('bosses.index');
+Route::get('siniar', [Public\PodcastController::class, 'index'])->name('podcasts.index');
+Route::get('siniar/{podcast:slug}', [Public\PodcastController::class, 'show'])->name('podcasts.show');
 
 Route::get('verifikasi', [Public\CertificateVerifyController::class, 'form'])->name('certificates.verify.form');
 Route::post('verifikasi', [Public\CertificateVerifyController::class, 'lookup'])->middleware('throttle:30,1')->name('certificates.verify.lookup');
@@ -82,6 +84,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('kelas/{program}/batal', [Warga\ProgramController::class, 'cancel'])->name('programs.cancel');
             Route::post('kelas/sesi/{session}/hadir', [Warga\ProgramController::class, 'attend'])->middleware('throttle:10,1')->name('programs.attend');
             Route::get('kelas/{program}/materi/{index}', [Warga\ProgramController::class, 'material'])->whereNumber('index')->name('programs.material');
+
+            Route::post('siniar/{podcast}/dengar', [Warga\PodcastController::class, 'listen'])->name('podcasts.listen');
+            Route::post('siniar/{podcast}/catatan', [Warga\PodcastController::class, 'note'])->name('podcasts.note');
 
             Route::get('sertifikat', [Warga\CertificateController::class, 'index'])->name('certificates.index');
             Route::get('sertifikat/{certificate}', [Warga\CertificateController::class, 'show'])->name('certificates.show');
@@ -153,6 +158,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('kelas/sesi/{session}/kode', [Pengelola\ProgramController::class, 'code'])->name('programs.code');
         Route::post('kelas/{program}/penanda-tangan', [Pengelola\ProgramController::class, 'signers'])->name('programs.signers');
         Route::resource('pembicara', Pengelola\SpeakerController::class)->parameters(['pembicara' => 'speaker'])->except('show')->names('speakers');
+
+        Route::post('siniar/ambil', [Pengelola\PodcastController::class, 'fetch'])->name('podcasts.fetch');
+        Route::post('siniar/{podcast}/ringkas', [Pengelola\PodcastController::class, 'summarize'])->middleware('throttle:ai')->name('podcasts.summarize');
+        Route::post('siniar/{podcast}/terbitkan', [Pengelola\PodcastController::class, 'publish'])->name('podcasts.publish');
+        Route::resource('siniar', Pengelola\PodcastController::class)->parameters(['siniar' => 'podcast'])->names('podcasts');
 
         Route::get('sertifikat', [Pengelola\CertificateController::class, 'index'])->name('certificates.index');
         Route::post('sertifikat/kelas/{program}/catat-ulang', [Pengelola\CertificateController::class, 'retry'])->name('certificates.retry');

@@ -13,7 +13,7 @@ Fase mengikuti PRD bagian 10. Bila sesi terputus, lanjutkan dari fase pertama ya
 | 4 | Cek Produk dan Lapak | Selesai |
 | 5 | Kelas Bos dan Temu Bos | Selesai |
 | 5b | Sertifikat Terverifikasi | Selesai (jaringan Hardhat lokal) |
-| 6 | Siniar Bos | Belum |
+| 6 | Siniar Bos | Selesai |
 | 7 | Warung Bos 3D | Belum |
 | 8 | Dashboard Pengelola dan Admin, CMS, wawasan | Belum |
 | 9 | Beranda, data demo, uji manual, deploy, README, video | Belum |
@@ -79,3 +79,9 @@ Fase mengikuti PRD bagian 10. Bila sesi terputus, lanjutkan dari fase pertama ya
 - Konfirmasi kata sandi saat menandatangani memakai isian kata sandi di formulir yang sama (aturan `current_password`), bukan middleware `password.confirm`, karena middleware itu mengalihkan permintaan POST ke GET.
 - Pratinjau sertifikat untuk penanda tangan memakai rute tambahan `signing.preview` (halaman HTML tanpa tanda tangan dan QR).
 - Diuji nyata di jaringan Hardhat lokal (chain 31337): catat, verifikasi, cabut, dan catat ulang. Jaringan uji Polygon Amoy belum diuji karena `ISSUER_PRIVATE_KEY` dan saldo POL uji belum tersedia.
+### Fase 6
+
+- Judul dan sampul diambil dari oEmbed YouTube. Bila gagal, episode tetap dibuat dengan judul sementara yang bisa diubah.
+- Ringkasan AI dicoba langsung dari video YouTube (bagian `fileData` Gemini). Bila gagal dan ada catatan pengelola, dicoba lagi dari judul dan catatan. Status ringkasan: kosong, memproses, draf, gagal, disetujui. Menerbitkan episode sama dengan menyetujui ringkasan (SB-02).
+- Pemutar memakai `youtube-nocookie.com` dan baru dimuat setelah tombol Putar ditekan (SB-04).
+- Ekspor XLSX peserta kelas menulis isian pengguna sebagai teks eksplisit supaya tidak bisa disisipi rumus (temuan tinjauan keamanan).

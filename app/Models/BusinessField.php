@@ -17,6 +17,11 @@ class BusinessField extends Model
         return $this->hasMany(Program::class);
     }
 
+    public function podcasts(): HasMany
+    {
+        return $this->hasMany(Podcast::class);
+    }
+
     public function bossProfiles(): HasMany
     {
         return $this->hasMany(BossProfile::class);
