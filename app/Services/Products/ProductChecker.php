@@ -3,12 +3,11 @@
 namespace App\Services\Products;
 
 use App\Enums\CheckStatus;
-use App\Enums\MarketSignal;
 use App\Models\ProductCheck;
 use App\Notifications\Pemberitahuan;
 use App\Services\Ai\AiException;
+use App\Services\Ai\FeatureSchemas;
 use App\Services\Ai\GeminiClient;
-use App\Services\Ai\Schema;
 use App\Services\Plans\CostCalculator;
 use App\Services\Readiness\ReadinessCalculator;
 use Illuminate\Support\Facades\Storage;
@@ -26,20 +25,7 @@ class ProductChecker
         $user = $check->user;
 
         try {
-            $data = $this->ai->generateJson('product_check', $this->context($check), Schema::obj([
-                'name' => Schema::str(),
-                'category' => Schema::str(),
-                'photo_score' => Schema::int(),
-                'pack_score' => Schema::int(),
-                'good' => Schema::arr(Schema::str(), 1, 3),
-                'fixes' => Schema::arr(Schema::str(), 1, 3),
-                'price_min' => Schema::int(),
-                'price_max' => Schema::int(),
-                'price_reason' => Schema::str(),
-                'signal' => Schema::str(array_column(MarketSignal::cases(), 'value')),
-                'reasons' => Schema::arr(Schema::str(), 1, 3),
-                'description' => Schema::str(),
-            ]), $user, [
+            $data = $this->ai->generateJson('product_check', $this->context($check), FeatureSchemas::for('product_check'), $user, [
                 'image' => ['mime' => 'image/webp', 'data' => base64_encode(Storage::disk('public')->get($check->photo_path))],
             ]);
         } catch (AiException $e) {

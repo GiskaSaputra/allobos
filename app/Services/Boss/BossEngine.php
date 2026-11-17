@@ -6,8 +6,8 @@ use App\Enums\SessionStatus;
 use App\Models\BossSession;
 use App\Models\User;
 use App\Services\Ai\AiException;
+use App\Services\Ai\FeatureSchemas;
 use App\Services\Ai\GeminiClient;
-use App\Services\Ai\Schema;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 use RuntimeException;
@@ -91,11 +91,7 @@ class BossEngine
         $content = "Profil warga:\n".($session->user->profile?->forAi() ?? '-')
             ."\n\nTopik sesi: {$session->topic}\n\nPercakapan sebelumnya:\n{$history}\n\nPesan baru warga:\n{$message}";
 
-        $data = $this->ai->generateJson('boss_chat', $content, Schema::obj([
-            'reply' => Schema::str(),
-            'follow_up' => Schema::str(),
-            'suggested_modules' => Schema::arr(Schema::str(array_keys(Modules::ALL)), 0, 2),
-        ]), $session->user);
+        $data = $this->ai->generateJson('boss_chat', $content, FeatureSchemas::for('boss_chat'), $session->user);
 
         $modules = $data['suggested_modules'];
         if (preg_match(self::SENSITIVE, $message) && ! in_array('temu_bos', $modules, true)) {

@@ -11,8 +11,8 @@ use App\Models\ResidentProfile;
 use App\Models\User;
 use App\Notifications\Pemberitahuan;
 use App\Services\Ai\AiException;
+use App\Services\Ai\FeatureSchemas;
 use App\Services\Ai\GeminiClient;
-use App\Services\Ai\Schema;
 use App\Services\Readiness\ReadinessCalculator;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
@@ -66,7 +66,7 @@ class PodcastService
     /** Ringkasan dan tiga pelajaran. Dicoba dari video, lalu dari judul dan catatan pengelola. */
     public function summarize(Podcast $podcast, ?User $user = null): void
     {
-        $schema = Schema::obj(['summary' => Schema::str(), 'lessons' => Schema::arr(Schema::str(), 3, 3)]);
+        $schema = FeatureSchemas::for('podcast_summary');
         $content = "Judul episode: {$podcast->title}\nBidang: ".($podcast->field?->name ?? '-')."\nCatatan pengelola:\n".($podcast->source_notes ?: '-');
 
         try {

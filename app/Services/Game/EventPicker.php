@@ -5,8 +5,8 @@ namespace App\Services\Game;
 use App\Models\ShopEvent;
 use App\Models\ShopGame;
 use App\Services\Ai\AiException;
+use App\Services\Ai\FeatureSchemas;
 use App\Services\Ai\GeminiClient;
-use App\Services\Ai\Schema;
 
 class EventPicker
 {
@@ -27,11 +27,7 @@ class EventPicker
                 'Jenis warung: '.$kind['label'].', menjual '.collect($kind['items'])->pluck('name')->implode(', ').'.',
                 'Rentang efek yang sesuai tema: demand '.implode(' sampai ', $theme['demand']).', cost '.implode(' sampai ', $theme['cost']).', cash '.implode(' sampai ', $theme['cash']).'.',
                 'Profil pemain: '.($game->user->profile?->forAi() ?? '-'),
-            ]), Schema::obj([
-                'title' => Schema::str(),
-                'story' => Schema::str(),
-                'effect' => Schema::obj(['demand' => Schema::num(), 'cost' => Schema::num(), 'cash' => Schema::num()]),
-            ]), $game->user);
+            ]), FeatureSchemas::for('shop_event'), $game->user);
 
             return ['title' => mb_substr($data['title'], 0, 80), 'story' => mb_substr($data['story'], 0, 400), 'effect' => $this->engine->clampEffect($day, $data['effect']), 'source' => 'ai'];
         } catch (AiException) {

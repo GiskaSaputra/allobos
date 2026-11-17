@@ -6,8 +6,8 @@ use App\Enums\SessionStatus;
 use App\Models\BossSession;
 use App\Models\ConsultNote;
 use App\Services\Ai\AiException;
+use App\Services\Ai\FeatureSchemas;
 use App\Services\Ai\GeminiClient;
-use App\Services\Ai\Schema;
 use App\Services\Readiness\ReadinessCalculator;
 use Illuminate\Support\Str;
 
@@ -28,12 +28,7 @@ class NoteBuilder
         $transcript = $turns->map(fn ($t) => ($t->role === 'bos' ? 'Bos Allo: ' : 'Warga: ').$t->content)->implode("\n");
 
         try {
-            $data = $this->ai->generateJson('boss_summary', "Topik: {$session->topic}\n\nPercakapan:\n{$transcript}", Schema::obj([
-                'problem' => Schema::str(),
-                'advice' => Schema::arr(Schema::str(), 1, 4),
-                'next_steps' => Schema::arr(Schema::str(), 1, 5),
-                'modules' => Schema::arr(Schema::str(array_keys(Modules::ALL)), 0, 3),
-            ]), $session->user);
+            $data = $this->ai->generateJson('boss_summary', "Topik: {$session->topic}\n\nPercakapan:\n{$transcript}", FeatureSchemas::for('boss_summary'), $session->user);
             $data['is_ai'] = true;
         } catch (AiException) {
             $data = $this->fallback($session);

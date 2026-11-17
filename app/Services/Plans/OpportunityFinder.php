@@ -8,8 +8,8 @@ use App\Models\Opportunity;
 use App\Models\ResidentProfile;
 use App\Models\User;
 use App\Services\Ai\AiException;
+use App\Services\Ai\FeatureSchemas;
 use App\Services\Ai\GeminiClient;
-use App\Services\Ai\Schema;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
@@ -51,15 +51,7 @@ class OpportunityFinder
         $batch = (string) Str::uuid();
 
         try {
-            $data = $this->ai->generateJson('opportunity', $this->context->for($user)."\n\nPilihan slug bidang usaha: ".$fields->pluck('slug')->implode(', '), Schema::obj([
-                'items' => Schema::arr(Schema::obj([
-                    'title' => Schema::str(),
-                    'why' => Schema::str(),
-                    'capital_range' => Schema::str(),
-                    'risk' => Schema::str(),
-                    'ipi_field' => Schema::str($fields->pluck('slug')->all()),
-                ]), 3, 3),
-            ]), $user);
+            $data = $this->ai->generateJson('opportunity', $this->context->for($user)."\n\nPilihan slug bidang usaha: ".$fields->pluck('slug')->implode(', '), FeatureSchemas::for('opportunity', ['fields' => $fields->pluck('slug')->all()]), $user);
             $items = collect($data['items'])->take(3)->map(fn ($item) => $item + ['is_ai' => true]);
         } catch (AiException $e) {
             if ($e->isQuota()) {

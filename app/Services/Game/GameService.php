@@ -8,8 +8,8 @@ use App\Models\ShopDay;
 use App\Models\ShopGame;
 use App\Models\User;
 use App\Services\Ai\AiException;
+use App\Services\Ai\FeatureSchemas;
 use App\Services\Ai\GeminiClient;
-use App\Services\Ai\Schema;
 use App\Services\Readiness\ReadinessCalculator;
 use Illuminate\Support\Facades\DB;
 
@@ -177,11 +177,7 @@ class GameService
         $log = $days->map(fn ($d) => 'Hari '.$d->day.' ('.GameRules::THEMES[$d->day]['title'].'): promosi '.$d->decisions['promo'].', keputusan '.GameRules::SPECIALS[$d->day]['options'][$d->decisions['special']]['label'].', terjual '.$d->result['sold_total'].', tidak kebagian '.$d->result['lost_total'].', terbuang Rp'.$d->result['waste_value'].', laba Rp'.$d->result['profit'].', kepuasan '.$d->result['satisfaction_after'])->implode("\n");
 
         try {
-            $data = $this->ai->generateJson('shop_debrief', 'Jenis warung: '.GameRules::KINDS[$game->kind]['label']."\nNilai akhir: {$final['score']}\nCatatan tujuh hari:\n{$log}", Schema::obj([
-                'best' => Schema::str(),
-                'worst' => Schema::str(),
-                'lessons' => Schema::arr(Schema::str(), 3, 3),
-            ]), $game->user);
+            $data = $this->ai->generateJson('shop_debrief', 'Jenis warung: '.GameRules::KINDS[$game->kind]['label']."\nNilai akhir: {$final['score']}\nCatatan tujuh hari:\n{$log}", FeatureSchemas::for('shop_debrief'), $game->user);
 
             return $data + ['parts' => $final['parts'], 'is_ai' => true];
         } catch (AiException) {

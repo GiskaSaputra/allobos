@@ -8,8 +8,8 @@ use App\Models\Opportunity;
 use App\Models\PlanStep;
 use App\Models\User;
 use App\Services\Ai\AiException;
+use App\Services\Ai\FeatureSchemas;
 use App\Services\Ai\GeminiClient;
-use App\Services\Ai\Schema;
 use App\Services\Readiness\ReadinessCalculator;
 
 class PlanBuilder
@@ -30,15 +30,7 @@ class PlanBuilder
     public function build(User $user, Opportunity $opportunity): BusinessPlan
     {
         try {
-            $data = $this->ai->generateJson('business_plan', $this->context->for($user)."\n\nUsaha tujuan: {$opportunity->title}\nAlasan: {$opportunity->why}\nPerkiraan modal: {$opportunity->capital_range}", Schema::obj([
-                'product' => Schema::str(),
-                'customers' => Schema::str(),
-                'channels' => Schema::str(),
-                'rivals' => Schema::str(),
-                'capital' => Schema::arr(Schema::obj(['name' => Schema::str(), 'amount' => Schema::int()]), 1, 8),
-                'risks' => Schema::arr(Schema::str(), 1, 4),
-                'steps' => Schema::arr(Schema::obj(['week' => Schema::int(), 'title' => Schema::str()]), 4, 12),
-            ]), $user);
+            $data = $this->ai->generateJson('business_plan', $this->context->for($user)."\n\nUsaha tujuan: {$opportunity->title}\nAlasan: {$opportunity->why}\nPerkiraan modal: {$opportunity->capital_range}", FeatureSchemas::for('business_plan'), $user);
             $data['is_ai'] = true;
         } catch (AiException $e) {
             if ($e->isQuota()) {
