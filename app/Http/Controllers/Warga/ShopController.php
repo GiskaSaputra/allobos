@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Warga\ShopRequest;
 use App\Models\BusinessField;
 use App\Models\District;
+use App\Models\Shop;
 use App\Services\Shops\ShopService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -30,6 +31,9 @@ class ShopController extends Controller
                 'visits' => $shop->visits()->where('kind', 'kunjungan')->count(),
                 'orders' => $shop->visits()->where('kind', 'pesan')->count(),
             ] : null,
+            // Lapak warga lain sebagai inspirasi dan supaya warga bisa saling melihat.
+            'others' => Shop::query()->published()->where('user_id', '!=', $user->id)->with(['district', 'field'])
+                ->withCount(['products' => fn ($q) => $q->where('hidden', false)])->latest('published_at')->limit(6)->get(),
         ]);
     }
 

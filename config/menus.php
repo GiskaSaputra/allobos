@@ -53,6 +53,9 @@ return [
             ['Langkah', 'warga.steps.index'],
             ['Cek Produk', 'warga.checks.index'],
         ]],
-        ['Lapak', 'warga.shop.edit', 'phosphor-storefront', []],
+        ['Lapak', 'warga.shop.edit', 'phosphor-storefront', [
+            ['Lapak Saya', 'warga.shop.edit'],
+            ['Jelajahi Lapak Warga', 'shops.index'],
+        ]],
     ],
 ];

@@ -1,13 +1,14 @@
 <x-layouts.app title="Lapak Saya">
     <x-page-header title="Lapak Saya" :description="$shop ? 'Status: '.$shop->status->label().'.' : 'Buat katalog online gratis. Pembeli memesan langsung lewat WhatsApp-mu.'">
-        @if ($shop)
-            <x-slot:actions>
+        <x-slot:actions>
+            @if ($shop)
                 @if ($shop->status === App\Enums\ShopStatus::Terbit)
                     <button type="button" class="btn btn-secondary btn-sm" data-copy="{{ route('shops.show', $shop) }}"><x-phosphor-link class="h-4 w-4" aria-hidden="true" /><span data-copy-label>Salin Tautan Lapak</span></button>
                 @endif
                 <x-button variant="ghost" size="sm" :href="route('shops.show', $shop)" target="_blank">Lihat Lapak</x-button>
-            </x-slot:actions>
-        @endif
+            @endif
+            <x-button variant="ghost" size="sm" :href="route('shops.index')" icon="phosphor-storefront">Jelajahi Lapak Warga</x-button>
+        </x-slot:actions>
     </x-page-header>
 
     @if ($shop?->reason && in_array($shop->status, [App\Enums\ShopStatus::Draf, App\Enums\ShopStatus::Diturunkan], true))
@@ -103,4 +104,19 @@
             <x-button variant="primary" loading="Menyimpan">Simpan Lapak</x-button>
         </form>
     </section>
+
+    @if ($others->isNotEmpty())
+        <section class="mt-12">
+            <div class="mb-4 flex flex-wrap items-end justify-between gap-3">
+                <div>
+                    <h2 class="text-2xl">Lapak warga lain</h2>
+                    <p class="mt-1 text-sm text-fg-muted">Lihat cara warga lain menata lapak dan produknya. Pesan langsung lewat WhatsApp penjual.</p>
+                </div>
+                <x-button variant="secondary" size="sm" :href="route('shops.index')" icon-right="phosphor-arrow-right">Lihat Semua Lapak</x-button>
+            </div>
+            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                @foreach ($others as $other)<x-shop-card :shop="$other" />@endforeach
+            </div>
+        </section>
+    @endif
 </x-layouts.app>

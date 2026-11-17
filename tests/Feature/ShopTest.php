@@ -133,4 +133,14 @@ class ShopTest extends TestCase
 
         return $shop;
     }
+
+    public function test_warga_bisa_melihat_lapak_warga_lain_dari_lapak_saya(): void
+    {
+        $other = $this->onboardedWarga();
+        Shop::create(['user_id' => $other->id, 'name' => 'Madu Klanceng Playen', 'slug' => 'madu-klanceng-playen', 'description' => 'Madu.', 'whatsapp' => '6281234567890', 'status' => ShopStatus::Terbit, 'published_at' => now()]);
+        Shop::create(['user_id' => $this->onboardedWarga()->id, 'name' => 'Lapak Draf', 'slug' => 'lapak-draf', 'description' => 'Belum terbit.', 'whatsapp' => '6281234567890', 'status' => ShopStatus::Draf]);
+
+        $this->actingAs($this->onboardedWarga())->get(route('warga.shop.edit'))
+            ->assertOk()->assertSee('Lapak warga lain')->assertSee('Madu Klanceng Playen')->assertDontSee('Lapak Draf')->assertSee(route('shops.index'));
+    }
 }
