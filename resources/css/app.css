@@ -220,6 +220,20 @@
     @keyframes stack-shrink { to { transform: scale(0.94); opacity: 0.6; } }
 }
 
+/* Ruang Bos: bingkai menyala dan gelombang suara saat Bos Allo bicara atau mendengar. */
+.avatar-frame { transition: box-shadow 300ms var(--ease-out); }
+[data-state='speaking'] .avatar-frame { box-shadow: 0 0 0 4px rgb(var(--accent)), 0 24px 60px -20px rgb(var(--accent) / 0.6); }
+[data-state='listening'] .avatar-frame { box-shadow: 0 0 0 4px rgb(var(--info)); }
+.voice-wave { display: flex; height: 22px; align-items: center; gap: 3px; opacity: 0; transition: opacity 200ms; }
+.voice-wave i { display: block; width: 4px; height: 30%; border-radius: 999px; background: rgb(var(--accent)); }
+[data-state='speaking'] .voice-wave { opacity: 1; }
+[data-state='speaking'] .voice-wave i { animation: wave 900ms ease-in-out infinite; }
+.voice-wave i:nth-child(2) { animation-delay: 120ms; }
+.voice-wave i:nth-child(3) { animation-delay: 240ms; }
+.voice-wave i:nth-child(4) { animation-delay: 360ms; }
+.voice-wave i:nth-child(5) { animation-delay: 480ms; }
+@keyframes wave { 50% { height: 100%; } }
+
 .pulse-ring { animation: pulse-ring 1.4s var(--ease-out) infinite; }
 @keyframes pulse-ring {
     0% { box-shadow: 0 0 0 0 rgb(var(--accent) / 0.7); }
@@ -228,6 +242,6 @@
 
 @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
-    .marquee, .pulse-ring, .animate-pulse { animation: none; }
+    .marquee, .pulse-ring, .animate-pulse, .voice-wave i { animation: none !important; }
     * { transition-duration: 0.01ms !important; }
 }

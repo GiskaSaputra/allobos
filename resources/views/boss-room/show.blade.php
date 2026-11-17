@@ -2,6 +2,7 @@
     $config = [
         'startUrl' => route('boss-room.start', $session),
         'sendUrl' => route('boss-room.send', $session),
+        'voiceUrl' => route('boss-room.voice', $session),
         'status' => $session->status->value,
         'mode' => $session->mode,
         'turns' => $turns,
@@ -12,13 +13,23 @@
     ];
 @endphp
 <x-layouts.stage title="Ruang Bos: {{ $session->topic }}" :exit="route('warga.dashboard')" confirm-exit="Sesi masih berjalan. Keluar sekarang? Kamu bisa kembali ke sesi ini dari Riwayat, atau tekan Akhiri Sesi untuk mendapat catatan.">
-    <div data-boss-room data-config="{{ json_encode($config) }}" data-state="idle" class="grid h-full grid-rows-[auto_1fr] lg:grid-cols-[minmax(340px,40%)_1fr] lg:grid-rows-1">
-        <section class="flex flex-col gap-3 border-b border-line p-3 sm:p-5 lg:border-b-0 lg:border-r">
-            <div class="relative mx-auto w-full max-w-[520px]">
-                <figure class="overflow-hidden rounded-card border border-line bg-surface-alt shadow-card">
-                    <video data-avatar poster="{{ asset('gif/bos-allo/allo-transparan.webp') }}" width="400" height="226" muted loop playsinline preload="none" aria-label="Bos Allo" class="block aspect-video max-h-[30dvh] w-full object-cover lg:max-h-none"></video>
-                </figure>
-                <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-2">
+    <div data-boss-room data-config="{{ json_encode($config) }}" data-state="idle" class="grid h-full grid-rows-[auto_1fr] lg:grid-cols-[1.35fr_1fr] lg:grid-rows-1">
+        {{-- Bos Allo tampil besar seperti panggilan video, percakapan di sampingnya --}}
+        <section class="flex min-h-0 flex-col gap-3 border-b border-line p-3 sm:p-4 lg:border-b-0 lg:border-r">
+            <figure data-avatar-frame class="avatar-frame relative h-[40dvh] overflow-hidden rounded-card border border-line bg-ink shadow-card lg:h-auto lg:min-h-0 lg:flex-1">
+                <video data-avatar poster="{{ asset('gif/bos-allo/allo-transparan.webp') }}" width="400" height="226" muted loop playsinline preload="none" aria-label="Bos Allo" class="absolute inset-0 h-full w-full object-cover"></video>
+                {{-- Peramban menahan suara sebelum ada ketukan pertama, jadi sapaan diputar lewat tombol ini --}}
+                <button type="button" data-unlock class="btn btn-accent btn-lg absolute left-1/2 top-1/2 z-10 hidden -translate-x-1/2 -translate-y-1/2 shadow-float">
+                    <x-phosphor-speaker-high class="h-5 w-5" aria-hidden="true" />Dengarkan Bos Allo
+                </button>
+                <div class="absolute inset-x-0 top-0 flex items-start justify-between gap-2 bg-gradient-to-b from-ink/70 to-transparent p-3 sm:p-4">
+                    <div class="min-w-0">
+                        <p class="flex items-center gap-2 text-sm font-semibold text-ink-fg"><span class="h-2 w-2 rounded-full bg-success" aria-hidden="true"></span>Bos Allo</p>
+                        <p class="truncate text-xs text-ink-muted">{{ $session->topic }}</p>
+                    </div>
+                    <span data-wave class="voice-wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+                </div>
+                <div class="absolute inset-x-0 bottom-0 flex flex-wrap items-center justify-between gap-2 bg-gradient-to-t from-ink/75 to-transparent p-3 sm:p-4">
                     <p data-status class="rounded-full bg-ink/65 px-3 py-1.5 text-xs font-medium text-ink-fg backdrop-blur-md" role="status" aria-live="polite">Bos Allo siap mendengar</p>
                     <div class="flex gap-1.5">
                         <button type="button" data-replay class="btn btn-glass btn-sm" disabled>Ulangi Jawaban</button>
@@ -28,11 +39,7 @@
                         </button>
                     </div>
                 </div>
-            </div>
-            <div class="hidden space-y-2 lg:block">
-                <p class="label-caps">Topik</p>
-                <p class="font-display text-lg font-semibold text-fg">{{ $session->topic }}</p>
-            </div>
+            </figure>
             <p data-notice class="hidden rounded-[20px] bg-info/15 p-3 text-sm text-info" role="note"></p>
         </section>
 
@@ -61,7 +68,7 @@
                 <div class="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs text-fg-muted">
                     <div class="flex items-center gap-2">
                         <button type="button" data-clear class="btn btn-ghost btn-sm hidden">Ulangi Rekaman</button>
-                        <span data-hint>Tahan tombol mikrofon untuk bicara, lepas untuk berhenti.</span>
+                        <span data-hint>Tahan tombol mikrofon untuk bicara, lepas untuk langsung mengirim.</span>
                     </div>
                     <span data-left>@if ($turnsLeft !== null)Sisa {{ $turnsLeft }} giliran hari ini @endif</span>
                 </div>

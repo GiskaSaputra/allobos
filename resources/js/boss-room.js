@@ -137,8 +137,52 @@ function initBossRoom(root) {
         });
     }
 
+    // Suara utama dari server (Speechify, suara Henry). Bila belum diatur atau gagal, peramban membacakan sendiri.
+    let aiVoice = true;
+    let audio = null;
+
+    function stopVoice() {
+        if (audio) {
+            audio.pause();
+            audio = null;
+        }
+        if (canSpeak) speechSynthesis.cancel();
+    }
+
+    async function speak(text) {
+        if (muted) return false;
+        if (await speakAi()) return true;
+        return speakBrowser(text);
+    }
+
+    async function speakAi() {
+        if (!aiVoice) return false;
+        try {
+            const res = await fetch(cfg.voiceUrl, {
+                method: 'POST',
+                headers: { Accept: 'audio/mpeg', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content ?? '' },
+            });
+            if (res.status === 404) aiVoice = false;
+            if (!res.ok || muted) return false;
+            const url = URL.createObjectURL(await res.blob());
+            stopVoice();
+            const player = new Audio(url);
+            audio = player;
+            return await new Promise((resolve) => {
+                const done = (ok) => { URL.revokeObjectURL(url); if (audio === player) audio = null; resolve(ok); };
+                player.onplaying = () => setState('speaking');
+                player.onended = () => done(true);
+                player.onpause = () => done(true);
+                player.onerror = () => done(false);
+                player.play().catch(() => done(false));
+            });
+        } catch (e) {
+            return false;
+        }
+    }
+
     // Kalimat dibacakan bergiliran karena ujaran panjang sering terpotong di Chrome.
-    function speak(text) {
+    function speakBrowser(text) {
         return new Promise((resolve) => {
             if (muted || !canSpeak) {
                 resolve(false);
@@ -166,17 +210,29 @@ function initBossRoom(root) {
                 if (index === parts.length - 1) u.onend = () => finish(true);
                 speechSynthesis.speak(u);
             });
-            // Peramban yang menolak suara tanpa interaksi tidak pernah memicu onstart.
-            setTimeout(() => { if (!started) { speechSynthesis.cancel(); finish(false); } }, 1500);
+            // Peramban yang menolak suara tanpa interaksi tidak pernah memicu onstart. Suara Google daring butuh waktu memuat.
+            setTimeout(() => { if (!started) { speechSynthesis.cancel(); finish(false); } }, 5000);
         });
     }
+
+    // Tanpa interaksi pengguna, peramban menolak memutar suara. Tombol Dengarkan muncul sebagai gantinya.
+    const unlock = root.querySelector('[data-unlock]');
+    const mayPlay = () => !navigator.userActivation || navigator.userActivation.hasBeenActive;
+    unlock.addEventListener('click', async () => {
+        unlock.classList.add('hidden');
+        setState('speaking');
+        await speak(lastReply);
+        setState('idle');
+    });
 
     async function present(text, modules) {
         lastReply = text;
         els.replay.disabled = false;
         const { box, body } = bubble('bos', '');
         setState('speaking');
-        const spoken = speak(text);
+        const silent = !mayPlay() && !muted;
+        if (silent) unlock.classList.remove('hidden');
+        const spoken = silent ? Promise.resolve(false) : speak(text);
         await typeOut(body, text);
         addModules(box, modules);
         await spoken;
@@ -197,6 +253,7 @@ function initBossRoom(root) {
         if (!message || state === 'thinking') return;
         stopListening();
         hideError();
+        unlock.classList.add('hidden');
         if (!isRetry) {
             bubble('warga', message);
             els.input.value = '';
@@ -250,13 +307,19 @@ function initBossRoom(root) {
         r.onend = () => {
             listening = false;
             if (state === 'listening') setState('idle');
+            // Hasil akhir pengenalan tiba sebelum onend, jadi pesan dikirim di sini setelah tombol dilepas.
+            if (sendOnStop) {
+                sendOnStop = false;
+                const message = els.input.value.trim();
+                if (message) sendMessage(message);
+            }
         };
         return r;
     }
 
     function startListening() {
         if (mode !== 'suara' || listening || state === 'speaking' || state === 'thinking' || !recognition) return;
-        if (canSpeak) speechSynthesis.cancel();
+        stopVoice();
         finalText = els.input.value ? `${els.input.value} ` : '';
         try {
             recognition.start();
@@ -287,10 +350,18 @@ function initBossRoom(root) {
         els.talk.setPointerCapture?.(e.pointerId);
         startListening();
     });
-    ['pointerup', 'pointercancel'].forEach((type) => els.talk.addEventListener(type, () => stopListening()));
+    // Melepas tombol langsung mengirim pertanyaan. Gerakan yang dibatalkan peramban hanya berhenti merekam.
+    let sendOnStop = false;
+    function releaseTalk() {
+        if (!listening) return;
+        sendOnStop = true;
+        stopListening();
+    }
+    els.talk.addEventListener('pointerup', releaseTalk);
+    els.talk.addEventListener('pointercancel', () => stopListening());
     els.talk.addEventListener('click', (e) => {
         if (e.detail !== 0) return;
-        if (listening) stopListening(); else startListening();
+        if (listening) releaseTalk(); else startListening();
     });
 
     els.composer.addEventListener('submit', (e) => {
@@ -319,13 +390,13 @@ function initBossRoom(root) {
     els.mute.addEventListener('click', () => {
         muted = !muted;
         applyMute();
-        if (muted && canSpeak) {
-            speechSynthesis.cancel();
+        if (muted) {
+            stopVoice();
         }
     });
     els.replay.addEventListener('click', async () => {
         if (!lastReply || state === 'thinking') return;
-        if (muted || !canSpeak) {
+        if (muted) {
             notice('Suara sedang dibisukan atau tidak tersedia di peramban ini. Jawaban tetap ada sebagai teks.');
             return;
         }
@@ -335,7 +406,7 @@ function initBossRoom(root) {
     });
     root.closest('body').querySelector('[data-finish]')?.addEventListener('submit', () => {
         stopListening();
-        if (canSpeak) speechSynthesis.cancel();
+        stopVoice();
         window.confirmExitDisabled = true;
     });
 
@@ -352,7 +423,7 @@ function initBossRoom(root) {
         els.talk.classList.add('hidden');
         els.hint.textContent = 'Ketik pertanyaanmu lalu tekan Kirim.';
     }
-    if (!canSpeak) notice('Peramban ini tidak bisa membacakan jawaban. Semua jawaban tetap tampil sebagai teks.');
+    if (!canSpeak && !cfg.voiceUrl) notice('Peramban ini tidak bisa membacakan jawaban. Semua jawaban tetap tampil sebagai teks.');
 
     cfg.turns.forEach((turn) => {
         const { box } = bubble(turn.role, turn.role === 'bos' && turn.follow_up ? `${turn.text}\n\n${turn.follow_up}` : turn.text);
