@@ -35,7 +35,7 @@ class ChainClient
      */
     public function verify(string $hash): array
     {
-        return Cache::remember('chain.verify.'.$hash, 60, fn () => $this->run('verify', ['hash' => $hash], 30));
+        return Cache::remember('chain.verify.'.$hash, 60, fn () => $this->run('verify', ['hash' => $hash], 15));
     }
 
     public function forget(string $hash): void
@@ -46,7 +46,7 @@ class ChainClient
     /** @return array{chain_id:int,block:int,issuer:string,balance:string,contract_deployed:bool,issuer_allowed:bool} */
     public function status(): array
     {
-        return $this->run('status', [], 30);
+        return $this->run('status', [], 20);
     }
 
     public function recoverSigner(string $message, string $signature): string
@@ -72,11 +72,14 @@ class ChainClient
 
         $result = Process::path(config('chain.scripts'))
             ->timeout($timeout ?? config('chain.timeout'))
-            ->env([
+            // Di Windows, Node tanpa SystemRoot tidak bisa membuka koneksi jaringan saat dipanggil dari server web.
+            ->env(array_filter([
+                'PATH' => getenv('PATH') ?: ($_SERVER['PATH'] ?? null),
+                'SystemRoot' => getenv('SystemRoot') ?: ($_SERVER['SystemRoot'] ?? (PHP_OS_FAMILY === 'Windows' ? 'C:\\Windows' : null)),
                 'CHAIN_RPC_URL' => config('chain.rpc_url'),
                 'CERT_CONTRACT_ADDRESS' => config('chain.contract'),
                 'ISSUER_PRIVATE_KEY' => config('chain.issuer_key'),
-            ])
+            ]))
             ->input(json_encode($input))
             ->run([config('chain.node'), $script.'.mjs']);
 
