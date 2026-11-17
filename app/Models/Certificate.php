@@ -42,6 +42,16 @@ class Certificate extends Model
         return $this->belongsTo(ChainTransaction::class, 'revoke_transaction_id');
     }
 
+    /** Format ALB-TAHUN-6 karakter tanpa huruf atau angka yang mudah tertukar. */
+    public static function generateCode(): string
+    {
+        do {
+            $code = 'ALB-'.now()->year.'-'.collect(range(1, 6))->map(fn () => 'ACDEFHJKMNPQRTUVWXY34679'[random_int(0, 23)])->implode('');
+        } while (static::query()->where('code', $code)->exists());
+
+        return $code;
+    }
+
     public function displayName(): string
     {
         if ($this->show_full_name) {
