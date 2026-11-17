@@ -7,7 +7,6 @@ export default defineConfig({
             input: [
                 'resources/css/app.css',
                 'resources/js/app.js',
-                'resources/js/home-scroll.js',
                 'resources/js/boss-room.js',
                 'resources/js/warung-3d.js',
             ],

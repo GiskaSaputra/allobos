@@ -6,7 +6,7 @@
     @livewireStyles
     @stack('head')
 </head>
-<body class="bg-surface">
+<body class="bg-surface" data-motion>
     <a href="#isi" class="sr-only z-flash rounded-full bg-brand px-4 py-2 text-brand-fg focus:not-sr-only focus:fixed focus:left-4 focus:top-4">Lewati ke isi</a>
     <div id="nav-sentinel" class="absolute top-0 h-6 w-px" aria-hidden="true"></div>
 
@@ -82,7 +82,7 @@
                 @endforeach
             </nav>
         </div>
-        <div class="container-page border-t border-line py-6 text-xs text-fg-muted">alloBos dibuat untuk IT RUSH 2026. Bos Allo adalah karakter fiktif.</div>
+        <div class="container-page flex flex-wrap items-center justify-between gap-2 border-t border-line py-6 text-xs text-fg-muted"><span>&copy; {{ now()->year }} alloBos. Pendamping usaha warga Gunungkidul.</span><span>Bersama Institusi Pengusaha Indonesia</span></div>
     </footer>
 
     @include('partials.confirm-dialog')

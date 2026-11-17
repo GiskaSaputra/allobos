@@ -5,11 +5,13 @@ import { initCharts } from './charts';
 import { initSignaturePads } from './signature-pad';
 import { walletSign } from './wallet';
 import { initAvatars } from './avatar';
+import { initMotion } from './motion';
 
 window.Alpine = Alpine;
 
 initTheme();
 initAvatars();
+initMotion();
 initForms();
 initCharts();
 initSignaturePads();

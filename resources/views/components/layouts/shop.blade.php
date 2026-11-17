@@ -6,7 +6,7 @@
     @include('partials.head')
     @stack('head')
 </head>
-<body class="bg-surface">
+<body class="bg-surface" data-motion>
     <header class="border-b border-line">
         <div class="container-page flex h-14 items-center justify-between">
             <a href="{{ route('home') }}" aria-label="alloBos, ke beranda"><x-logo /></a>
