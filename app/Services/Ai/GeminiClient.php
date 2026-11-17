@@ -131,33 +131,44 @@ class GeminiClient
         return $sources ? $data + ['_sources' => $sources] : $data;
     }
 
-    /** Mencoba tiap kunci bergiliran. Kunci yang terkena batas dilewati. */
+    /**
+     * Mencoba tiap kunci bergiliran, lalu model cadangan.
+     * Kunci yang terkena batas (401, 403, 429, 503) dilewati. Model yang hilang atau galat (404, 500) diganti model berikutnya.
+     */
     private function send(string $model, array $payload): array
     {
         $keys = config('ai.keys');
+        $models = array_values(array_unique([$model, ...config('ai.fallback_models', [])]));
         $start = (int) Cache::get('ai.key_index', 0);
         $last = 'tidak ada kunci';
 
-        foreach (range(0, count($keys) - 1) as $offset) {
-            $index = ($start + $offset) % count($keys);
+        foreach ($models as $name) {
+            foreach (range(0, count($keys) - 1) as $offset) {
+                $index = ($start + $offset) % count($keys);
 
-            try {
-                $response = Http::timeout(config('ai.timeout'))
-                    ->withHeaders(['x-goog-api-key' => $keys[$index]])
-                    ->post(config('ai.endpoint')."/models/{$model}:generateContent", $payload);
-            } catch (ConnectionException $e) {
-                throw AiException::http('sambungan gagal');
-            }
+                try {
+                    $response = Http::timeout(config('ai.timeout'))
+                        ->withHeaders(['x-goog-api-key' => $keys[$index]])
+                        ->post(config('ai.endpoint')."/models/{$name}:generateContent", $payload);
+                } catch (ConnectionException) {
+                    $last = 'sambungan gagal';
 
-            if ($response->successful()) {
-                Cache::forever('ai.key_index', $index);
+                    continue;
+                }
 
-                return $response->json();
-            }
+                if ($response->successful()) {
+                    Cache::forever('ai.key_index', $index);
 
-            $last = 'kode '.$response->status();
-            if (! in_array($response->status(), [401, 403, 429], true)) {
-                break;
+                    return $response->json();
+                }
+
+                $last = 'kode '.$response->status();
+                if (in_array($response->status(), [404, 500], true)) {
+                    continue 2;
+                }
+                if (! in_array($response->status(), [401, 403, 429, 503], true)) {
+                    throw AiException::http($last);
+                }
             }
         }
 
