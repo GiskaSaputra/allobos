@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Auth;
 
-use App\Models\User;
+use App\Enums\RoleName;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -10,45 +10,41 @@ class AuthenticationTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_login_screen_can_be_rendered(): void
+    public function test_halaman_masuk_tampil(): void
     {
-        $response = $this->get('/login');
-
-        $response->assertStatus(200);
+        $this->get('/masuk')->assertOk()->assertSee('Masuk');
     }
 
-    public function test_users_can_authenticate_using_the_login_screen(): void
+    public function test_pengguna_masuk_dan_diarahkan_ke_dashboard_peran(): void
     {
-        $user = User::factory()->create();
+        $user = $this->userWithRole(RoleName::Pengelola);
 
-        $response = $this->post('/login', [
-            'email' => $user->email,
-            'password' => 'password',
-        ]);
+        $this->post('/masuk', ['email' => $user->email, 'password' => 'password'])
+            ->assertRedirect(route('dashboard'));
 
         $this->assertAuthenticated();
-        $response->assertRedirect(route('dashboard', absolute: false));
+        $this->get(route('dashboard'))->assertRedirect(route('pengelola.dashboard'));
     }
 
-    public function test_users_can_not_authenticate_with_invalid_password(): void
+    public function test_sandi_salah_ditolak(): void
     {
-        $user = User::factory()->create();
+        $user = $this->userWithRole();
 
-        $this->post('/login', [
-            'email' => $user->email,
-            'password' => 'wrong-password',
-        ]);
-
+        $this->post('/masuk', ['email' => $user->email, 'password' => 'salah'])->assertSessionHasErrors('email');
         $this->assertGuest();
     }
 
-    public function test_users_can_logout(): void
+    public function test_pengguna_dapat_keluar(): void
     {
-        $user = User::factory()->create();
-
-        $response = $this->actingAs($user)->post('/logout');
-
+        $this->actingAs($this->userWithRole())->post('/keluar')->assertRedirect('/');
         $this->assertGuest();
-        $response->assertRedirect('/');
+    }
+
+    public function test_akun_nonaktif_dikeluarkan(): void
+    {
+        $user = $this->userWithRole(RoleName::Bos, ['is_active' => false]);
+
+        $this->actingAs($user)->get(route('bos.dashboard'))->assertRedirect(route('login'));
+        $this->assertGuest();
     }
 }

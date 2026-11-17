@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -9,23 +10,35 @@ class RegistrationTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_registration_screen_can_be_rendered(): void
+    public function test_halaman_daftar_tampil(): void
     {
-        $response = $this->get('/register');
-
-        $response->assertStatus(200);
+        $this->get('/daftar')->assertOk()->assertSee('Buat Akun');
     }
 
-    public function test_new_users_can_register(): void
+    public function test_warga_baru_mendaftar_dan_diarahkan_ke_onboarding(): void
     {
-        $response = $this->post('/register', [
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-            'password' => 'password',
-            'password_confirmation' => 'password',
-        ]);
+        $this->post('/daftar', [
+            'name' => 'Sri Lestari',
+            'whatsapp' => '081234567890',
+            'email' => 'sri@contoh.id',
+            'password' => 'rahasia-panjang',
+            'password_confirmation' => 'rahasia-panjang',
+            'consent' => '1',
+        ])->assertRedirect(route('warga.onboarding.show', ['step' => 1]));
 
-        $this->assertAuthenticated();
-        $response->assertRedirect(route('dashboard', absolute: false));
+        $user = User::where('email', 'sri@contoh.id')->firstOrFail();
+        $this->assertTrue($user->hasRole('warga'));
+        $this->assertSame('6281234567890', $user->whatsapp);
+        $this->assertAuthenticatedAs($user);
+    }
+
+    public function test_tanpa_persetujuan_ditolak(): void
+    {
+        $this->post('/daftar', [
+            'name' => 'Dimas', 'whatsapp' => '081234567890', 'email' => 'dimas@contoh.id',
+            'password' => 'rahasia-panjang', 'password_confirmation' => 'rahasia-panjang',
+        ])->assertSessionHasErrors('consent');
+
+        $this->assertGuest();
     }
 }
