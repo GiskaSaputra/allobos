@@ -1,5 +1,6 @@
 <x-layouts.public :title="$podcast->title" :description="Str::limit($podcast->summary, 150)">
     <section class="container-page pt-6">
+        <x-back-link :href="route('podcasts.index')" class="mb-5">Semua Siniar</x-back-link>
         <div class="grid gap-8 lg:grid-cols-[1fr_340px]">
             <div class="space-y-6">
                 <div class="overflow-hidden rounded-card border border-line bg-ink" x-data="{ play: false }">

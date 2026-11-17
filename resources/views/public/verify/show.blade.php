@@ -1,5 +1,6 @@
 <x-layouts.shop :title="'Verifikasi '.$code">
     <div class="mx-auto max-w-3xl space-y-6 py-4">
+        <x-back-link :href="route('certificates.verify.form')">Periksa Sertifikat Lain</x-back-link>
         <x-verify-status :status="$status" />
 
         @if ($chain_error)<p class="rounded-[20px] bg-warning/15 p-4 text-sm text-fg">{{ $chain_error }}</p>@endif

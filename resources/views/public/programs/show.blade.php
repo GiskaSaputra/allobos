@@ -1,5 +1,6 @@
 <x-layouts.public :title="$program->title" :description="Str::limit($program->description, 150)">
     <section class="container-page pt-6">
+        <x-back-link :href="route('programs.index')" class="mb-5">Semua Kelas</x-back-link>
         <div class="grid gap-8 lg:grid-cols-[1fr_360px]">
             <div class="space-y-6">
                 <div class="flex flex-wrap items-center gap-2">
