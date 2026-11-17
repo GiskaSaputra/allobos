@@ -16,7 +16,8 @@ Fase mengikuti PRD bagian 10. Bila sesi terputus, lanjutkan dari fase pertama ya
 | 6 | Siniar Bos | Selesai |
 | 7 | Warung Bos 3D | Selesai |
 | 8 | Dashboard Pengelola dan Admin, CMS, wawasan | Selesai |
-| 9 | Beranda, data demo, uji manual, deploy, README, video | Selesai kecuali video demo dan deploy ke VPS |
+| 9 | Beranda, data demo, uji manual, deploy, README, video | Selesai kecuali video demo |
+| 10 | Aset baru, halaman masuk, Gemini bergiliran, Resend, Warung Bos 3D orang pertama, deploy VPS | Selesai |
 
 ## Keputusan
 
@@ -113,10 +114,29 @@ Fase mengikuti PRD bagian 10. Bila sesi terputus, lanjutkan dari fase pertama ya
 - GitHub Actions: `ci.yml` (tes Laravel, Pint, build aset, tes Hardhat) dan `deploy.yml` (SSH biasa dengan `known_hosts` terkunci, tanpa aksi pihak ketiga).
 - Daftar periksa rilis Design System 12: tidak ada nilai hex, em dash, `console.log`, `dd()` di kode tampilan dan aplikasi. Semua halaman publik dan halaman berlogin keempat peran diperiksa di lebar 360 px tanpa gulir mendatar.- `docker compose up -d --build` dari klon bersih dengan `.env` dari contoh lulus di Docker 29.7.2. Percobaan pertama gagal karena `endroid/qr-code` 6.2 butuh PHP 8.5, percobaan kedua gagal karena galat jaringan npm saat tiga layanan membangun image yang sama bersamaan. Keduanya sudah diperbaiki.
 
+### Fase 10: perbaikan dan pengembangan
+
+- Aset baru dari pemilik proyek: logo dipangkas dan dibuat varian terang untuk tema gelap, favicon dan ikon dari bagian ikon logo, pose Bos Allo diubah ke WebP lebar 720 (sekitar 30 KB per pose). GIF diam dan bicara (21 MB) diubah ke MP4 H.264 (240 KB) dengan ffmpeg dan diputar lewat `<video muted loop playsinline>`. Saat gerak dikurangi, video tidak diputar dan poster diam yang tampil. GIF asli tetap di repositori sebagai sumber.
+- Beranda: hero memakai potongan pose Bos Allo setinggi panel dengan gelembung kaca dan pil Suara atau teks, mengikuti panel hijau zaitun dari referensi. Kartu Kamu pengusaha dan ajakan akhir memakai pose lain.
+- Halaman masuk, daftar, lupa sandi, atur ulang, konfirmasi, dan undangan mengikuti contoh Jogja Music School: panel gambar penuh di kiri dengan gradasi merek dan judul, kartu di kanan dengan logo, ikon di kolom, tombol tampilkan kata sandi, dan tombol utama berpanah. Di ponsel panel gambar menjadi pita pendek di atas kartu.
+- Gemini: lima kunci dipakai bergiliran. Kunci yang mendapat 401, 403, 429, atau 503 dilewati. Model bawaan `gemini-3.1-flash-lite` karena `gemini-2.5-flash` sudah tidak tersedia untuk kunci baru (404). Bila model hilang atau galat (404, 500), model cadangan `gemini-flash-lite-latest` lalu `gemini-flash-latest` dicoba. `phpunit.xml` mengosongkan `GEMINI_API_KEY` supaya tes tidak pernah memanggil API sungguhan.
+- Email lewat Resend SMTP (`smtp.resend.com:465`, pengirim `noreply@zite.my.id`). Verifikasi email dinyalakan di server.
+- Warung Bos 3D dibangun ulang menjadi orang pertama:
+  - Server: `GameEngine::run` dipecah menjadi `plan` (efek tertunda dan permintaan) dan `settle` (tutup buku dari jumlah yang benar-benar terjual). `run` tetap ada untuk Mode Ringan dan hasilnya sama persis dengan sebelumnya. `customers` membagi permintaan ke paling banyak delapan pembeli secara deterministik.
+  - Keadaan baru: `display` (isi rak pajang, gudang adalah stok dikurangi rak) dan `day_plan` (rencana hari, pembeli, jumlah terlayani, uang masuk). Tahap baru `melayani` di antara `buka` dan `laporan`.
+  - Rute baru: `rak` (pindah satu peti ke rak), `buka-warung`, `layani`, `pergi`, `tutup`. Semuanya membawa `rid`. Perubahan dijalankan di bawah kunci baris dan hasil per `rid` disimpan, jadi kiriman ulang tidak diterapkan dua kali. Belanja boleh diulang sebelum warung dibuka.
+  - Klien: `resources/js/warung/` berisi `input.js` (pusat aksi untuk papan ketik, tetikus, gamepad, sentuh), `player.js` (pengendali orang pertama dengan tabrakan kotak), `world.js` (warung dan tujuh stasiun), `interact.js` (sinar tengah layar 3 m dengan oklusi, sorotan, soket tangan dengan `attach()`), `customers.js` (mesin keadaan pembeli), dan `game.js` (putaran bingkai). `warung-3d.js` memegang panel, HUD, dan kiriman ke server.
+  - Pustaka fisika tidak dipakai. Warung hanya berisi dinding dan perabot persegi, jadi tabrakan kotak sejajar sumbu cukup dan unduhan tetap kecil.
+  - Pointer lock dipakai untuk tetikus. Gamepad memakai tata letak standar, zona mati 0,18, deteksi tekan sekali, dan label tombol Xbox atau PlayStation dari id perangkat. Di panel, arah gamepad memindah fokus, A menekan, B menutup.
+  - Posisi dan arah pandang pemain disimpan di `localStorage`. Keadaan permainan tetap di server. Memuat ulang di tengah hari memunculkan lagi pembeli yang belum dilayani.
+- Kepala halaman panggung memakai ikon logo saja di ponsel supaya tombol tidak bertabrakan.
+- Deploy ke VPS di `https://allobos.zite.my.id` (lihat bagian Deploy di README). Repositori privat, jadi kode dikirim dengan `git archive` lewat SSH, bukan `git clone` di server.
+
 ## Belum selesai
 
 - Video demo 3 sampai 5 menit belum dibuat (perlu direkam pemilik proyek).
-- Deploy ke VPS belum dijalankan karena data VPS dan secret GitHub belum tersedia.
+- Alur `deploy.yml` (GitHub Actions) belum dipakai karena secret `VPS_*` belum diisi dan server tidak bisa `git pull` dari repositori privat. Deploy saat ini manual (README).
+- Kontrol gamepad dan sentuh Warung Bos 3D diuji lewat kode dan peristiwa tiruan, belum dengan gamepad dan ponsel sungguhan.
 - Kontrak belum di-deploy ke Polygon Amoy karena `ISSUER_PRIVATE_KEY` dan saldo POL uji belum tersedia. Setelah tersedia: `cd web3 && npm run deploy:amoy`, isi `CERT_CONTRACT_ADDRESS`, lalu di pengelola tekan Catat Ulang ke Blockchain untuk kelas demo.
 - Semua fitur AI baru teruji dengan jawaban Gemini dipalsukan dan jalur cadangan. Perlu uji ulang dengan `GEMINI_API_KEY` sungguhan, terutama Ruang Bos mode suara, Cek Produk dengan foto nyata, dan ringkasan siniar dari video.
 - Taksonomi 13 bidang usaha dan 5 bidang pendukung, nama program, dan pembicara IPI perlu dicocokkan dengan data resmi IPI. Saat ini semua kelas dan pembicara berlabel Demo.

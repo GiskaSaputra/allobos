@@ -4,6 +4,8 @@ Pendamping usaha berbasis AI untuk warga Gunungkidul, dari bertanya sampai membu
 
 IT RUSH 2026, Web Development, Subtema 3 Ekonomi dan Pemberdayaan Masyarakat. Mitra pelaksana: Institusi Pengusaha Indonesia (IPI), Gunungkidul.
 
+Versi berjalan: https://allobos.zite.my.id
+
 ![Beranda alloBos](docs/tangkapan/beranda.jpg)
 
 ## Ringkasan
@@ -34,7 +36,7 @@ Status: **Jalan** = berfungsi dan teruji. **Jalan, cadangan** = teruji dengan ja
 | Kelas Bos | Kelas publik, pendaftaran, kuota, kode kehadiran, progres, XLSX peserta | Jalan |
 | Sertifikat Terverifikasi | Spesimen tanda tangan, tanda tangan dengan kata sandi, PDF ber-QR, pencatatan ke kontrak, verifikasi publik, pencabutan, catat ulang, tanda tangan dompet opsional | Jalan di jaringan Hardhat lokal. Polygon Amoy belum di-deploy |
 | Siniar Bos | Episode dari URL YouTube, ringkasan AI, pemutar hemat data, tanda dengar dan catatan | Jalan, cadangan |
-| Warung Bos 3D | Tujuh babak bercerita, perhitungan di server, kejadian AI dengan bank 34 kejadian, adegan Three.js, Mode Ringan, rapor | Jalan, cadangan |
+| Warung Bos 3D | Tujuh babak bercerita, orang pertama (papan ketik dan tetikus, gamepad, sentuh), tujuh stasiun di dalam warung, pembeli antre di kasir, perhitungan di server, kejadian AI dengan bank 34 kejadian, Mode Ringan, rapor | Jalan, cadangan |
 | Cek Produk | Unggah foto, kompres WEBP, AI penglihatan, Sinyal Pasar, deskripsi siap pakai | Jalan, cadangan. AI teruji dengan Gemini dipalsukan |
 | Peluang dan Rencana | Tiga peluang, rencana satu halaman yang bisa diubah, PDF, Kalkulator HPP dan titik impas, Langkah 30 Hari | Jalan, cadangan |
 | Lapak | Katalog, produk, stok, moderasi, halaman publik, pesan WhatsApp, laporan, hitungan kunjungan | Jalan |
@@ -76,6 +78,19 @@ docker compose up -d --build
 Aplikasi terbuka di `http://localhost:8080` (ubah lewat `APP_PORT`). Empat layanan berjalan: `app` (Apache dan PHP 8.4, menjalankan migrasi dan data acuan otomatis), `mysql` (8.4), `queue` (antrean AI, PDF, dan pencatatan blockchain), `scheduler` (pengingat, kedaluwarsa sesi, pembersihan transkrip). Bila `SEED_DEMO=true`, data demo diisi otomatis saat basis data masih kosong.
 
 Deploy ke VPS memakai `.github/workflows/deploy.yml`: setelah tes di cabang `main` lulus, GitHub Actions masuk lewat SSH lalu menjalankan `git pull` dan `docker compose up -d --build`. Isi secret `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY`, `VPS_KNOWN_HOSTS` (hasil `ssh-keyscan` server), `VPS_PATH`, dan bila perlu `VPS_PORT`.
+
+## Deploy ke VPS
+
+Server memakai Docker dan nginx yang sudah ada. Aplikasi hanya mendengar di `127.0.0.1:3040`, nginx menangani HTTPS.
+
+```bash
+# dari komputer pengembang (repositori privat, jadi server tidak menarik dari GitHub)
+git archive --format=tar HEAD | ssh server "mkdir -p ~/allobos && tar -x -C ~/allobos"
+# sekali saja: salin .env produksi (APP_URL https, APP_BIND=127.0.0.1, APP_PORT=3040, kunci Gemini, Resend)
+ssh server "cd ~/allobos && docker compose up -d --build"
+```
+
+Situs nginx `allobos` meneruskan `allobos.zite.my.id` ke port 3040 dengan sertifikat Let's Encrypt (certbot webroot). Jalankan `sudo nginx -t` sebelum `systemctl reload nginx`.
 
 ## Menjalankan lokal tanpa Docker
 
@@ -119,13 +134,14 @@ Langkah uji manual per peran dan hasilnya ada di `docs/UJI_MANUAL.md`. Catatan k
 
 | Nama | Isi |
 | --- | --- |
-| `APP_KEY`, `APP_URL`, `APP_PORT` | Kunci aplikasi, alamat publik, port Docker |
+| `APP_KEY`, `APP_URL`, `APP_PORT`, `APP_BIND` | Kunci aplikasi, alamat publik, port Docker, alamat ikat port (`127.0.0.1` di belakang nginx) |
 | `APP_DEMO`, `SEED_DEMO`, `DEMO_PASSWORD` | Lencana Demo, isi data demo otomatis, sandi akun demo |
 | `REQUIRE_EMAIL_VERIFICATION` | `false` bila server belum punya SMTP |
 | `DB_*`, `DB_ROOT_PASSWORD` | Basis data MySQL |
-| `MAIL_*` | Pengiriman email notifikasi |
+| `MAIL_*` | Pengiriman email notifikasi. Contoh Resend ada di `.env.example` |
 | `GEMINI_API_KEY` | Satu atau beberapa kunci dipisah koma, dipakai bergiliran |
-| `GEMINI_MODEL` | Model bawaan semua fitur AI, bisa ditimpa per fitur di halaman Admin |
+| `GEMINI_MODEL` | Model bawaan semua fitur AI (`gemini-3.1-flash-lite`), bisa ditimpa per fitur di halaman Admin |
+| `GEMINI_FALLBACK_MODELS` | Model cadangan dipisah koma, dicoba bila model utama hilang atau galat |
 | `BOSS_SESSIONS_PER_DAY` | Batas sesi Ruang Bos per warga per hari |
 | `CHAIN_NAME`, `CHAIN_ID`, `CHAIN_TESTNET` | Nama dan id jaringan, tanda jaringan uji |
 | `CHAIN_RPC_URL`, `CHAIN_EXPLORER_URL` | RPC dan penjelajah blok |
@@ -169,7 +185,7 @@ Laravel 12 monolit dengan Blade, Livewire 3, Alpine, Tailwind 3, Vite. Controlle
 | Aset | Sumber |
 | --- | --- |
 | GIF Bos Allo (diam dan bicara) | Disediakan pemilik proyek. `allo-transparan.webp` dibuat dari bingkai pertama GIF diam |
-| Adegan Warung Bos 3D | Dibangun dari geometri di kode (`resources/js/warung-scene.js`), tanpa model atau tekstur luar |
+| Adegan Warung Bos 3D | Dibangun dari geometri di kode (`resources/js/warung/`), tanpa model atau tekstur luar |
 | Gambar produk dan sampul lapak demo | Dibuat otomatis dengan GD oleh `DemoSeeder` |
 | Video episode siniar demo | Video publik YouTube dari kanal kasisolusi dan Pojok Umkm, diputar lewat pemutar YouTube. Hak cipta milik pemilik kanal. Ringkasan disusun dari keterangan video dan berlabel Demo |
 | Arah visual | Referensi Dribbble "Creative agency web ui design" oleh Roohi Koohi, diamati untuk palet, bentuk, dan gerak. Tidak ada gambar atau logo referensi yang dipakai |
