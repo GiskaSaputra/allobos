@@ -109,6 +109,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('sertifikat', [Warga\CertificateController::class, 'index'])->name('certificates.index');
             Route::get('sertifikat/{certificate}', [Warga\CertificateController::class, 'show'])->name('certificates.show');
             Route::get('sertifikat/{certificate}/pdf', [Warga\CertificateController::class, 'pdf'])->name('certificates.pdf');
+            Route::get('sertifikat/{certificate}/pratinjau', [Warga\CertificateController::class, 'preview'])->name('certificates.preview');
             Route::patch('sertifikat/{certificate}', [Warga\CertificateController::class, 'update'])->name('certificates.update');
 
             Route::get('temu-bos', [Warga\MentoringController::class, 'index'])->name('mentoring.index');

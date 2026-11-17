@@ -28,6 +28,16 @@
                 </div>
                 @unless ($status->downloadable())<p class="mt-2 text-sm text-fg-muted">PDF bisa diunduh setelah semua penanda tangan menandatangani.</p>@endunless
             </x-card>
+            <x-card>
+                <div class="mb-3 flex items-center justify-between gap-3">
+                    <h2 class="text-xl">Pratinjau sertifikat</h2>
+                    @unless ($status->downloadable())<span class="badge badge-warning">Belum ditandatangani</span>@endunless
+                </div>
+                {{-- Lembar A4 lanskap (1123 x 794 px) diskalakan mengikuti lebar kartu. --}}
+                <div data-scale-frame class="relative w-full overflow-hidden rounded-[16px] border border-line bg-surface-alt" style="aspect-ratio: 297 / 210">
+                    <iframe src="{{ route('warga.certificates.preview', $certificate) }}" title="Pratinjau sertifikat {{ $certificate->code }}" loading="lazy" class="absolute left-0 top-0 h-[794px] w-[1123px] origin-top-left border-0" tabindex="-1"></iframe>
+                </div>
+            </x-card>
             @if ($certificate->transaction)<x-chain-proof :certificate="$certificate" :tx-url="$explorer" />@endif
         </div>
 

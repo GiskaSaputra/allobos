@@ -151,4 +151,14 @@ class CertificateTest extends TestCase
 
         return [$program->load('signers.user'), $certificate, $warga];
     }
+
+    public function test_pratinjau_sertifikat_hanya_untuk_pemiliknya(): void
+    {
+        [$program, $certificate, $warga] = $this->closedProgram();
+
+        $this->actingAs($warga)->get(route('warga.certificates.show', $certificate))->assertOk()->assertSee(route('warga.certificates.preview', $certificate));
+        $this->get(route('warga.certificates.preview', $certificate))->assertOk()
+            ->assertSee('SERTIFIKAT')->assertSee($certificate->recipient_name)->assertSee($certificate->code)->assertSee('image/logo-allobos-480.png');
+        $this->actingAs($this->onboardedWarga())->get(route('warga.certificates.preview', $certificate))->assertForbidden();
+    }
 }

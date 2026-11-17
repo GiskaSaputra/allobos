@@ -6,12 +6,14 @@ import { initSignaturePads } from './signature-pad';
 import { walletSign } from './wallet';
 import { initAvatars } from './avatar';
 import { initMotion } from './motion';
+import { initScaleFrames } from './scale-frame';
 
 window.Alpine = Alpine;
 
 initTheme();
 initAvatars();
 initMotion();
+initScaleFrames();
 initForms();
 initCharts();
 initSignaturePads();

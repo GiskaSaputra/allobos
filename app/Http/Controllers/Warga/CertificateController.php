@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Warga;
 use App\Enums\CertificateStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Certificate;
+use App\Services\Certificates\CertificateBuilder;
 use App\Services\Chain\ChainClient;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -32,6 +33,14 @@ class CertificateController extends Controller
             'hasShop' => $request->user()->shop()->exists(),
             'explorer' => $chain->explorerTx($certificate->transaction?->tx_hash),
         ]);
+    }
+
+    /** Pratinjau sertifikat di halaman, sama dengan PDF. Tanda tangan tampil setelah sertifikat sah. */
+    public function preview(Certificate $certificate, CertificateBuilder $builder): View
+    {
+        Gate::authorize('view', $certificate);
+
+        return view('pdf.certificate', $builder->viewData($certificate, preview: true, withSignatures: $certificate->status->downloadable()));
     }
 
     public function pdf(Certificate $certificate): StreamedResponse|RedirectResponse

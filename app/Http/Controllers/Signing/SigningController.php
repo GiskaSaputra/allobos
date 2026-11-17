@@ -8,6 +8,7 @@ use App\Models\Certificate;
 use App\Models\Program;
 use App\Models\ProgramSigner;
 use App\Models\SignatureSpecimen;
+use App\Services\Certificates\CertificateBuilder;
 use App\Services\Certificates\SigningService;
 use App\Services\Chain\ChainClient;
 use Illuminate\Http\JsonResponse;
@@ -90,13 +91,7 @@ class SigningController extends Controller
     {
         abort_unless($this->signing->signerFor($program, $request->user()) && $certificate->program_id === $program->id, 403);
 
-        return view('pdf.certificate', [
-            'certificate' => $certificate,
-            'program' => $program->load(['signers.user', 'sessions', 'field']),
-            'signers' => $program->signers->map(fn ($s) => ['name' => $s->user->name, 'title' => $s->title, 'image' => null]),
-            'qr' => null,
-            'preview' => true,
-        ]);
+        return view('pdf.certificate', app(CertificateBuilder::class)->viewData($certificate, preview: true, withSignatures: false));
     }
 
     public function wallet(Request $request, Program $program, ChainClient $chain): JsonResponse
