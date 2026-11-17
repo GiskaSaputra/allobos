@@ -33,6 +33,7 @@
                 @endforeach
             </nav>
             <div class="flex items-center gap-1">
+                <a href="{{ route('home') }}" class="btn btn-ghost btn-sm px-3" aria-label="Ke beranda alloBos"><x-phosphor-house class="h-5 w-5" aria-hidden="true" /><span class="hidden sm:inline">Ke Beranda</span></a>
                 <x-notification-bell />
                 <x-account-menu />
             </div>

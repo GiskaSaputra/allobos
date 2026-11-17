@@ -31,6 +31,7 @@
             <button type="button" class="btn btn-ghost btn-icon lg:hidden" @click="drawer = true" aria-label="Buka menu"><x-phosphor-list class="h-6 w-6" aria-hidden="true" /></button>
             <p class="hidden truncate text-sm text-fg-muted sm:block">{{ $title }}</p>
             <div class="ml-auto flex items-center gap-1">
+                <a href="{{ route('home') }}" class="btn btn-ghost btn-sm px-3" aria-label="Ke beranda alloBos"><x-phosphor-house class="h-5 w-5" aria-hidden="true" /><span class="hidden sm:inline">Ke Beranda</span></a>
                 <x-notification-bell />
                 <x-account-menu />
             </div>
