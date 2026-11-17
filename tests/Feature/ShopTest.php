@@ -147,4 +147,25 @@ class ShopTest extends TestCase
         $this->actingAs($this->onboardedWarga())->get(route('warga.shop.edit'))
             ->assertOk()->assertSee('Lapak warga lain')->assertSee('Madu Klanceng Playen')->assertDontSee('Lapak Draf')->assertSee(route('shops.index'));
     }
+
+    public function test_cek_produk_yang_tertahan_dihentikan_lalu_bisa_diperiksa_ulang(): void
+    {
+        Storage::fake('public');
+        $user = $this->onboardedWarga();
+        Storage::disk('public')->put('cek-produk/a.webp', 'foto');
+        $check = ProductCheck::create(['user_id' => $user->id, 'photo_path' => 'cek-produk/a.webp', 'status' => CheckStatus::Diperiksa]);
+        $check->forceFill(['updated_at' => now()->subMinutes(10)])->saveQuietly();
+
+        $this->actingAs($user)->get(route('warga.checks.show', $check))->assertOk()->assertSee('Periksa Ulang');
+        $this->assertSame(CheckStatus::Gagal, $check->fresh()->status);
+
+        $this->fakeGemini([
+            'name' => 'Keripik', 'category' => 'Makanan ringan', 'photo_score' => 3, 'pack_score' => 3,
+            'good' => ['Rapi'], 'fixes' => ['Latar polos'], 'price_min' => 8000, 'price_max' => 10000,
+            'price_reason' => 'Pasar', 'signal' => 'stabil', 'reasons' => ['Stabil'], 'description' => 'Keripik renyah.',
+        ]);
+        $this->post(route('warga.checks.retry', $check))->assertRedirect(route('warga.checks.show', $check));
+        $this->assertSame(CheckStatus::Selesai, $check->fresh()->status);
+        $this->actingAs($this->onboardedWarga())->post(route('warga.checks.retry', $check))->assertForbidden();
+    }
 }

@@ -35,7 +35,10 @@
                 <x-card class="border-danger/40">
                     <h2 class="text-xl">Foto belum bisa diperiksa</h2>
                     <p class="mt-2 text-fg-body">{{ $check->error }}</p>
-                    <x-button variant="primary" :href="route('warga.checks.index')" class="mt-4">Unggah Foto Lagi</x-button>
+                    <div class="mt-4 flex flex-wrap gap-2">
+                        <form method="POST" action="{{ route('warga.checks.retry', $check) }}">@csrf<x-button variant="primary" loading="Memeriksa ulang" icon="phosphor-arrow-clockwise">Periksa Ulang</x-button></form>
+                        <x-button variant="secondary" :href="route('warga.checks.index')">Unggah Foto Lain</x-button>
+                    </div>
                 </x-card>
             @else
                 <div class="grid gap-4 sm:grid-cols-2">

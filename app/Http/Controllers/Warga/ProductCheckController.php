@@ -45,11 +45,33 @@ class ProductCheckController extends Controller
     {
         Gate::authorize('view', $check);
 
+        // Pemeriksaan yang tertahan (antrean mati atau jaringan putus) dihentikan supaya halaman tidak memuat ulang selamanya.
+        if ($check->status === CheckStatus::Diperiksa && $check->updated_at->lt(now()->subMinutes(3))) {
+            $check->update(['status' => CheckStatus::Gagal, 'error' => 'Pemeriksaan terlalu lama dan dihentikan. Fotomu tetap tersimpan, tekan Periksa Ulang.']);
+        }
+
         return view('warga.checks.show', [
             'check' => $check,
             'reference' => $check->status === CheckStatus::Selesai ? $checker->planReference($check) : null,
             'hasShop' => $request->user()->shop()->exists(),
         ]);
+    }
+
+    /** Memeriksa ulang foto yang sama tanpa unggah lagi. Jatah hanya terhitung bila pemeriksaan berhasil. */
+    public function retry(Request $request, ProductCheck $check, GeminiClient $ai): RedirectResponse
+    {
+        Gate::authorize('update', $check);
+        if ($check->status !== CheckStatus::Gagal) {
+            return redirect()->route('warga.checks.show', $check);
+        }
+        if ($ai->quotaLeft('product_check', $request->user()) === 0) {
+            return back()->with('error', 'Jatah Cek Produk hari ini sudah habis. Bisa dipakai lagi besok pukul 00.00 WIB.');
+        }
+
+        $check->update(['status' => CheckStatus::Diperiksa, 'error' => null]);
+        CheckProduct::dispatch($check);
+
+        return redirect()->route('warga.checks.show', $check);
     }
 
     public function update(Request $request, ProductCheck $check): RedirectResponse

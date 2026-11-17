@@ -82,6 +82,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('cek-produk', [Warga\ProductCheckController::class, 'store'])->middleware('throttle:ai')->name('checks.store');
             Route::get('cek-produk/{check}', [Warga\ProductCheckController::class, 'show'])->name('checks.show');
             Route::patch('cek-produk/{check}', [Warga\ProductCheckController::class, 'update'])->name('checks.update');
+            Route::post('cek-produk/{check}/ulang', [Warga\ProductCheckController::class, 'retry'])->middleware('throttle:ai')->name('checks.retry');
 
             Route::get('lapak-saya', [Warga\ShopController::class, 'edit'])->name('shop.edit');
             Route::post('lapak-saya', [Warga\ShopController::class, 'store'])->name('shop.store');
