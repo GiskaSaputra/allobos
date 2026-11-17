@@ -19,6 +19,7 @@ Fase mengikuti PRD bagian 10. Bila sesi terputus, lanjutkan dari fase pertama ya
 | 9 | Beranda, data demo, uji manual, deploy, README, video | Selesai kecuali video demo |
 | 10 | Aset baru, halaman masuk, Gemini bergiliran, Resend, Warung Bos 3D orang pertama, deploy VPS | Selesai |
 | 11 | Kerapian responsif, animasi, palet, logo di kartu, data contoh, akun demo | Selesai |
+| 12 | Kelas berbayar QRIS SumoPod, sertifikat premium dan pratinjau, perbaikan CRUD dan Cek Produk | Selesai, SumoPod menunggu kunci API |
 
 ## Keputusan
 
@@ -147,7 +148,20 @@ Fase mengikuti PRD bagian 10. Bila sesi terputus, lanjutkan dari fase pertama ya
 - Menu sidebar yang menyala lebih dari satu diperbaiki lewat `App\Support\Nav`: rute dua bagian seperti `admin.audit` tidak lagi dipotong menjadi `admin.*`.
 - Data server diperbarui tanpa `allobos:demo --force`, karena perintah itu menjalankan `migrate:fresh` dan akan menghapus akun warga sungguhan yang sudah mendaftar.
 
+### Fase 12: kelas berbayar, sertifikat, dan fungsi sungguhan
+
+- Kelas punya biaya (`programs.price`, 0 berarti gratis). Daftar kelas selalu lewat halaman konfirmasi dengan centang persetujuan. Kelas gratis langsung Terdaftar. Kelas berbayar menahan kursi (`menunggu_bayar`), membuat tautan QRIS SumoPod (sandbox), dan baru Terdaftar setelah webhook `payment.completed` terverifikasi (token `X-Webhook-Token` atau tanda tangan Svix) dengan jumlah yang cocok. Pembayaran gagal atau lewat satu jam melepas kursi (`allobos:pembayaran-kedaluwarsa` tiap lima menit). Pengingat, kehadiran, sertifikat, dan agenda hanya untuk peserta sah (`EnrollmentStatus::participating()`).
+- Sertifikat didesain ulang: latar dengan bingkai ganda, lengkung sudut, pita diagonal, tanda air logo, dan medali berikon alloBos (`public/image/sertifikat-latar.png`, digambar GD). Teks, tanda tangan, dan QR tetap HTML supaya tajam. Halaman sertifikat warga menampilkan pratinjau yang sama sebelum mengunduh.
+- Penanda tangan pimpinan IPI: Deni Fuadi (`pimpinan@allobos.com`). Tanda tangannya sengaja tidak dibuat-buat karena orang sungguhan. Ia menandatangani sendiri lewat halaman Tanda Tangan Sertifikat.
+- Ubah lapak yang tidak tersimpan: penyebabnya batas unggah PHP 6 MB dan isi formulir 8 MB, sementara foto ponsel sering lebih besar sehingga seluruh formulir terbuang. Batas dinaikkan (PHP 20/25 MB, validasi 15 MB, nginx 25 MB), foto tetap dikecilkan otomatis. `CrudTest` membuktikan ubah lapak dengan sampul baru, produk, pembicara, pengumuman, bank kejadian, dan halaman tersimpan.
+- Cek Produk yang tertahan (antrean mati atau jaringan putus) dihentikan setelah tiga menit dan bisa Periksa Ulang tanpa unggah lagi.
+- Semua tujuh fitur AI diuji dengan Gemini sungguhan dan skema masing-masing. Skema memakai `propertyOrdering` supaya urutan isian sesuai kode.
+- Ruang Bos: riwayat percakapan sebelumnya keliru mengambil sepuluh giliran pertama, sekarang sepuluh terakhir. Prompt mewajibkan jawaban langsung ke pesan baru, profil hanya latar belakang, dan bertanya balik bila pesan terlalu singkat. Isian `understood` ditulis sebelum jawaban.
+- Memesan dan melaporkan lapak wajib masuk. Halaman masuk menerima `?tujuan=` supaya kembali ke lapak.
+- Lingkungan lokal: PHP Windows tanpa daftar CA dijalankan dengan `-d curl.cainfo=<ca-bundle Git>` untuk server dan `queue:work` supaya AI, suara, dan Cek Produk berjalan.
+
 ## Belum selesai
+n- SumoPod: `SUMOPOD_API_KEY` dan `SUMOPOD_WEBHOOK_TOKEN` (atau `SUMOPOD_WEBHOOK_SECRET`) belum diisi di server. Sampai diisi, tombol Bayar dengan QRIS menampilkan pesan bahwa pembayaran online belum diatur. Alamat webhook untuk diisi di SumoPod: `https://allobos.zite.my.id/webhook/sumopod`.
 
 - Akun demo memakai sandi `password123`, termasuk Admin. Ganti sandi Admin dan Pengelola di server setelah penjurian.
 - Kirim otomatis saat tombol mikrofon dilepas belum dicoba dengan mikrofon sungguhan.
