@@ -46,7 +46,7 @@ class ReadinessCalculator
         $listened = PodcastListen::query()->where('user_id', $user->id)->whereNotNull('listened_at')->count();
         $parts['belajar'] = [min(1, ($attended + 2 * $certs + $listened) / $targets['belajar_butir']), "{$attended} kehadiran kelas, {$certs} sertifikat tercatat, {$listened} episode siniar"];
 
-        $best = (int) ShopGame::query()->where('user_id', $user->id)->where('status', GameStatus::Selesai->value)->max('score');
+        $best = (int) ShopGame::query()->where('user_id', $user->id)->where('status', GameStatus::Selesai->value)->whereNotNull('saved_at')->max('score');
         $parts['simulasi'] = [$best / 100, $best ? "Nilai terbaik Warung Bos {$best}" : 'Belum menamatkan Warung Bos 3D'];
 
         $plan = $user->plan()->whereNotNull('built_at')->exists();

@@ -116,6 +116,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('{session}/langkah', 'addSteps')->whereNumber('session')->name('steps');
     });
 
+    Route::middleware(['role:warga', 'onboarded'])->prefix('warung')->name('game.')->controller(Warga\GameController::class)->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::post('/', 'store')->name('store');
+        Route::get('{game}', 'play')->whereNumber('game')->name('play');
+        Route::post('{game}/belanja', 'buy')->whereNumber('game')->name('buy');
+        Route::post('{game}/harga', 'price')->whereNumber('game')->name('price');
+        Route::post('{game}/buka', 'run')->whereNumber('game')->middleware('throttle:30,1')->name('run');
+        Route::post('{game}/lanjut', 'next')->whereNumber('game')->middleware('throttle:30,1')->name('next');
+        Route::get('{game}/rapor', 'report')->whereNumber('game')->name('report');
+        Route::post('{game}/simpan', 'save')->whereNumber('game')->name('save');
+    });
+
     Route::middleware('role:bos')->prefix('bos-area')->name('bos.')->group(function () {
         Route::get('/', Bos\DashboardController::class)->name('dashboard');
         Route::get('profil', [Bos\ProfileController::class, 'edit'])->name('profile.edit');
