@@ -22,8 +22,9 @@ Route::post('webhook/sumopod', SumoPodWebhookController::class)->middleware('thr
 
 Route::get('lapak', [Public\ShopController::class, 'index'])->name('shops.index');
 Route::get('lapak/{shop:slug}', [Public\ShopController::class, 'show'])->name('shops.show');
-Route::post('lapak/{shop:slug}/pesan/{product}', [Public\ShopController::class, 'order'])->name('shops.order');
-Route::post('lapak/{shop:slug}/lapor', [Public\ShopController::class, 'report'])->middleware('throttle:5,10')->name('shops.report');
+// Memesan dan melapor perlu masuk dulu supaya tercatat siapa pelakunya. Melihat katalog tetap terbuka.
+Route::post('lapak/{shop:slug}/pesan/{product}', [Public\ShopController::class, 'order'])->middleware(['auth', 'throttle:30,1'])->name('shops.order');
+Route::post('lapak/{shop:slug}/lapor', [Public\ShopController::class, 'report'])->middleware(['auth', 'throttle:5,10'])->name('shops.report');
 
 Route::get('kelas', [Public\ProgramController::class, 'index'])->name('programs.index');
 Route::get('kelas/{program:slug}', [Public\ProgramController::class, 'show'])->name('programs.show');

@@ -92,8 +92,12 @@ class ShopTest extends TestCase
         auth()->logout();
 
         $this->get(route('shops.index'))->assertSee('Keripik Mbok Sri');
-        $this->get(route('shops.show', $shop))->assertOk()->assertSee('Pesan lewat WhatsApp');
+        $this->get(route('shops.show', $shop))->assertOk()->assertSee('Masuk untuk Memesan')->assertDontSee('Kirim Laporan');
         $product = $shop->products()->first();
+        $this->post(route('shops.order', [$shop, $product]))->assertRedirect(route('login'));
+        $this->post(route('shops.report', $shop), ['reason' => 'Foto produk bukan milik penjual'])->assertRedirect(route('login'));
+
+        $this->actingAs($this->onboardedWarga());
         $this->post(route('shops.order', [$shop, $product]))->assertRedirectContains('https://wa.me/6281234567890?text=');
         $this->assertSame(1, $shop->visits()->where('kind', 'kunjungan')->count());
         $this->assertSame(1, $shop->visits()->where('kind', 'pesan')->count());

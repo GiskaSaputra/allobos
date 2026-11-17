@@ -14,8 +14,14 @@ class AuthenticatedSessionController extends Controller
     /**
      * Display the login view.
      */
-    public function create(): View
+    public function create(Request $request): View
     {
+        // Sama seperti pendaftaran: hanya jalur internal, supaya tidak bisa dipakai mengalihkan ke situs lain.
+        $target = $request->string('tujuan')->toString();
+        if (preg_match('#^/[a-z0-9][a-z0-9/_-]*$#i', $target) === 1) {
+            session(['url.intended' => url($target)]);
+        }
+
         return view('auth.login');
     }
 

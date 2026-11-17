@@ -5,6 +5,8 @@
     @if (session('status'))<p class="mb-4 rounded-[20px] bg-success/15 p-4 text-sm text-success" role="status">{{ session('status') }}</p>@endif
     @if (session('error'))<p class="mb-4 rounded-[20px] bg-danger/15 p-4 text-sm text-danger" role="alert">{{ session('error') }}</p>@endif
 
+    <x-back-link :href="route('shops.index')" class="mb-5">Semua Lapak</x-back-link>
+
     <header class="overflow-hidden rounded-[28px] border border-line bg-surface-raised">
         @if ($shop->coverUrl())
             <img src="{{ $shop->coverUrl() }}" alt="" class="aspect-[3/1] w-full object-cover" fetchpriority="high">
@@ -44,6 +46,9 @@
     <x-slot:footer>
         <details class="max-w-md">
             <summary class="cursor-pointer text-sm text-fg-muted underline underline-offset-2">Laporkan Lapak</summary>
+            @guest
+                <p class="mt-3 text-sm text-fg-body">Masuk dulu untuk melaporkan lapak supaya pengelola bisa menghubungimu bila perlu. <a href="{{ route('login', ['tujuan' => '/lapak/'.$shop->slug]) }}" class="font-medium text-accent-text underline underline-offset-2">Masuk</a></p>
+            @else
             <form method="POST" action="{{ route('shops.report', $shop) }}" class="mt-3 space-y-3">
                 @csrf
                 <label for="alasan-lapor" class="block text-sm font-medium text-fg">Apa yang tidak pantas atau keliru?</label>
@@ -51,6 +56,7 @@
                 @error('reason')<p class="text-sm text-danger">{{ $message }}</p>@enderror
                 <button type="submit" class="btn btn-secondary btn-sm">Kirim Laporan</button>
             </form>
+            @endguest
         </details>
     </x-slot:footer>
 </x-layouts.shop>
