@@ -25,7 +25,7 @@ class CertificateBuilder
             ];
         })->values();
 
-        $qr = (new Builder(writer: new PngWriter, data: $certificate->verifyUrl(), size: 360, margin: 16))->build();
+        $qr = Builder::create()->writer(new PngWriter)->data($certificate->verifyUrl())->size(360)->margin(16)->build();
 
         $pdf = Pdf::loadView('pdf.certificate', [
             'certificate' => $certificate,
