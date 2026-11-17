@@ -2,6 +2,7 @@
 <a href="{{ $href ?? route('podcasts.show', $podcast) }}" class="card card-link group flex flex-col gap-3 p-3 sm:p-3">
     <span class="relative block overflow-hidden rounded-[20px]">
         <img src="{{ $podcast->thumbnail() }}" alt="" loading="lazy" width="480" height="270" class="aspect-video w-full object-cover transition duration-300 group-hover:scale-[1.03]">
+        <x-logo-chip class="absolute left-2 top-2" />
         <span class="absolute bottom-2 right-2 flex h-10 w-10 items-center justify-center rounded-full bg-ink/70 text-ink-fg"><x-phosphor-play-fill class="h-5 w-5" aria-hidden="true" /></span>
     </span>
     <span class="space-y-1 px-1 pb-1">

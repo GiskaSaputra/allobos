@@ -1,5 +1,6 @@
 @props(['boss', 'href'])
-<a href="{{ $href }}" class="card card-link flex flex-col gap-4">
+<a href="{{ $href }}" class="card card-link group relative isolate flex flex-col gap-4 overflow-hidden">
+    <x-logo-mark class="-right-5 -top-5 h-24 w-24" />
     <span class="flex items-center gap-4">
         @if ($boss->photo_path)
             <img src="{{ Storage::disk('public')->url($boss->photo_path) }}" alt="" class="h-16 w-16 rounded-full object-cover">

@@ -1,5 +1,6 @@
 @props(['program'])
-<a href="{{ route('programs.show', $program) }}" class="card card-link flex flex-col gap-3">
+<a href="{{ route('programs.show', $program) }}" class="card card-link group relative isolate flex flex-col gap-3 overflow-hidden">
+    <x-logo-mark class="-bottom-6 -right-6 h-28 w-28" />
     <span class="flex flex-wrap items-center gap-2">
         <span class="badge badge-brand">{{ $program->kind->label() }}</span>
         @if ($program->is_official)<x-official-badge />@endif
