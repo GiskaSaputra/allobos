@@ -15,7 +15,7 @@ Fase mengikuti PRD bagian 10. Bila sesi terputus, lanjutkan dari fase pertama ya
 | 5b | Sertifikat Terverifikasi | Selesai (jaringan Hardhat lokal) |
 | 6 | Siniar Bos | Selesai |
 | 7 | Warung Bos 3D | Selesai |
-| 8 | Dashboard Pengelola dan Admin, CMS, wawasan | Belum |
+| 8 | Dashboard Pengelola dan Admin, CMS, wawasan | Selesai |
 | 9 | Beranda, data demo, uji manual, deploy, README, video | Belum |
 
 ## Keputusan
@@ -93,3 +93,11 @@ Fase mengikuti PRD bagian 10. Bila sesi terputus, lanjutkan dari fase pertama ya
 - Skor Siap Usaha memakai nilai terbaik dari permainan yang sudah disimpan lewat Simpan Pelajaran ke Jejak Usaha (Alur Bisnis 3.7 langkah 8). Rute tambahan `game.save`.
 - Adegan 3D dibangun dari geometri di kode (tanpa model GLB), jadi tidak ada aset pihak ketiga yang perlu dicatat lisensinya. Paket Three.js dimuat terpisah lewat impor dinamis (sekitar 139 KB gzip).
 - Pemanggilan `initWarung` dipindah ke akhir berkas setelah galat urutan deklarasi ditemukan saat uji peramban.
+### Fase 8
+
+- Skema JSON semua fitur AI dipusatkan di `App\Services\Ai\FeatureSchemas`, dipakai service dan tombol Uji Prompt (DA-02). Uji Prompt memakai prompt yang sedang diketik tanpa menyimpannya dan tidak memakan kuota warga.
+- Kurasi Bos: Aktifkan hanya bila keempat standar dicentang. Undangan Bos atau Pengelola memakai tautan bertanda tangan Laravel (`signed`) yang berlaku 7 hari. Hanya Admin yang dapat mengundang Pengelola.
+- Jadi Bos Pendamping: tamu membuat akun sekaligus profil Bos (Diajukan). Warga yang sudah masuk cukup mengisi profil usaha dan mendapat peran Bos tambahan.
+- Halaman CMS (tentang, bantuan, privasi, syarat, kontak) disimpan sebagai Markdown di tabel `pages` dan dirender dengan `html_input: escape`. Isi awal dari `PageSeeder`.
+- Wawasan: topik konsultasi, bidang minat, sebaran kapanewon, kehadiran kelas. Dapat diunduh XLSX dengan nama ditulis sebagai teks.
+- Pengaturan Admin: bobot Skor Siap Usaha (wajib berjumlah 100) dan batas sesi Ruang Bos per hari, disimpan di tabel `settings`.

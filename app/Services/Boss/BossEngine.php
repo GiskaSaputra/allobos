@@ -4,6 +4,7 @@ namespace App\Services\Boss;
 
 use App\Enums\SessionStatus;
 use App\Models\BossSession;
+use App\Models\Setting;
 use App\Models\User;
 use App\Services\Ai\AiException;
 use App\Services\Ai\FeatureSchemas;
@@ -21,7 +22,7 @@ class BossEngine
 
     public function sessionsPerDay(): int
     {
-        return (int) config('features.boss_sessions_per_day', 5);
+        return (int) Setting::read('boss_sessions_per_day', config('features.boss_sessions_per_day', 5));
     }
 
     public function sessionsLeft(User $user): int

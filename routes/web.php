@@ -4,12 +4,14 @@ use App\Http\Controllers\ActiveRoleController;
 use App\Http\Controllers\Admin;
 use App\Http\Controllers\Bos;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\InvitationAcceptController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Pengelola;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Public;
 use App\Http\Controllers\Signing;
 use App\Http\Controllers\Warga;
+use App\Models\Page;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [Public\PageController::class, 'home'])->name('home');
@@ -28,6 +30,14 @@ Route::get('siniar/{podcast:slug}', [Public\PodcastController::class, 'show'])->
 Route::get('verifikasi', [Public\CertificateVerifyController::class, 'form'])->name('certificates.verify.form');
 Route::post('verifikasi', [Public\CertificateVerifyController::class, 'lookup'])->middleware('throttle:30,1')->name('certificates.verify.lookup');
 Route::get('verifikasi/{code}', [Public\CertificateVerifyController::class, 'show'])->middleware('throttle:60,1')->name('certificates.verify');
+
+Route::get('jadi-bos', [Public\BecomeBossController::class, 'create'])->name('become-boss');
+Route::post('jadi-bos', [Public\BecomeBossController::class, 'store'])->middleware('throttle:5,10')->name('become-boss.store');
+Route::get('undangan/{invitation}', [InvitationAcceptController::class, 'show'])->middleware('signed')->name('invitations.accept');
+Route::post('undangan/{invitation}', [InvitationAcceptController::class, 'store'])->middleware('signed')->name('invitations.accept.store');
+foreach (array_keys(Page::SLUGS) as $slug) {
+    Route::get($slug, [Public\PageController::class, 'show'])->defaults('slug', $slug)->name('pages.'.$slug);
+}
 
 require __DIR__.'/auth.php';
 
@@ -180,6 +190,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('sertifikat/kelas/{program}/catat-ulang', [Pengelola\CertificateController::class, 'retry'])->name('certificates.retry');
         Route::post('sertifikat/{certificate}/cabut', [Pengelola\CertificateController::class, 'revoke'])->name('certificates.revoke');
 
+        Route::get('bos', [Pengelola\BossController::class, 'index'])->name('bosses.index');
+        Route::post('bos/undang', [Pengelola\BossController::class, 'invite'])->name('bosses.invite');
+        Route::post('bos/{boss}/aktifkan', [Pengelola\BossController::class, 'activate'])->name('bosses.activate');
+        Route::post('bos/{boss}/tolak', [Pengelola\BossController::class, 'reject'])->name('bosses.reject');
+        Route::resource('pengumuman', Pengelola\AnnouncementController::class)->parameters(['pengumuman' => 'announcement'])->except('show')->names('announcements');
+        Route::get('wawasan', Pengelola\InsightController::class)->name('insights');
+
         Route::get('lapak', [Pengelola\ShopModerationController::class, 'index'])->name('shops.index');
         Route::post('lapak/{shop}/setujui', [Pengelola\ShopModerationController::class, 'approve'])->name('shops.approve');
         Route::post('lapak/{shop}/tolak', [Pengelola\ShopModerationController::class, 'reject'])->name('shops.reject');
@@ -188,5 +205,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/', Admin\DashboardController::class)->name('dashboard');
+        Route::resource('pengguna', Admin\UserController::class)->parameters(['pengguna' => 'user'])->only(['index', 'create', 'store', 'edit', 'update'])->names('users');
+        Route::post('pengguna/{user}/reset-sandi', [Admin\UserController::class, 'sendReset'])->name('users.reset');
+        Route::get('ai', [Admin\AiController::class, 'index'])->name('ai.index');
+        Route::patch('ai/{feature}', [Admin\AiController::class, 'update'])->name('ai.update');
+        Route::post('ai/prompt/{feature}', [Admin\AiController::class, 'storePrompt'])->name('ai.prompts.store');
+        Route::post('ai/prompt/{feature}/uji', [Admin\AiController::class, 'testPrompt'])->middleware('throttle:ai')->name('ai.prompts.test');
+        Route::resource('halaman', Admin\PageController::class)->parameters(['halaman' => 'page'])->only(['index', 'edit', 'update'])->names('pages');
+        Route::resource('bank-kejadian', Admin\EventBankController::class)->parameters(['bank-kejadian' => 'event'])->except('show')->names('events');
+        Route::get('pengaturan', [Admin\SettingController::class, 'edit'])->name('settings.edit');
+        Route::patch('pengaturan', [Admin\SettingController::class, 'update'])->name('settings.update');
+        Route::get('blockchain', [Admin\ChainController::class, 'index'])->name('chain');
+        Route::get('audit', [Admin\SystemController::class, 'audit'])->name('audit');
     });
 });
