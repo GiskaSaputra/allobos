@@ -1,31 +1,14 @@
-<x-guest-layout>
-    <div class="mb-4 text-sm text-gray-600">
-        {{ __('Thanks for signing up! Before getting started, could you verify your email address by clicking on the link we just emailed to you? If you didn\'t receive the email, we will gladly send you another.') }}
-    </div>
-
-    @if (session('status') == 'verification-link-sent')
-        <div class="mb-4 font-medium text-sm text-green-600">
-            {{ __('A new verification link has been sent to the email address you provided during registration.') }}
-        </div>
+<x-layouts.auth title="Pastikan email">
+    <h1 class="text-3xl">Pastikan email kamu</h1>
+    <p class="mt-3 text-fg-body">Kami sudah mengirim tautan ke <strong class="text-fg">{{ auth()->user()->email }}</strong>. Buka email itu dan tekan tombol Pastikan Email. Periksa juga folder spam.</p>
+    @if (session('status') === 'verification-link-sent')
+        <p class="mt-6 rounded-[20px] bg-success/15 p-4 text-sm text-success">Tautan baru sudah dikirim.</p>
     @endif
-
-    <div class="mt-4 flex items-center justify-between">
-        <form method="POST" action="{{ route('verification.send') }}">
+    <div class="mt-8 flex flex-wrap items-center gap-3" x-data="{ wait: 0 }">
+        <form method="POST" action="{{ route('verification.send') }}" @submit="wait = 60; const t = setInterval(() => { if (--wait <= 0) clearInterval(t) }, 1000)">
             @csrf
-
-            <div>
-                <x-primary-button>
-                    {{ __('Resend Verification Email') }}
-                </x-primary-button>
-            </div>
+            <button type="submit" class="btn btn-secondary" :disabled="wait > 0"><span x-text="wait > 0 ? 'Kirim ulang dalam ' + wait + ' detik' : 'Kirim Ulang Email Verifikasi'">Kirim Ulang Email Verifikasi</span></button>
         </form>
-
-        <form method="POST" action="{{ route('logout') }}">
-            @csrf
-
-            <button type="submit" class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                {{ __('Log Out') }}
-            </button>
-        </form>
+        <form method="POST" action="{{ route('logout') }}">@csrf<x-button variant="ghost">Keluar</x-button></form>
     </div>
-</x-guest-layout>
+</x-layouts.auth>

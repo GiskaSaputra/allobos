@@ -1,39 +1,11 @@
-<x-guest-layout>
-    <form method="POST" action="{{ route('password.store') }}">
+<x-layouts.auth title="Atur ulang sandi">
+    <h1 class="text-3xl">Buat kata sandi baru</h1>
+    <form method="POST" action="{{ route('password.store') }}" class="mt-8 space-y-5">
         @csrf
-
-        <!-- Password Reset Token -->
         <input type="hidden" name="token" value="{{ $request->route('token') }}">
-
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email', $request->email)" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
-        </div>
-
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
-            <x-text-input id="password" class="block mt-1 w-full" type="password" name="password" required autocomplete="new-password" />
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
-
-        <!-- Confirm Password -->
-        <div class="mt-4">
-            <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
-
-            <x-text-input id="password_confirmation" class="block mt-1 w-full"
-                                type="password"
-                                name="password_confirmation" required autocomplete="new-password" />
-
-            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
-        </div>
-
-        <div class="flex items-center justify-end mt-4">
-            <x-primary-button>
-                {{ __('Reset Password') }}
-            </x-primary-button>
-        </div>
+        <x-field label="Email" name="email"><x-text-input name="email" type="email" :value="$request->email" required autocomplete="username" /></x-field>
+        <x-field label="Kata sandi baru" name="password" hint="Minimal 8 karakter."><x-text-input name="password" type="password" required autofocus autocomplete="new-password" /></x-field>
+        <x-field label="Ulangi kata sandi baru" name="password_confirmation"><x-text-input name="password_confirmation" type="password" required autocomplete="new-password" /></x-field>
+        <x-button variant="primary" full loading="Menyimpan">Simpan Sandi Baru</x-button>
     </form>
-</x-guest-layout>
+</x-layouts.auth>

@@ -1,3 +1,5 @@
-@props(['disabled' => false])
-
-<input @disabled($disabled) {{ $attributes->merge(['class' => 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm']) }}>
+@props(['name', 'value' => null, 'type' => 'text', 'id' => null])
+@php($fieldId = $id ?? 'f-'.str_replace(['[', ']', '.'], '-', $name))
+<input id="{{ $fieldId }}" name="{{ $name }}" type="{{ $type }}" value="{{ $type === 'password' ? '' : old(str_replace(['[', ']'], ['.', ''], $name), $value) }}"
+       {{ $attributes->class(['field-input', 'border-danger' => $errors->has(str_replace(['[', ']'], ['.', ''], $name))]) }}
+       @error(str_replace(['[', ']'], ['.', ''], $name)) aria-invalid="true" aria-describedby="{{ $fieldId }}-error" @enderror>
