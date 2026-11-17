@@ -48,6 +48,11 @@ class Shop extends Model
         return $this->hasMany(ShopVisit::class);
     }
 
+    public function reports(): HasMany
+    {
+        return $this->hasMany(ShopReport::class);
+    }
+
     public function scopePublished(Builder $query): Builder
     {
         return $query->where('status', ShopStatus::Terbit->value);
