@@ -34,6 +34,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
         });
     });
 
+    Route::middleware(['role:warga', 'onboarded'])->prefix('ruang-bos')->name('boss-room.')->controller(Warga\BossRoomController::class)->group(function () {
+        Route::get('/', 'setup')->name('setup');
+        Route::post('/', 'store')->name('store');
+        Route::get('riwayat', 'history')->name('history');
+        Route::get('{session}', 'show')->whereNumber('session')->name('show');
+        Route::post('{session}/mulai', 'start')->whereNumber('session')->name('start');
+        Route::post('{session}/kirim', 'send')->whereNumber('session')->middleware('throttle:ai')->name('send');
+        Route::post('{session}/akhiri', 'finish')->whereNumber('session')->name('finish');
+        Route::get('{session}/catatan', 'note')->whereNumber('session')->name('note');
+        Route::get('{session}/catatan/pdf', 'pdf')->whereNumber('session')->name('note.pdf');
+        Route::post('{session}/langkah', 'addSteps')->whereNumber('session')->name('steps');
+    });
+
     Route::middleware('role:bos')->prefix('bos-area')->name('bos.')->group(function () {
         Route::get('/', Bos\DashboardController::class)->name('dashboard');
     });
