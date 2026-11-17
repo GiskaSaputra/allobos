@@ -1,0 +1,21 @@
+{
+    "name": "allobos-web3",
+    "private": true,
+    "description": "Kontrak pintar AlloBosCertificate dan skrip pencatatan sertifikat alloBos",
+    "scripts": {
+        "compile": "hardhat compile",
+        "test": "hardhat test test/AlloBosCertificate.test.cjs",
+        "node": "hardhat node",
+        "deploy:local": "hardhat run scripts/deploy.cjs --network localhost",
+        "deploy:amoy": "hardhat run scripts/deploy.cjs --network amoy"
+    },
+    "dependencies": {
+        "ethers": "6.13.4"
+    },
+    "devDependencies": {
+        "@nomicfoundation/hardhat-chai-matchers": "2.0.8",
+        "@nomicfoundation/hardhat-ethers": "3.0.8",
+        "chai": "4.5.0",
+        "hardhat": "2.22.17"
+    }
+}
