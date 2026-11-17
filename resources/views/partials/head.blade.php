@@ -3,7 +3,9 @@
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <title>{{ $title ? $title.' | alloBos' : 'alloBos | Pendamping usaha warga Gunungkidul' }}</title>
 <meta name="description" content="{{ $description ?? 'Tanya Bos Allo, belajar dari pengusaha asli, lalu buka lapak. Pendamping usaha untuk warga Gunungkidul.' }}">
-<link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
+<link rel="icon" href="{{ asset('favicon.png') }}" type="image/png" sizes="64x64">
+<link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
+<meta property="og:image" content="{{ asset('image/logo-allobos-480.png') }}">
 <script>
     (function () {
         var t = null;
