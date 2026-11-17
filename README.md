@@ -57,6 +57,7 @@ Sandi keempat akun sama dengan nilai `DEMO_PASSWORD` di `.env` (bawaan `password
 | Bos | bos@allobos.com | Pak Arif, Bos aktif dengan slot, sesi selesai, dan penanda tangan kelas |
 | Pengelola IPI | pengelola@allobos.com | Mbak Rani, kelas, siniar, moderasi, sertifikat |
 | Admin | admin@allobos.com | Pengguna, AI, blockchain, audit |
+| Pimpinan IPI | pimpinan@allobos.com | Deni Fuadi, penanda tangan sertifikat atas nama PT Institusi Pengusaha Indonesia |
 
 Semua data contoh berlabel **Demo** dan tidak dihitung di statistik beranda. Isi ulang data demo dengan satu perintah:
 

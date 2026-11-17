@@ -113,14 +113,16 @@ class DemoSeeder extends Seeder
         $closed = $this->program('Workshop Kemasan dan Harga Jual Camilan', ProgramKind::Workshop, $fieldKuliner, ProgramStatus::Selesai, -10, 2, $speaker, $rani);
         $closed->signers()->delete();
         $closed->signers()->create(['user_id' => $arif->id, 'title' => 'Pembicara kelas', 'sort' => 1, 'signed_at' => now()->subDays(8)]);
-        $closed->signers()->create(['user_id' => $rani->id, 'title' => 'Pimpinan Institusi Pengusaha Indonesia', 'sort' => 2, 'signed_at' => now()->subDays(8)]);
+        // Pimpinan IPI orang sungguhan: akunnya dibuat, tetapi tanda tangannya tidak dibuat-buat. Ia menandatangani sendiri lewat halaman Tanda Tangan Sertifikat.
+        $leader = User::query()->updateOrCreate(['email' => 'pimpinan@allobos.com'], ['name' => 'Deni Fuadi', 'whatsapp' => '6281200000000', 'password' => config('features.demo_password'), 'email_verified_at' => now(), 'active_role' => RoleName::Pengelola, 'is_active' => true, 'is_demo' => true]);
+        $leader->syncRoles([RoleName::Pengelola->value]);
+        $closed->signers()->create(['user_id' => $leader->id, 'title' => 'Pimpinan PT Institusi Pengusaha Indonesia', 'sort' => 2, 'signed_at' => now()->subDays(8)]);
         $closed->enrollments()->updateOrCreate(['user_id' => $sri->id], ['status' => EnrollmentStatus::LulusHadir, 'materials_opened' => [0]]);
         foreach ($closed->sessions as $s) {
             $s->attendances()->firstOrCreate(['user_id' => $sri->id]);
         }
         $this->evidence($sri, 'kelas', 'Hadir di '.$closed->title);
         $this->specimen($arif);
-        $this->specimen($rani);
         $certificate = Certificate::query()->updateOrCreate(['program_id' => $closed->id, 'user_id' => $sri->id], [
             'code' => Certificate::query()->where('program_id', $closed->id)->where('user_id', $sri->id)->value('code') ?? Certificate::generateCode(),
             'status' => CertificateStatus::Ditandatangani, 'recipient_name' => $sri->name, 'issued_on' => now()->subDays(8)->toDateString(), 'is_demo' => true, 'show_on_shop' => true,
