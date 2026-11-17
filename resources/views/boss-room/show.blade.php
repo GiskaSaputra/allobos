@@ -17,7 +17,7 @@
         {{-- Bos Allo tampil besar seperti panggilan video, percakapan di sampingnya --}}
         <section class="flex min-h-0 flex-col gap-3 border-b border-line p-3 sm:p-4 lg:border-b-0 lg:border-r">
             <figure data-avatar-frame class="avatar-frame relative h-[40dvh] overflow-hidden rounded-card border border-line bg-ink shadow-card lg:h-auto lg:min-h-0 lg:flex-1">
-                <video data-avatar poster="{{ asset('gif/bos-allo/allo-transparan.webp') }}" width="400" height="226" muted loop playsinline preload="none" aria-label="Bos Allo" class="absolute inset-0 h-full w-full object-cover"></video>
+                <video data-avatar poster="{{ asset('gif/bos-allo/allo-transparan.webp') }}" width="1280" height="720" muted loop playsinline preload="none" aria-label="Bos Allo" class="absolute inset-0 h-full w-full object-cover"></video>
                 {{-- Peramban menahan suara sebelum ada ketukan pertama, jadi sapaan diputar lewat tombol ini --}}
                 <button type="button" data-unlock class="btn btn-accent btn-lg absolute left-1/2 top-1/2 z-10 hidden -translate-x-1/2 -translate-y-1/2 shadow-float">
                     <x-phosphor-speaker-high class="h-5 w-5" aria-hidden="true" />Dengarkan Bos Allo

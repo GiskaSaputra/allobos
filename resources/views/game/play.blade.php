@@ -50,7 +50,7 @@
             <p data-prompt class="pointer-events-none absolute left-1/2 top-[calc(50%+22px)] hidden max-w-[80%] -translate-x-1/2 rounded-full bg-ink/70 px-3 py-1.5 text-center text-sm font-medium text-ink-fg backdrop-blur-md"></p>
 
             <div data-bos-toast class="pointer-events-none absolute bottom-3 left-3 flex max-w-[min(420px,calc(100%-24px))] items-center gap-3 rounded-[20px] bg-ink/70 p-2 pr-4 text-ink-fg backdrop-blur-md">
-                <video data-bos poster="{{ asset('gif/bos-allo/allo-transparan.webp') }}" width="400" height="226" muted loop playsinline preload="none" aria-hidden="true" class="h-12 w-20 shrink-0 rounded-xl object-cover"></video>
+                <video data-bos poster="{{ asset('gif/bos-allo/allo-transparan.webp') }}" width="1280" height="720" muted loop playsinline preload="none" aria-hidden="true" class="h-12 w-20 shrink-0 rounded-xl object-cover"></video>
                 <p data-bos-line class="text-sm" aria-live="polite"></p>
             </div>
 

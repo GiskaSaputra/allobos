@@ -7,6 +7,15 @@ export function playClip(video, src) {
     video.play().catch(() => {});
 }
 
+// Video hiasan baru diunduh dan diputar saat terlihat, lalu dijeda saat keluar layar.
 export function initAvatars(root = document) {
-    root.querySelectorAll('video[data-clip]').forEach((video) => playClip(video, video.dataset.clip));
+    const videos = root.querySelectorAll('video[data-clip]');
+    if (!videos.length || reduce) return;
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(({ target, isIntersecting }) => {
+            if (isIntersecting) playClip(target, target.dataset.clip);
+            else target.pause();
+        });
+    }, { rootMargin: '200px 0px' });
+    videos.forEach((video) => observer.observe(video));
 }
