@@ -9,7 +9,7 @@
     <div class="flex h-[100dvh] flex-col">
         <header class="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-line px-3 sm:px-5">
             <div class="flex min-w-0 items-center gap-3">
-                <x-logo />
+                <x-logo compact size="h-8" />
                 <span class="hidden truncate text-sm text-fg-muted sm:block">{{ $title }}</span>
             </div>
             <div class="flex items-center gap-1">
