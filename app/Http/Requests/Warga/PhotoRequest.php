@@ -8,7 +8,7 @@ class PhotoRequest extends FormRequest
 {
     public function rules(): array
     {
-        return ['photo' => ['required', 'file', 'mimes:jpg,jpeg,png,webp', 'max:5120']];
+        return ['photo' => ['required', 'file', 'mimes:jpg,jpeg,png,webp', 'max:15360']];
     }
 
     public function messages(): array
@@ -16,7 +16,7 @@ class PhotoRequest extends FormRequest
         return [
             'photo.required' => 'Pilih atau ambil foto produk dulu.',
             'photo.mimes' => 'Foto harus berformat JPG, PNG, atau WEBP.',
-            'photo.max' => 'Ukuran foto paling besar 5 MB. Kecilkan foto atau ambil ulang dengan resolusi lebih rendah.',
+            'photo.max' => 'Ukuran foto paling besar 15 MB. Kecilkan foto atau ambil ulang dengan resolusi lebih rendah.',
         ];
     }
 }

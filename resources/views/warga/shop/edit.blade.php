@@ -98,7 +98,7 @@
                 <x-field label="Bidang usaha" name="business_field_id"><x-select name="business_field_id" :options="$fields" :value="$shop?->business_field_id ?? $defaults['business_field_id']" placeholder="Pilih bidang" /></x-field>
             </div>
             <x-field label="Nomor WhatsApp penjual" name="whatsapp" hint="Pesanan pembeli masuk ke nomor ini." required><x-text-input name="whatsapp" type="tel" :value="$shop?->whatsapp ?? $defaults['whatsapp']" required /></x-field>
-            <x-field label="Foto sampul" name="cover" hint="JPG, PNG, atau WEBP. Maksimal 5 MB. Foto dikecilkan otomatis.">
+            <x-field label="Foto sampul" name="cover" hint="JPG, PNG, atau WEBP. Maksimal 15 MB. Foto dikecilkan otomatis.">
                 <input id="f-cover" type="file" name="cover" accept="image/jpeg,image/png,image/webp" class="block w-full text-sm text-fg-body file:mr-3 file:rounded-full file:border-0 file:bg-brand file:px-4 file:py-2 file:text-brand-fg">
             </x-field>
             <x-button variant="primary" loading="Menyimpan">Simpan Lapak</x-button>

@@ -74,7 +74,7 @@ class SpeakerController extends Controller
             'business' => ['required', 'string', 'max:160'],
             'bio' => ['nullable', 'string', 'max:1000'],
             'user_id' => ['nullable', 'exists:users,id'],
-            'photo' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'photo' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:15360'],
         ]);
         $data['is_demo'] = $request->boolean('is_demo');
 

@@ -14,7 +14,7 @@ class ShopRequest extends FormRequest
             'district_id' => ['required', 'exists:districts,id'],
             'business_field_id' => ['nullable', 'exists:business_fields,id'],
             'whatsapp' => ['required', 'regex:/^(\+?62|0)8[0-9]{7,12}$/'],
-            'cover' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'cover' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:15360'],
         ];
     }
 

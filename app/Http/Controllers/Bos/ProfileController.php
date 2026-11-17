@@ -37,7 +37,7 @@ class ProfileController extends Controller
             'years_running' => ['required', 'integer', 'min:0', 'max:80'],
             'track_record' => ['nullable', 'string', 'max:2000'],
             'trace_url' => ['nullable', 'url:http,https', 'max:255'],
-            'photo' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'photo' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:15360'],
         ]);
 
         $boss = $request->user()->bossProfile ?? new BossProfile(['user_id' => $request->user()->id, 'status' => BossStatus::Diajukan]);

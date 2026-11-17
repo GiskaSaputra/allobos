@@ -15,7 +15,7 @@
                 <label for="galeri" class="btn btn-secondary cursor-pointer"><x-phosphor-images class="h-5 w-5" aria-hidden="true" />Pilih dari Galeri</label>
             </div>
             @error('photo')<p class="text-sm text-danger">{{ $message }}</p>@enderror
-            <p class="text-sm text-fg-muted">JPG, PNG, atau WEBP. Maksimal 5 MB.{{ $quotaLeft !== null ? ' Sisa '.$quotaLeft.' pemeriksaan hari ini.' : '' }}</p>
+            <p class="text-sm text-fg-muted">JPG, PNG, atau WEBP. Maksimal 15 MB.{{ $quotaLeft !== null ? ' Sisa '.$quotaLeft.' pemeriksaan hari ini.' : '' }}</p>
             <x-button variant="primary" loading="Memeriksa foto" x-bind:disabled="!preview || {{ $quotaLeft === 0 ? 'true' : 'false' }}" icon="phosphor-magnifying-glass">Periksa Produk</x-button>
         </form>
 

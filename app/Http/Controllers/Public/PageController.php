@@ -22,12 +22,12 @@ class PageController extends Controller
 {
     public function home(): View
     {
-        // AB-15: angka publik dari basis data dan tanpa data berlabel Demo.
+        // AB-15: angka publik dari basis data. Saat mode demo menyala, data contoh tidak ikut dihitung.
         $stats = Cache::remember('beranda.statistik', 600, fn () => [
-            'kelas' => Program::query()->where('is_demo', false)->where('status', '!=', ProgramStatus::Draf->value)->count(),
-            'lapak' => Shop::query()->where('is_demo', false)->where('status', ShopStatus::Terbit->value)->count(),
-            'bos' => BossProfile::query()->where('is_demo', false)->where('status', BossStatus::Aktif->value)->count(),
-            'sertifikat' => Certificate::query()->where('is_demo', false)->where('status', CertificateStatus::Tercatat->value)->count(),
+            'kelas' => Program::query()->when(config('features.demo'), fn ($q) => $q->where('is_demo', false))->where('status', '!=', ProgramStatus::Draf->value)->count(),
+            'lapak' => Shop::query()->when(config('features.demo'), fn ($q) => $q->where('is_demo', false))->where('status', ShopStatus::Terbit->value)->count(),
+            'bos' => BossProfile::query()->when(config('features.demo'), fn ($q) => $q->where('is_demo', false))->where('status', BossStatus::Aktif->value)->count(),
+            'sertifikat' => Certificate::query()->when(config('features.demo'), fn ($q) => $q->where('is_demo', false))->where('status', CertificateStatus::Tercatat->value)->count(),
         ]);
 
         return view('public.home', [

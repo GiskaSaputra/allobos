@@ -35,7 +35,7 @@
             <x-field label="Satuan" name="unit" hint="Contoh: bungkus, kg, buah" required><x-text-input name="unit" :value="$product->unit" maxlength="30" required /></x-field>
         </div>
         <x-field label="Deskripsi" name="description"><x-textarea name="description" :value="$product->description ?? ($prefill['description'] ?? null)" rows="4" maxlength="600" /></x-field>
-        <x-field label="Foto produk" :hint="$check ? 'Kosongkan untuk memakai foto dari Cek Produk.' : 'JPG, PNG, atau WEBP. Maksimal 5 MB.'" name="photo">
+        <x-field label="Foto produk" :hint="$check ? 'Kosongkan untuk memakai foto dari Cek Produk.' : 'JPG, PNG, atau WEBP. Maksimal 15 MB.'" name="photo">
             @if ($product->photoUrl())<img src="{{ $product->photoUrl() }}" alt="Foto sekarang" class="mb-2 h-24 w-24 rounded-2xl object-cover">@endif
             <input id="f-photo" type="file" name="photo" accept="image/jpeg,image/png,image/webp" class="block w-full text-sm text-fg-body file:mr-3 file:rounded-full file:border-0 file:bg-brand file:px-4 file:py-2 file:text-brand-fg">
         </x-field>
