@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use RuntimeException;
@@ -146,7 +147,14 @@ class ProgramController extends Controller
         $sheet->fromArray(['No', 'Nama', 'Email', 'WhatsApp', 'Status', 'Sesi dihadiri', 'Jumlah sesi', 'Terdaftar'], null, 'A1');
 
         foreach ($program->enrollments()->with('user')->get()->values() as $i => $e) {
-            $sheet->fromArray([$i + 1, $e->user->name, $e->user->email, $e->user->whatsapp, $e->status->label(), $attendance->get($e->user_id)?->count() ?? 0, $program->sessions->count(), $e->created_at->format('Y-m-d H:i')], null, 'A'.($i + 2));
+            $row = $i + 2;
+            $sheet->setCellValue('A'.$row, $i + 1);
+            // Isian pengguna ditulis sebagai teks supaya awalan seperti "=" tidak dijalankan sebagai rumus.
+            foreach (['B' => $e->user->name, 'C' => $e->user->email, 'D' => (string) $e->user->whatsapp, 'E' => $e->status->label(), 'H' => $e->created_at->format('Y-m-d H:i')] as $col => $value) {
+                $sheet->setCellValueExplicit($col.$row, $value, DataType::TYPE_STRING);
+            }
+            $sheet->setCellValue('F'.$row, $attendance->get($e->user_id)?->count() ?? 0);
+            $sheet->setCellValue('G'.$row, $program->sessions->count());
         }
         foreach (range('A', 'H') as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
