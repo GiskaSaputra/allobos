@@ -134,6 +134,8 @@ Fase mengikuti PRD bagian 10. Bila sesi terputus, lanjutkan dari fase pertama ya
 
 ## Belum selesai
 
+- Suara Henry dari Speechify sudah terpasang (`VoiceClient`, rute `ruang-bos/{sesi}/suara`, hasil disimpan per teks) tetapi `SPEECHIFY_API_KEY` belum diisi. Sampai diisi, Ruang Bos memakai suara Google Bahasa Indonesia dari peramban. Karena peramban menahan suara sebelum ada ketukan, sapaan pertama memunculkan tombol Dengarkan Bos Allo.
+- Kirim otomatis saat tombol mikrofon dilepas belum dicoba dengan mikrofon sungguhan.
 - Video demo 3 sampai 5 menit belum dibuat (perlu direkam pemilik proyek).
 - Alur `deploy.yml` (GitHub Actions) belum dipakai karena secret `VPS_*` belum diisi dan server tidak bisa `git pull` dari repositori privat. Deploy saat ini manual (README).
 - Kontrol gamepad dan sentuh Warung Bos 3D diuji lewat kode dan peristiwa tiruan, belum dengan gamepad dan ponsel sungguhan.
