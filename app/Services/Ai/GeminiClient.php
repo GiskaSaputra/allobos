@@ -70,7 +70,7 @@ class GeminiClient
 
         $used = AiRequest::query()
             ->where('user_id', $user->id)->where('feature', $feature)->where('status', 'ok')
-            ->where('created_at', '>=', CarbonImmutable::now('Asia/Jakarta')->startOfDay()->utc())
+            ->where('created_at', '>=', CarbonImmutable::now()->startOfDay())
             ->count();
 
         return max(0, $quota - $used);
@@ -78,7 +78,7 @@ class GeminiClient
 
     public function quotaResetsAt(): CarbonImmutable
     {
-        return CarbonImmutable::now('Asia/Jakarta')->addDay()->startOfDay();
+        return CarbonImmutable::now()->addDay()->startOfDay();
     }
 
     private function payload(array $config, string $system, string $content, array $schema, ?array $image): array

@@ -8,7 +8,7 @@ Fase mengikuti PRD bagian 10. Bila sesi terputus, lanjutkan dari fase pertama ya
 | --- | --- | --- |
 | 0 | Fondasi: proyek, autentikasi, peran, tata letak, token desain, klien AI | Selesai |
 | 1 | Profil Usaha dan Jejak Usaha | Selesai |
-| 2 | Ruang Bos | Belum |
+| 2 | Ruang Bos | Selesai |
 | 3 | Peluang, Rencana, HPP, Langkah 30 Hari | Belum |
 | 4 | Cek Produk dan Lapak | Belum |
 | 5 | Kelas Bos dan Temu Bos | Belum |
@@ -34,4 +34,15 @@ Fase mengikuti PRD bagian 10. Bila sesi terputus, lanjutkan dari fase pertama ya
 ## Belum selesai atau perlu dicek
 
 - Docker daemon di komputer pengembang mati, jadi `docker compose up` diuji di Fase 9 bila daemon dapat dinyalakan.
-- `npm run build` di komputer ini lambat (sekitar 8 menit). Penyebabnya belum diselidiki.
+- Ruang Bos dengan Gemini sungguhan belum diuji karena `GEMINI_API_KEY` belum tersedia. Jalur cadangan (galat, Coba Lagi, catatan tanpa AI) sudah diuji di peramban dan tes.
+
+### Fase 2
+
+- Sapaan pembuka disusun tanpa AI dari profil warga supaya tidak memakan jatah giliran.
+- Kuota Ruang Bos dua lapis: jumlah sesi per hari (bawaan 5, `BOSS_SESSIONS_PER_DAY`) dihitung saat sesi dimulai (RB-01), dan jatah giliran `boss_chat` 30 per hari dihitung `GeminiClient` (RB-10). Batas laju per menit lewat `throttle:ai`.
+- Bila AI gagal, giliran warga tidak disimpan dan tidak dihitung. Tombol Coba Lagi mengirim ulang pesan yang sama.
+- Pengaman RB-09 dua lapis: instruksi sistem, dan pemeriksaan kata kunci (pajak, hukum, pinjaman, KUR, izin) yang selalu menambahkan saran Temu Bos.
+- Catatan Konsultasi disusun lewat antrean (`SummarizeBossSession`). Halaman catatan menampilkan kerangka dan memuat ulang sendiri sampai catatan siap.
+- Perintah `allobos:ruang-bos-rapikan` tiap 5 menit menutup sesi diam lebih dari 30 menit dan menghapus transkrip lebih dari 180 hari (AB-16).
+- Zona waktu aplikasi diganti ke `Asia/Jakarta` supaya jam di antarmuka dan reset kuota tengah malam WIB (AB-11) benar.
+- PDF memakai dompdf. Karena dompdf tidak membaca variabel CSS, nilai token ditulis ulang sebagai `rgb()` di `resources/views/pdf/layout.blade.php`.
