@@ -10,7 +10,7 @@ Fase mengikuti PRD bagian 10. Bila sesi terputus, lanjutkan dari fase pertama ya
 | 1 | Profil Usaha dan Jejak Usaha | Selesai |
 | 2 | Ruang Bos | Selesai |
 | 3 | Peluang, Rencana, HPP, Langkah 30 Hari | Selesai |
-| 4 | Cek Produk dan Lapak | Belum |
+| 4 | Cek Produk dan Lapak | Selesai |
 | 5 | Kelas Bos dan Temu Bos | Belum |
 | 5b | Sertifikat Terverifikasi | Belum |
 | 6 | Siniar Bos | Belum |
@@ -54,3 +54,10 @@ Fase mengikuti PRD bagian 10. Bila sesi terputus, lanjutkan dari fase pertama ya
 - Menyusun ulang rencana mengganti langkah asal Rencana yang belum dikerjakan. Langkah yang sudah dicentang dan langkah dari sumber lain tetap.
 - Kalkulator HPP memakai Livewire (hasil berubah langsung). Langkah 30 Hari memakai formulir biasa dengan kotak centang yang langsung terkirim, agar tetap jalan tanpa skrip.
 - `.grid > * { min-width: 0 }` ditambahkan di CSS dasar setelah grafik Jejak Usaha melebarkan kolom di layar 360 px.
+### Fase 4
+
+- Foto unggahan (Cek Produk, produk, sampul) disimpan sebagai WEBP dengan sisi terpanjang 1280 px (sampul 1600 px) lewat `ImageStore` berbasis GD. Arah putar EXIF dipakai bila ekstensi exif tersedia.
+- Cek Produk berjalan lewat antrean (`CheckProduct`). Bila AI tidak tersedia, status menjadi Gagal dengan penjelasan dan foto tetap tersimpan. Kisaran harga dibandingkan dengan HPP dari Rencana Usaha bila ada (Alur Bisnis 7).
+- Moderasi lapak (setujui, tolak, turunkan) dibuat di fase ini supaya alur Buka bisa diuji ujung ke ujung. Daftar Pengelola lain menyusul di Fase 8.
+- Tombol Laporkan Lapak membutuhkan rute tambahan `shops.report` (POST `/lapak/{slug}/lapor`, dibatasi 5 kali per 10 menit) yang tidak tertulis di Design System 3.1.
+- Pemilik, Pengelola, dan Admin dapat melihat pratinjau lapak yang belum terbit. Kunjungan pemilik tidak dihitung.

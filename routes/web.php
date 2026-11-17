@@ -13,6 +13,11 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [Public\PageController::class, 'home'])->name('home');
 
+Route::get('lapak', [Public\ShopController::class, 'index'])->name('shops.index');
+Route::get('lapak/{shop:slug}', [Public\ShopController::class, 'show'])->name('shops.show');
+Route::post('lapak/{shop:slug}/pesan/{product}', [Public\ShopController::class, 'order'])->name('shops.order');
+Route::post('lapak/{shop:slug}/lapor', [Public\ShopController::class, 'report'])->middleware('throttle:5,10')->name('shops.report');
+
 require __DIR__.'/auth.php';
 
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -46,6 +51,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('langkah', [Warga\StepController::class, 'store'])->name('steps.store');
             Route::patch('langkah/{step}', [Warga\StepController::class, 'update'])->name('steps.update');
             Route::delete('langkah/{step}', [Warga\StepController::class, 'destroy'])->name('steps.destroy');
+
+            Route::get('cek-produk', [Warga\ProductCheckController::class, 'index'])->name('checks.index');
+            Route::post('cek-produk', [Warga\ProductCheckController::class, 'store'])->middleware('throttle:ai')->name('checks.store');
+            Route::get('cek-produk/{check}', [Warga\ProductCheckController::class, 'show'])->name('checks.show');
+            Route::patch('cek-produk/{check}', [Warga\ProductCheckController::class, 'update'])->name('checks.update');
+
+            Route::get('lapak-saya', [Warga\ShopController::class, 'edit'])->name('shop.edit');
+            Route::post('lapak-saya', [Warga\ShopController::class, 'store'])->name('shop.store');
+            Route::patch('lapak-saya', [Warga\ShopController::class, 'update'])->name('shop.update');
+            Route::post('lapak-saya/ajukan', [Warga\ShopController::class, 'submit'])->name('shop.submit');
+            Route::post('lapak-saya/tutup', [Warga\ShopController::class, 'toggle'])->name('shop.toggle');
+            Route::get('lapak-saya/produk', [Warga\ProductController::class, 'create'])->name('products.create');
+            Route::post('lapak-saya/produk', [Warga\ProductController::class, 'store'])->name('products.store');
+            Route::get('lapak-saya/produk/{product}', [Warga\ProductController::class, 'edit'])->name('products.edit');
+            Route::patch('lapak-saya/produk/{product}', [Warga\ProductController::class, 'update'])->name('products.update');
+            Route::delete('lapak-saya/produk/{product}', [Warga\ProductController::class, 'destroy'])->name('products.destroy');
         });
     });
 
@@ -68,6 +89,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::middleware('role:pengelola,admin')->prefix('pengelola')->name('pengelola.')->group(function () {
         Route::get('/', Pengelola\DashboardController::class)->name('dashboard');
+
+        Route::get('lapak', [Pengelola\ShopModerationController::class, 'index'])->name('shops.index');
+        Route::post('lapak/{shop}/setujui', [Pengelola\ShopModerationController::class, 'approve'])->name('shops.approve');
+        Route::post('lapak/{shop}/tolak', [Pengelola\ShopModerationController::class, 'reject'])->name('shops.reject');
+        Route::post('lapak/{shop}/turunkan', [Pengelola\ShopModerationController::class, 'takedown'])->name('shops.takedown');
     });
 
     Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
