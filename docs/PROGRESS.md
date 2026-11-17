@@ -142,12 +142,14 @@ Fase mengikuti PRD bagian 10. Bila sesi terputus, lanjutkan dari fase pertama ya
 - Kartu kelas, bos, lapak, dan siniar diberi tanda air atau pil logo alloBos. Gambar contoh produk dan sampul lapak memakai ikon alloBos.
 - Lencana Demo dan catatan lomba disembunyikan dari tampilan publik atas permintaan pemilik proyek. `APP_DEMO=true` menampilkannya lagi.
 - Data contoh: 9 episode siniar dari video publik YouTube yang dicek lewat oEmbed (ringkasan episode baru dibuat Gemini dari videonya di server), 7 kelas, 5 bos, 6 lapak dengan 3 produk masing-masing. Akun demo memakai `@allobos.com` dengan sandi `password123` atas permintaan pemilik proyek.
+- Suara Bos Allo memakai Speechify dengan suara pria bahasa Indonesia gratis `bima` (model `simba-3.5`). Henry adalah suara bahasa Inggris, jadi tidak dipakai. Pilihan lain: `langit`. Peramban menahan suara sebelum ada ketukan, jadi sapaan pertama memunculkan tombol Dengarkan Bos Allo.
+- Video Bos Allo diperbesar dari 400x225 ke 1280x720 (kurangi derau dither GIF, skala lanczos, penajaman). Ketajaman penuh butuh video sumber beresolusi tinggi.
+- Menu sidebar yang menyala lebih dari satu diperbaiki lewat `App\Support\Nav`: rute dua bagian seperti `admin.audit` tidak lagi dipotong menjadi `admin.*`.
 - Data server diperbarui tanpa `allobos:demo --force`, karena perintah itu menjalankan `migrate:fresh` dan akan menghapus akun warga sungguhan yang sudah mendaftar.
 
 ## Belum selesai
 
 - Akun demo memakai sandi `password123`, termasuk Admin. Ganti sandi Admin dan Pengelola di server setelah penjurian.
-- Suara Henry dari Speechify sudah terpasang (`VoiceClient`, rute `ruang-bos/{sesi}/suara`, hasil disimpan per teks) tetapi `SPEECHIFY_API_KEY` belum diisi. Sampai diisi, Ruang Bos memakai suara Google Bahasa Indonesia dari peramban. Karena peramban menahan suara sebelum ada ketukan, sapaan pertama memunculkan tombol Dengarkan Bos Allo.
 - Kirim otomatis saat tombol mikrofon dilepas belum dicoba dengan mikrofon sungguhan.
 - Video demo 3 sampai 5 menit belum dibuat (perlu direkam pemilik proyek).
 - Alur `deploy.yml` (GitHub Actions) belum dipakai karena secret `VPS_*` belum diisi dan server tidak bisa `git pull` dari repositori privat. Deploy saat ini manual (README).
