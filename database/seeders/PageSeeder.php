@@ -30,7 +30,7 @@ Kelas, pembicara, dan kurasi Bos dijalankan bersama Institusi Pengusaha Indonesi
 
 ## Catatan
 
-Bos Allo adalah karakter fiktif. Jawaban AI adalah bahan pertimbangan, bukan nasihat hukum, pajak, atau pinjaman.
+Bos Allo adalah pendamping virtual berbasis AI. Jawabannya adalah bahan pertimbangan, bukan nasihat hukum, pajak, atau pinjaman.
 MD],
             'bantuan' => ['Bantuan', <<<'MD'
 ## Ruang Bos tidak bisa mendengar suara saya

@@ -35,7 +35,7 @@
 <div class="sheet">
     <div class="frame"></div>
     <div class="bar"></div>
-    @if ($certificate->is_demo)<div class="demo">Demo</div>@endif
+    @if ($certificate->is_demo && config('features.demo'))<div class="demo">Demo</div>@endif
     <div class="brand"><b>alloBos</b> bersama Institusi Pengusaha Indonesia</div>
     <h1>SERTIFIKAT</h1>
     <p class="lead">Diberikan kepada</p>

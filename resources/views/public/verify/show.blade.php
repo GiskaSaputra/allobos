@@ -13,7 +13,7 @@
                     <div class="sm:col-span-2"><dt class="text-fg-muted">Kelas</dt><dd class="text-base font-medium text-fg">{{ $certificate->program->title }}</dd></div>
                     <div><dt class="text-fg-muted">Bidang</dt><dd class="text-fg">{{ $certificate->program->field?->name ?? '-' }}</dd></div>
                     <div><dt class="text-fg-muted">Tanggal terbit</dt><dd class="text-fg">{{ $certificate->issued_on?->translatedFormat('d F Y') ?? '-' }}</dd></div>
-                    <div class="sm:col-span-2"><dt class="text-fg-muted">Penyelenggara</dt><dd class="text-fg">alloBos bersama Institusi Pengusaha Indonesia @if ($certificate->is_demo)<span class="badge badge-warning">Demo</span>@endif</dd></div>
+                    <div class="sm:col-span-2"><dt class="text-fg-muted">Penyelenggara</dt><dd class="text-fg">alloBos bersama Institusi Pengusaha Indonesia @if ($certificate->is_demo && config('features.demo'))<span class="badge badge-warning">Demo</span>@endif</dd></div>
                 </dl>
                 @if ($status === 'dicabut')
                     <p class="rounded-[20px] bg-danger/10 p-4 text-sm text-fg"><strong>Alasan dicabut:</strong> {{ $chain['reason'] ?? null ?: $certificate->reason }}</p>
