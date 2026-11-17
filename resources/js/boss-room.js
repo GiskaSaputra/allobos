@@ -1,4 +1,5 @@
 import { postJson } from './forms';
+import { playClip } from './avatar';
 
 const root = document.querySelector('[data-boss-room]');
 if (root) initBossRoom(root);
@@ -35,19 +36,10 @@ function initBossRoom(root) {
     let voice = null;
     let blocked = false;
 
-    // Kedua GIF dimuat lebih dulu agar pergantian tidak berkedip.
-    [cfg.gifIdle, cfg.gifTalk].forEach((src) => { new Image().src = src; });
-
-    function gifFor(s) {
-        if (reduce) return cfg.still;
-        return s === 'speaking' ? cfg.gifTalk : cfg.gifIdle;
-    }
-
     function setState(next) {
         state = next;
         root.dataset.state = next;
-        const src = gifFor(next);
-        if (!els.avatar.src.endsWith(src)) els.avatar.src = src;
+        playClip(els.avatar, next === 'speaking' ? cfg.clipTalk : cfg.clipIdle);
         els.status.textContent = statusText[next];
         const busy = next === 'thinking' || next === 'speaking';
         els.talk.disabled = busy || mode !== 'suara' || blocked;

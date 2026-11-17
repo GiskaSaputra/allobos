@@ -1,5 +1,4 @@
-@props(['state' => 'idle', 'size' => 'md'])
+@props(['clip' => 'diam'])
 <figure {{ $attributes->class('relative overflow-hidden rounded-card border border-line bg-surface-alt shadow-card') }}>
-    <img src="{{ asset('gif/bos-allo/allo-diam.gif') }}" alt="Bos Allo" width="400" height="225" class="block aspect-video w-full object-cover motion-reduce:hidden" data-avatar>
-    <img src="{{ asset('gif/bos-allo/allo-transparan.webp') }}" alt="Bos Allo" width="400" height="225" class="hidden aspect-video w-full object-cover motion-reduce:block">
+    <video data-clip="{{ asset("gif/bos-allo/allo-{$clip}.mp4") }}" poster="{{ asset('gif/bos-allo/allo-transparan.webp') }}" width="400" height="226" muted loop playsinline preload="none" aria-label="Bos Allo" class="block aspect-video w-full object-cover"></video>
 </figure>

@@ -6,9 +6,8 @@
         'mode' => $session->mode,
         'turns' => $turns,
         'turnsLeft' => $turnsLeft,
-        'gifIdle' => asset('gif/bos-allo/allo-diam.gif'),
-        'gifTalk' => asset('gif/bos-allo/allo-bicara.gif'),
-        'still' => asset('gif/bos-allo/allo-transparan.webp'),
+        'clipIdle' => asset('gif/bos-allo/allo-diam.mp4'),
+        'clipTalk' => asset('gif/bos-allo/allo-bicara.mp4'),
         'mentoringUrl' => Route::has('warga.mentoring.index') ? route('warga.mentoring.index') : null,
     ];
 @endphp
@@ -17,7 +16,7 @@
         <section class="flex flex-col gap-3 border-b border-line p-3 sm:p-5 lg:border-b-0 lg:border-r">
             <div class="relative mx-auto w-full max-w-[520px]">
                 <figure class="overflow-hidden rounded-card border border-line bg-surface-alt shadow-card">
-                    <img data-avatar src="{{ $config['gifIdle'] }}" alt="Bos Allo" width="400" height="225" class="block aspect-video max-h-[30dvh] w-full object-cover lg:max-h-none">
+                    <video data-avatar poster="{{ asset('gif/bos-allo/allo-transparan.webp') }}" width="400" height="226" muted loop playsinline preload="none" aria-label="Bos Allo" class="block aspect-video max-h-[30dvh] w-full object-cover lg:max-h-none"></video>
                 </figure>
                 <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-2">
                     <p data-status class="rounded-full bg-ink/65 px-3 py-1.5 text-xs font-medium text-ink-fg backdrop-blur-md" role="status" aria-live="polite">Bos Allo siap mendengar</p>

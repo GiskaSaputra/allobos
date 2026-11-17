@@ -3,11 +3,13 @@
         $tanyaUrl = auth()->check() ? route('boss-room.setup') : route('register', ['tujuan' => '/ruang-bos']);
     @endphp
     <section class="container-page pt-4">
-        <div class="bg-hero relative overflow-hidden rounded-[28px] px-5 pb-6 pt-8 sm:rounded-panel sm:px-10 sm:pb-10 sm:pt-12">
-            <div class="grid items-end gap-8 lg:grid-cols-[1.25fr_1fr]">
-                <div class="space-y-6">
+        <div class="bg-hero relative isolate overflow-hidden rounded-[28px] px-5 pt-8 sm:rounded-panel sm:px-10 sm:pt-12 lg:min-h-[640px]">
+            <div aria-hidden="true" class="pointer-events-none absolute -right-24 top-10 -z-10 h-[520px] w-[520px] rounded-full bg-accent/45 blur-3xl"></div>
+            <div class="grid gap-6 lg:grid-cols-[1.15fr_1fr]">
+                <div class="space-y-6 lg:pb-14">
+                    <p class="inline-flex items-center gap-2 rounded-full bg-ink/25 px-3 py-1.5 text-sm font-medium text-ink-fg backdrop-blur-md"><x-phosphor-storefront class="h-4 w-4" aria-hidden="true" />Pendamping usaha warga Gunungkidul</p>
                     <h1 class="w-fit rounded-[24px] bg-ink/40 px-5 py-4 font-display text-[40px] font-semibold leading-[1.05] tracking-tight text-ink-fg backdrop-blur-md sm:text-6xl lg:text-[68px]" aria-label="Tanya bos, belajar, lalu buka usaha.">
-                        <span aria-hidden="true">@foreach (['Tanya', 'bos,', 'belajar,', 'lalu'] as $i => $word)<span data-word style="--i: {{ $i }}">{{ $word }}</span> @endforeach<em class="font-bold"><span data-word style="--i: 4">buka</span> <span data-word style="--i: 5">usaha.</span></em></span>
+                        <span aria-hidden="true">@foreach (['Tanya', 'bos,', 'belajar,', 'lalu'] as $i => $word)<span data-word style="--i: {{ $i }}">{{ $word }}</span> @endforeach<em class="font-bold text-accent"><span data-word style="--i: 4">buka</span> <span data-word style="--i: 5">usaha.</span></em></span>
                     </h1>
                     <p class="max-w-md text-base text-ink sm:text-lg">Bos Allo menjawab pertanyaan usahamu dengan suara, pengusaha asli IPI mendampingi, dan lapakmu bisa langsung dipesan.</p>
                     <div class="flex flex-wrap gap-3">
@@ -15,9 +17,16 @@
                         <x-button variant="glass" size="lg" :href="route('programs.index')">Lihat Kelas</x-button>
                     </div>
                 </div>
-                <div class="overflow-hidden rounded-card border border-ink-fg/25 shadow-float">
-                    <img src="{{ asset('gif/bos-allo/allo-diam.gif') }}" alt="Bos Allo tersenyum di meja kerja dengan laptop" width="400" height="225" class="block aspect-video w-full object-cover motion-reduce:hidden" fetchpriority="high">
-                    <img src="{{ asset('gif/bos-allo/allo-transparan.webp') }}" alt="Bos Allo di meja kerja" width="400" height="225" class="hidden aspect-video w-full object-cover motion-reduce:block">
+                <div class="relative mx-auto h-[360px] w-full max-w-[460px] sm:h-[460px] lg:absolute lg:bottom-0 lg:right-10 lg:h-[600px] lg:max-w-[520px]">
+                    <img src="{{ asset('image/pose-3.webp') }}" alt="Bos Allo, maskot alloBos berjas, mempersilakan dengan tangan terbuka" width="720" height="965" fetchpriority="high" class="pose-rise absolute bottom-0 left-1/2 h-full w-auto max-w-none -translate-x-1/2 object-contain object-bottom drop-shadow-[0_30px_40px_rgb(var(--ink)/0.35)]">
+                    <div class="hero-float absolute right-0 top-4 max-w-[190px] rounded-[20px] rounded-bl-md border border-ink-fg/30 bg-ink/45 p-3 text-sm text-ink-fg shadow-float backdrop-blur-md sm:top-12 sm:max-w-[230px]" style="--i: 0">
+                        <p class="text-xs text-ink-muted">Bos Allo</p>
+                        <p class="font-medium">Mau mulai usaha apa? Ceritakan saja, aku dengarkan.</p>
+                    </div>
+                    <div class="hero-float absolute bottom-8 right-0 flex items-center gap-3 rounded-full border border-ink-fg/30 bg-surface-raised/85 py-2 pl-2 pr-4 text-sm text-fg shadow-float backdrop-blur-md" style="--i: 1">
+                        <span class="grid h-9 w-9 place-items-center rounded-full bg-brand text-brand-fg"><x-phosphor-microphone class="h-5 w-5" aria-hidden="true" /></span>
+                        <span><span class="block font-semibold">Suara atau teks</span><span class="text-xs text-fg-muted">Bahasa sehari-hari</span></span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -71,10 +80,7 @@
 
     <section class="container-page mt-20">
         <div class="panel-ink grid gap-8 overflow-hidden p-6 sm:p-10 lg:grid-cols-[1fr_1.1fr] lg:items-center" data-reveal>
-            <div class="overflow-hidden rounded-card border border-ink-fg/15">
-                <img src="{{ asset('gif/bos-allo/allo-bicara.gif') }}" alt="Bos Allo sedang menjelaskan" width="400" height="225" loading="lazy" class="block aspect-video w-full object-cover motion-reduce:hidden">
-                <img src="{{ asset('gif/bos-allo/allo-transparan.webp') }}" alt="Bos Allo" width="400" height="225" loading="lazy" class="hidden aspect-video w-full object-cover motion-reduce:block">
-            </div>
+            <x-boss-avatar clip="bicara" class="border-ink-fg/15" />
             <div class="space-y-4">
                 <h2 class="text-3xl text-ink-fg sm:text-5xl">Bicara saja, <em class="font-bold">Bos Allo</em> mendengar.</h2>
                 <p class="max-w-lg text-lg text-ink-muted">Tidak perlu mengetik panjang. Tahan tombol mikrofon, ceritakan usahamu dengan bahasa sehari-hari, dan dengarkan jawabannya. Setiap sesi ditutup dengan catatan dan langkah yang bisa langsung dikerjakan.</p>
@@ -125,21 +131,25 @@
             </div>
             <a href="{{ route('certificates.verify.form') }}" class="w-fit font-medium text-accent-text underline underline-offset-4">Verifikasi Sertifikat</a>
         </div>
-        <div class="bg-hero flex flex-col justify-between gap-6 rounded-[28px] p-6 sm:rounded-panel sm:p-10" data-reveal style="--i: 1">
-            <div class="space-y-3">
+        <div class="bg-hero relative flex min-h-[340px] flex-col justify-between gap-6 overflow-hidden rounded-[28px] p-6 sm:rounded-panel sm:p-10" data-reveal style="--i: 1">
+            <div class="relative z-10 max-w-[62%] space-y-3 sm:max-w-[58%]">
                 <h2 class="text-3xl text-ink">Kamu pengusaha?</h2>
                 <p class="text-ink">Dampingi warga yang baru mulai. Atur slot sendiri, catatan sesi tersusun rapi, dan lihat dampaknya.</p>
             </div>
-            <x-button variant="secondary" :href="route('become-boss')" class="w-fit">Jadi Bos Pendamping</x-button>
+            <x-button variant="secondary" :href="route('become-boss')" class="relative z-10 w-fit">Jadi Bos Pendamping</x-button>
+            <img src="{{ asset('image/pose-4.webp') }}" alt="" width="720" height="965" loading="lazy" class="pointer-events-none absolute -bottom-2 -right-10 h-[92%] w-auto max-w-none object-contain object-bottom sm:-right-4">
         </div>
     </section>
 
     <section class="container-page mt-20">
         <div class="panel-ink p-4 sm:p-6" data-reveal>
-            <div class="bg-mint flex flex-col items-center gap-5 rounded-[24px] px-6 py-14 text-center sm:rounded-[32px]">
-                <h2 class="max-w-xl text-4xl text-ink sm:text-5xl">Mulai dari satu pertanyaan.</h2>
-                <p class="max-w-md text-ink">Ceritakan usahamu ke Bos Allo. Gratis untuk warga Gunungkidul.</p>
-                <x-button variant="primary" size="lg" :href="$tanyaUrl" icon="phosphor-chat-circle-dots">Tanya Bos Allo</x-button>
+            <div class="bg-mint relative grid overflow-hidden rounded-[24px] sm:rounded-[32px] md:grid-cols-[1fr_auto]">
+                <div class="flex flex-col items-start gap-5 px-6 py-12 sm:px-12 sm:py-16">
+                    <h2 class="max-w-xl text-4xl text-ink sm:text-5xl">Mulai dari <em class="font-bold">satu pertanyaan.</em></h2>
+                    <p class="max-w-md text-ink">Ceritakan usahamu ke Bos Allo. Gratis untuk warga Gunungkidul.</p>
+                    <x-button variant="primary" size="lg" :href="$tanyaUrl" icon="phosphor-chat-circle-dots">Tanya Bos Allo</x-button>
+                </div>
+                <img src="{{ asset('image/pose-6.webp') }}" alt="" width="720" height="965" loading="lazy" class="mx-auto -mb-1 h-[280px] w-auto self-end object-contain object-bottom sm:h-[360px] md:mr-10">
             </div>
         </div>
     </section>

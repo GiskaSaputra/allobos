@@ -4,10 +4,12 @@ import { initForms } from './forms';
 import { initCharts } from './charts';
 import { initSignaturePads } from './signature-pad';
 import { walletSign } from './wallet';
+import { initAvatars } from './avatar';
 
 window.Alpine = Alpine;
 
 initTheme();
+initAvatars();
 initForms();
 initCharts();
 initSignaturePads();
