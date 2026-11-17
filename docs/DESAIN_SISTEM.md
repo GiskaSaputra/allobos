@@ -7,32 +7,39 @@ Arsitektur, struktur kode, alur routing, tata letak, komponen, dan detail tombol
 - **Referensi visual:** dribbble.com/shots/26954032-Creative-agency-web-ui-design
 - **Alat desain:** design-taste-frontend (taste skill) di Claude Code
 - **Penyusun:** Giska Saputra
-- **Versi:** Final 1.1, 17 November 2026 (menambah Sertifikat Terverifikasi berbasis Web3)
+- **Versi:** Final 2.0, 18 November 2026 (disesuaikan dengan sistem yang sudah berjalan: layanan pihak ketiga, pembayaran kelas QRIS, suara Bos Allo, Warung 3D orang pertama, sertifikat premium, jaringan uji alloBos)
+- **Aplikasi berjalan:** https://allobos.zite.my.id
+- **Kode sumber:** github.com/GiskaSaputra/allobos (cabang main)
 
 ## 1. Arsitektur sistem
 
-alloBos memakai arsitektur proyek acuan PNC Elevate: aplikasi Laravel monolit yang merender HTML di server, dengan Livewire dan Alpine untuk interaksi, dan JavaScript mandiri hanya untuk dua halaman berat, yaitu Ruang Bos dan Warung Bos 3D.
+alloBos memakai arsitektur proyek acuan PNC Elevate: aplikasi Laravel monolit yang merender HTML di server, dengan Livewire dan Alpine untuk interaksi, dan JavaScript mandiri hanya untuk dua halaman berat, yaitu Ruang Bos dan Warung Bos 3D. Layanan luar (Gemini, Speechify, Resend, SumoPod) selalu dipanggil dari server lewat satu kelas klien per layanan, sehingga kunci API tidak pernah sampai ke peramban dan kegagalan satu layanan tidak menghentikan alur.
 
 | Lapisan | Teknologi | Tanggung jawab |
 | --- | --- | --- |
 | Tampilan | Blade, komponen Blade, Tailwind 3, Alpine | Halaman, tata letak, komponen antarmuka |
 | Interaksi | Livewire 3 | Formulir bertahap, daftar bersaring, kalkulator HPP, langkah yang dicentang |
-| Skrip halaman | JavaScript modul lewat Vite | boss-room.js (suara dan GIF), warung-3d.js (Three.js), home-scroll.js (animasi beranda), theme.js |
+| Skrip halaman | JavaScript modul lewat Vite | boss-room.js (suara, video avatar, tahan untuk bicara), warung-3d.js dan folder warung/ (Three.js orang pertama), motion.js (animasi muncul dan gulir di semua halaman publik), scale-frame.js (pratinjau sertifikat), signature-pad.js, wallet.js, charts.js, theme.js |
 | Routing | routes/web.php, routes/auth.php | Kelompok rute per peran dengan awalan dan middleware |
 | Controller | app/Http/Controllers/{Public,Warga,Bos,Pengelola,Admin} | Menerima permintaan, memvalidasi, memanggil service, mengembalikan tampilan |
-| Service | app/Services/{Ai,Boss,Mentoring,Programs,Podcasts,Game,Products,Plans,Shops,Readiness} | Aturan bisnis per domain |
-| Pekerjaan antrean | app/Jobs | Panggilan AI yang lama: rangkuman, cek produk, ringkasan siniar, rapor |
+| Service | app/Services/{Ai,Boss,Bosses,Certificates,Chain,Game,Insights,Media,Mentoring,Payments,Plans,Podcasts,Products,Programs,Readiness,Shops} | Aturan bisnis per domain |
+| Pekerjaan antrean | app/Jobs, layanan queue | Proses lama: rangkuman sesi, cek produk, ringkasan siniar, pembuatan dan pencatatan sertifikat, pencabutan |
+| Penjadwal | app/Console/Commands, layanan scheduler | Pengingat sesi, menutup sesi Bos Allo yang menganggur, kedaluwarsa pembayaran tiap lima menit |
 | Model | Eloquent, app/Models, app/Enums | Data dan status |
 | Akses | spatie/laravel-permission, middleware role, policy | Peran dan kepemilikan data |
-| AI | App\Services\Ai\GeminiClient | Satu pintu ke Gemini: JSON berskema, kuota, log, penyamaran data |
+| AI | Google Gemini API lewat App\Services\Ai\GeminiClient | Satu pintu ke Gemini: model gemini-3.1-flash-lite dengan cadangan gemini-flash-lite-latest dan gemini-flash-latest, rotasi lima kunci, JSON berskema dengan propertyOrdering, kuota, log, penyamaran data |
 | Data | MySQL 8.4 | Penyimpanan utama |
 | Berkas | Laravel Storage (disk public dan private) | Foto produk, sampul, sertifikat |
 | Dokumen | barryvdh/laravel-dompdf, phpoffice/phpspreadsheet, pustaka QR | PDF rencana dan sertifikat ber-QR, unduhan XLSX |
 | Grafik | Chart.js | Grafik skor dan wawasan |
 | 3D | Three.js | Adegan Warung Bos 3D |
-| Web3 | Kontrak pintar Solidity di jaringan EVM, ethers.js, Hardhat | Mencatat dan memeriksa sidik digital sertifikat |
-| Suara | Web Speech API | Pengenalan ucapan dan sintesis suara di peramban |
-| Deploy | Docker Compose di VPS, GitHub Actions | Layanan app, mysql, queue, scheduler |
+| Web3 | Kontrak pintar Solidity, Hardhat, ethers.js, Anvil (Foundry) | Mencatat dan memeriksa sidik digital sertifikat di Jaringan Uji alloBos (chain id 31337) |
+| Suara masuk | Web Speech API (SpeechRecognition) | Mengubah ucapan warga menjadi teks di peramban |
+| Suara keluar | Speechify API lewat App\Services\Ai\VoiceClient | Suara Bos Allo berbahasa Indonesia (model simba-3.5, suara bima), disimpan di tembolok berkas MP3 |
+| Email | Resend (SMTP) | Verifikasi email, reset sandi, undangan Bos, notifikasi |
+| Pembayaran | SumoPod Payment (QRIS) lewat App\Services\Payments\SumoPodClient | Pembayaran kelas berbayar dan webhook status |
+| Video dan siniar | YouTube oEmbed dan pemutar YouTube | Mengambil judul dan sampul siniar, memutar episode |
+| Deploy | Docker Compose di VPS, nginx, Let's Encrypt, GitHub Actions | Layanan app, queue, scheduler, mysql, chain |
 
 ### 1.1 Alur satu permintaan
 
@@ -50,7 +57,7 @@ alloBos memakai arsitektur proyek acuan PNC Elevate: aplikasi Laravel monolit ya
 2. Klien memeriksa fitur aktif, kunci API tersedia, dan kuota harian pengguna.
 3. PiiRedactor menyamarkan nama, nomor, email, dan alamat.
 4. PromptRegistry mengambil instruksi sistem versi aktif dari basis data, atau bawaan dari config/ai.php.
-5. Permintaan dikirim. Bila satu kunci terkena batas, kunci berikutnya dipakai.
+5. Permintaan dikirim. Bila satu kunci terkena batas atau ditolak (401, 403, 429, 503), kunci berikutnya dipakai. Bila model tidak tersedia (404, 500), model cadangan berikutnya dipakai.
 6. Jawaban divalidasi terhadap skema. Gagal: ulang satu kali, lalu lempar AiException.
 7. Permintaan dicatat di ai_requests: fitur, durasi, token, status.
 8. Service menangani AiException dengan cadangan tanpa AI.
@@ -65,36 +72,66 @@ alloBos memakai arsitektur proyek acuan PNC Elevate: aplikasi Laravel monolit ya
 6. Setelah transaksi terkonfirmasi, nomor blok disimpan dan status menjadi Tercatat. Notifikasi dikirim.
 7. Halaman verifikasi memanggil ChainClient::verify, yang membaca kontrak lewat RPC dengan tembolok 60 detik, lalu membandingkan dengan sidik digital di server.
 
+### 1.3b Alur suara Bos Allo
+
+1. Warga menahan tombol bicara. SpeechRecognition (id-ID) menampilkan transkrip sementara. Saat tombol dilepas, teks langsung terkirim.
+2. POST /ruang-bos/{session}/kirim mengembalikan jawaban teks dan id giliran.
+3. Skrip memanggil POST /ruang-bos/{session}/suara dengan id giliran itu. VoiceClient meminta MP3 ke Speechify, atau mengambilnya dari tembolok storage/suara/{sha1}.mp3 bila kalimat yang sama pernah dibuat.
+4. Teks jawaban dan suara ditampilkan bersamaan: avatar beralih ke video bicara saat audio mulai, kembali ke video diam saat audio selesai.
+5. Bila Speechify gagal atau kunci kosong, jawaban tetap tampil sebagai teks yang diketik per kata. Sesi tidak terhenti.
+
+### 1.3c Alur pembayaran kelas
+
+1. Warga menekan Daftar Kelas dan diarahkan ke halaman konfirmasi /warga/kelas/{program}/konfirmasi yang menampilkan jadwal, kuota, dan harga.
+2. Kelas gratis: pendaftaran langsung berstatus Terdaftar.
+3. Kelas berbayar: PaymentService membuat pendaftaran berstatus Menunggu Bayar dan meminta tagihan QRIS ke SumoPod. Warga diarahkan ke /warga/pembayaran/{payment} yang menampilkan QRIS, nominal, dan batas waktu.
+4. SumoPod mengirim webhook ke POST /webhook/sumopod. Permintaan diperiksa dengan X-Webhook-Token atau tanda tangan Svix (HMAC-SHA256). Webhook yang sama diproses sekali saja.
+5. payment.completed mengubah pembayaran menjadi Lunas dan pendaftaran menjadi Terdaftar, lalu notifikasi dikirim. payment.failed atau payment.expired membatalkan pendaftaran dan melepas kuota.
+6. Perintah ExpirePayments berjalan tiap lima menit untuk menutup tagihan yang lewat batas waktu.
+
 ### 1.4 Struktur folder
 
 | Jalur | Isi |
 | --- | --- |
-| app/Enums | RoleName, SessionStatus, MentoringStatus, ProgramStatus, EnrollmentStatus, BossStatus, ShopStatus, GameStatus, ContentStatus, ProgramKind, MarketSignal, CertificateStatus |
+| app/Enums | RoleName, SessionStatus, MentoringStatus, ProgramStatus, EnrollmentStatus (termasuk Menunggu Bayar), PaymentStatus, BossStatus, ShopStatus, GameStatus, ContentStatus, ProgramKind, MarketSignal, CertificateStatus, CheckStatus, StepOrigin |
 | app/Http/Controllers/Public | PageController, ProgramController, PodcastController, ShopController, BecomeBossController, CertificateVerifyController |
 | app/Http/Controllers/Signing | SigningController, SpecimenController |
-| app/Http/Controllers/Warga | DashboardController, OnboardingController, BossRoomController, MentoringController, ProgramController, CertificateController, PodcastController, GameController, ProductCheckController, OpportunityController, PlanController, StepController, ShopController, ProductController |
+| app/Http/Controllers/Warga | DashboardController, OnboardingController, BossRoomController, MentoringController, ProgramController, PaymentController, CertificateController, PodcastController, GameController, ProductCheckController, OpportunityController, PlanController, StepController, ShopController, ProductController |
+| app/Http/Controllers | SumoPodWebhookController (webhook pembayaran, tanpa CSRF, diverifikasi token atau tanda tangan) |
 | app/Http/Controllers/Bos | DashboardController, SlotController, SessionController, ProfileController |
 | app/Http/Controllers/Pengelola | DashboardController, ProgramController, SpeakerController, PodcastController, BossController, ShopModerationController, CertificateController, AnnouncementController, InsightController |
 | app/Http/Controllers/Admin | DashboardController, UserController, AiController, PageController, SettingController, EventBankController, ChainController, SystemController |
 | app/Http/Middleware | EnsureRole, EnsureOnboarded, EnsureAccountIsActive, EnsureActiveBoss |
-| app/Services/Ai | GeminiClient, AiSettings, PromptRegistry, PiiRedactor, AiException |
-| app/Services | Boss/BossEngine, Boss/NoteBuilder, Mentoring/MentoringService, Programs/ProgramService, Podcasts/PodcastService, Game/GameEngine, Game/EventPicker, Products/ProductChecker, Plans/OpportunityFinder, Plans/PlanBuilder, Plans/CostCalculator, Shops/ShopService, Readiness/ReadinessCalculator, Certificates/SigningService, Certificates/CertificateBuilder, Certificates/CertificateHasher, Chain/ChainClient |
-| app/Jobs | SummarizeBossSession, CheckProduct, SummarizePodcast, DebriefShopGame, GenerateCertificates, AnchorCertificates, RevokeCertificate |
-| web3 | contracts/AlloBosCertificate.sol, scripts/deploy.mjs, anchor.mjs, revoke.mjs, verify.mjs, test, hardhat.config |
+| app/Services/Ai | GeminiClient, VoiceClient (Speechify), AiSettings, PromptRegistry, FeatureSchemas, Schema, PiiRedactor, AiException |
+| app/Services | Payments/SumoPodClient, Payments/PaymentService, Media/ImageStore, Insights/InsightService, Bosses/CurationService, Certificates/AnchorService, Certificates/VerificationService, Game/GameService, Game/GameRules, Plans/LearningContext, Plans/StepService, Boss/BossEngine, Boss/NoteBuilder, Mentoring/MentoringService, Programs/ProgramService, Podcasts/PodcastService, Game/GameEngine, Game/EventPicker, Products/ProductChecker, Plans/OpportunityFinder, Plans/PlanBuilder, Plans/CostCalculator, Shops/ShopService, Readiness/ReadinessCalculator, Certificates/SigningService, Certificates/CertificateBuilder, Certificates/CertificateHasher, Chain/ChainClient |
+| app/Jobs | SummarizeBossSession, CheckProduct, SummarizePodcast, GenerateCertificates, AnchorCertificates, RevokeCertificate |
+| app/Console/Commands | SendReminders, CloseIdleBossSessions, ExpirePayments, ResetDemo |
+| app/Support | Nav (penentu menu aktif berdasarkan nama rute) |
+| web3 | contracts/AlloBosCertificate.sol, scripts/deploy.mjs, deploy-ethers.mjs (deploy ke Anvil tanpa Hardhat), anchor.mjs, revoke.mjs, verify.mjs, test, hardhat.config |
 | config | ai.php, chain.php, menus.php, readiness.php, game.php, features.php |
-| resources/views | layouts, components, public, auth, warga, boss-room, game, signing, bos, pengelola, admin, pdf, errors |
-| resources/js | app.js, boss-room.js, warung-3d.js, home-scroll.js, theme.js |
-| public/gif/bos-allo | allo-diam.gif, allo-bicara.gif, allo-transparan.webp |
-| public/models | Aset 3D low-poly warung (GLB) |
-| docs | SPESIFIKASI.md, DESAIN.md, PROGRESS.md, UJI_MANUAL.md |
+| resources/views | components/layouts, components, public, auth, warga, boss-room, game, signing, bos, pengelola, admin, pdf, errors |
+| resources/js | app.js, boss-room.js, avatar.js, warung-3d.js, warung/ (game, world, player, input, interact, customers), motion.js, scale-frame.js, signature-pad.js, wallet.js, charts.js, forms.js, theme.js |
+| public/gif/bos-allo | allo-diam.mp4, allo-bicara.mp4 (720p, pengganti GIF agar tajam dan ringan), GIF lama sebagai cadangan, allo-transparan.webp |
+| public/image | Logo, favikon, pose Bos Allo, latar sertifikat (sertifikat-latar.png) |
+| docs | KONSEP.md, SPESIFIKASI.md, ALUR_BISNIS.md, DESAIN_SISTEM.md, DESAIN.md, PROGRESS.md, UJI_MANUAL.md |
 
 ### 1.5 Arsitektur deploy
 
-- Empat layanan Docker Compose: app (server web), mysql, queue (pekerja antrean), scheduler (pengingat dan pembersihan transkrip).
-- GitHub Actions membangun image dan menerapkannya ke VPS saat cabang utama berubah.
-- Variabel lingkungan: APP_URL, APP_DEMO, DB_*, GEMINI_API_KEY (boleh beberapa kunci dipisah koma), GEMINI_MODEL, DEMO_PASSWORD, pengaturan email, serta CHAIN_NAME, CHAIN_ID, CHAIN_RPC_URL, CHAIN_EXPLORER_URL, CERT_CONTRACT_ADDRESS, ISSUER_PRIVATE_KEY, CERT_HASH_SALT.
-- Image aplikasi menyertakan Node agar pekerjaan antrean dapat menjalankan skrip ethers.js. Kontrak di-deploy satu kali dengan Hardhat dan alamatnya dicatat di README.
-- Saat APP_DEMO aktif, lencana Demo tampil di samping logo.
+| Lapisan | Isi |
+| --- | --- |
+| Domain | allobos.zite.my.id, sertifikat HTTPS Let's Encrypt yang diperbarui otomatis |
+| Proksi | nginx di VPS meneruskan ke 127.0.0.1:3040. Batas unggah 25 MB |
+| app | PHP 8.4 dan server web dalam satu image. upload_max_filesize 20 MB, post_max_size 25 MB, validasi aplikasi 15 MB per gambar |
+| queue | Image yang sama, menjalankan queue:work untuk pekerjaan AI dan sertifikat |
+| scheduler | Image yang sama, menjalankan schedule:work (pengingat, sesi menganggur, kedaluwarsa pembayaran) |
+| mysql | MySQL 8.4 dengan volume tetap |
+| chain | Anvil (ghcr.io/foundry-rs/foundry:v1.5.1), chain id 31337, hanya dapat dicapai dari jaringan Docker di http://chain:8545. Status rantai disimpan ke volume tiap 30 detik sehingga catatan sertifikat bertahan setelah mulai ulang |
+
+- Penerapan: arsip git dikirim lewat SSH ke VPS, lalu docker compose up -d --build. GitHub Actions (ci.yml) menjalankan tes, Pint, dan build aset di tiap push.
+- Variabel lingkungan: APP_URL, APP_DEMO, DB_*, GEMINI_API_KEY (lima kunci dipisah koma), GEMINI_MODEL, GEMINI_FALLBACK_MODELS, SPEECHIFY_API_KEY, SPEECHIFY_VOICE, MAIL_* (Resend), SUMOPOD_API_KEY, SUMOPOD_BASE_URL, SUMOPOD_WEBHOOK_TOKEN, SUMOPOD_WEBHOOK_SECRET, DEMO_PASSWORD, serta CHAIN_NAME, CHAIN_ID, CHAIN_RPC_URL, CHAIN_EXPLORER_URL, CERT_CONTRACT_ADDRESS, ISSUER_PRIVATE_KEY, CERT_HASH_SALT.
+- Semua nilai rahasia hanya ada di berkas .env server dan lokal, tidak pernah di repositori. Dompet penerbit dibuat di server.
+- Image aplikasi menyertakan Node agar pekerjaan antrean dapat menjalankan skrip ethers.js. Kontrak di-deploy sekali ke Anvil dengan deploy-ethers.mjs dan alamatnya disimpan di .env.
+- APP_DEMO=false di produksi, sehingga lencana Demo tidak tampil.
 
 ## 2. Peran dan penjaga akses
 
@@ -123,7 +160,8 @@ Penamaan mengikuti proyek acuan: URI berbahasa Indonesia, nama rute berawalan pe
 | GET | /siniar/{podcast:slug} | podcasts.show | Public\PodcastController@show |
 | GET | /lapak | shops.index | Public\ShopController@index |
 | GET | /lapak/{shop:slug} | shops.show | Public\ShopController@show |
-| POST | /lapak/{shop:slug}/pesan/{product} | shops.order | Public\ShopController@order (catat klik, alihkan ke WhatsApp) |
+| POST | /lapak/{shop:slug}/pesan/{product} | shops.order | Public\ShopController@order (wajib masuk, catat klik, alihkan ke WhatsApp) |
+| POST | /lapak/{shop:slug}/lapor | shops.report | Public\ShopController@report (wajib masuk) |
 | GET | /bos | bosses.index | Public\PageController@bosses |
 | GET | /jadi-bos | become-boss | Public\BecomeBossController@create |
 | POST | /jadi-bos | become-boss.store | Public\BecomeBossController@store |
@@ -133,6 +171,7 @@ Penamaan mengikuti proyek acuan: URI berbahasa Indonesia, nama rute berawalan pe
 | GET | /tentang, /bantuan, /privasi, /syarat, /kontak | pages.{slug} | Public\PageController@show |
 | GET | /undangan/{invitation} | invitations.accept | InvitationAcceptController@show (signed) |
 | POST | /undangan/{invitation} | invitations.accept.store | InvitationAcceptController@store (signed) |
+| POST | /webhook/sumopod | webhooks.sumopod | SumoPodWebhookController (tanpa CSRF, diverifikasi token atau tanda tangan Svix) |
 
 ### 3.2 Autentikasi (routes/auth.php)
 
@@ -164,11 +203,14 @@ Penamaan mengikuti proyek acuan: URI berbahasa Indonesia, nama rute berawalan pe
 | POST | /warga/temu-bos/sesi/{session}/batal | warga.mentoring.cancel | Warga\MentoringController@cancel |
 | POST | /warga/temu-bos/sesi/{session}/nilai | warga.mentoring.rate | Warga\MentoringController@rate |
 | GET | /warga/kelas | warga.programs.index | Warga\ProgramController@index |
-| POST | /warga/kelas/{program}/daftar | warga.programs.enroll | Warga\ProgramController@enroll |
+| GET | /warga/kelas/{program}/konfirmasi | warga.programs.confirm | Warga\ProgramController@confirm (ringkasan jadwal dan harga) |
+| POST | /warga/kelas/{program}/daftar | warga.programs.enroll | Warga\ProgramController@enroll (gratis langsung terdaftar, berbayar ke pembayaran) |
+| GET | /warga/pembayaran/{payment} | warga.payments.show | Warga\PaymentController@show (QRIS, nominal, batas waktu, status) |
 | POST | /warga/kelas/{program}/batal | warga.programs.cancel | Warga\ProgramController@cancel |
 | POST | /warga/kelas/sesi/{session}/hadir | warga.programs.attend | Warga\ProgramController@attend |
 | GET | /warga/sertifikat | warga.certificates.index | Warga\CertificateController@index |
 | GET | /warga/sertifikat/{certificate} | warga.certificates.show | Warga\CertificateController@show |
+| GET | /warga/sertifikat/{certificate}/pratinjau | warga.certificates.preview | Warga\CertificateController@preview (tampilan sertifikat sebelum diunduh) |
 | GET | /warga/sertifikat/{certificate}/pdf | warga.certificates.pdf | Warga\CertificateController@pdf |
 | PATCH | /warga/sertifikat/{certificate} | warga.certificates.update | Warga\CertificateController@update (nama atau inisial, tampil di lapak) |
 | POST | /warga/siniar/{podcast}/dengar | warga.podcasts.listen | Warga\PodcastController@listen |
@@ -177,6 +219,7 @@ Penamaan mengikuti proyek acuan: URI berbahasa Indonesia, nama rute berawalan pe
 | POST | /warga/cek-produk | warga.checks.store | Warga\ProductCheckController@store |
 | GET | /warga/cek-produk/{check} | warga.checks.show | Warga\ProductCheckController@show |
 | PATCH | /warga/cek-produk/{check} | warga.checks.update | Warga\ProductCheckController@update |
+| POST | /warga/cek-produk/{check}/ulang | warga.checks.retry | Warga\ProductCheckController@retry (pemeriksaan macet lebih dari 3 menit) |
 | GET | /warga/peluang | warga.opportunities.index | Warga\OpportunityController@index |
 | POST | /warga/peluang | warga.opportunities.generate | Warga\OpportunityController@generate |
 | POST | /warga/peluang/{opportunity}/pilih | warga.opportunities.choose | Warga\OpportunityController@choose |
@@ -204,7 +247,8 @@ Penamaan mengikuti proyek acuan: URI berbahasa Indonesia, nama rute berawalan pe
 | POST | /ruang-bos | boss-room.store | Warga\BossRoomController@store |
 | GET | /ruang-bos/{session} | boss-room.show | Warga\BossRoomController@show |
 | POST | /ruang-bos/{session}/mulai | boss-room.start | Warga\BossRoomController@start (JSON) |
-| POST | /ruang-bos/{session}/kirim | boss-room.send | Warga\BossRoomController@send (JSON) |
+| POST | /ruang-bos/{session}/kirim | boss-room.send | Warga\BossRoomController@send (JSON, mengembalikan id giliran) |
+| POST | /ruang-bos/{session}/suara | boss-room.voice | Warga\BossRoomController@voice (MP3 Speechify untuk id giliran) |
 | POST | /ruang-bos/{session}/akhiri | boss-room.finish | Warga\BossRoomController@finish |
 | GET | /ruang-bos/{session}/catatan | boss-room.note | Warga\BossRoomController@note |
 | GET | /ruang-bos/{session}/catatan/pdf | boss-room.note.pdf | Warga\BossRoomController@pdf |
@@ -218,10 +262,16 @@ Penamaan mengikuti proyek acuan: URI berbahasa Indonesia, nama rute berawalan pe
 | GET | /warung | game.index | Warga\GameController@index |
 | POST | /warung | game.store | Warga\GameController@store |
 | GET | /warung/{game} | game.play | Warga\GameController@play |
-| POST | /warung/{game}/belanja | game.buy | Warga\GameController@buy (JSON) |
+| POST | /warung/{game}/belanja | game.buy | Warga\GameController@buy (JSON, belanja stok pagi) |
+| POST | /warung/{game}/rak | game.stock | Warga\GameController@stock (JSON, menata barang ke rak) |
 | POST | /warung/{game}/harga | game.price | Warga\GameController@price (JSON) |
-| POST | /warung/{game}/buka | game.run | Warga\GameController@run (JSON) |
+| POST | /warung/{game}/buka-warung | game.open | Warga\GameController@open (JSON, menyusun rencana pembeli hari itu) |
+| POST | /warung/{game}/layani | game.serve | Warga\GameController@serve (JSON, satu pembeli dilayani, idempoten) |
+| POST | /warung/{game}/pergi | game.miss | Warga\GameController@miss (JSON, pembeli pergi karena menunggu terlalu lama) |
+| POST | /warung/{game}/tutup | game.close | Warga\GameController@close (JSON, menutup hari dan menghitung hasil) |
+| POST | /warung/{game}/buka | game.run | Warga\GameController@run (JSON, Mode Ringan: satu hari dihitung sekaligus) |
 | POST | /warung/{game}/lanjut | game.next | Warga\GameController@next (JSON) |
+| POST | /warung/{game}/simpan | game.save | Warga\GameController@save (simpan pelajaran ke Jejak Usaha) |
 | GET | /warung/{game}/rapor | game.report | Warga\GameController@report |
 
 ### 3.6 Tanda Tangan (awalan /tanda-tangan, role:bos,pengelola,admin)
@@ -232,6 +282,7 @@ Penamaan mengikuti proyek acuan: URI berbahasa Indonesia, nama rute berawalan pe
 | GET | /tanda-tangan/spesimen | signing.specimen.edit | Signing\SpecimenController@edit |
 | POST | /tanda-tangan/spesimen | signing.specimen.store | Signing\SpecimenController@store |
 | GET | /tanda-tangan/kelas/{program} | signing.show | Signing\SigningController@show (penerima dan pratinjau) |
+| GET | /tanda-tangan/kelas/{program}/pratinjau/{certificate} | signing.preview | Signing\SigningController@preview |
 | POST | /tanda-tangan/kelas/{program}/keluarkan/{certificate} | signing.exclude | Signing\SigningController@exclude |
 | POST | /tanda-tangan/kelas/{program} | signing.sign | Signing\SigningController@sign (password.confirm) |
 | POST | /tanda-tangan/kelas/{program}/dompet | signing.wallet | Signing\SigningController@wallet (opsional, JSON) |
@@ -309,7 +360,10 @@ Hanya penanda tangan yang ditetapkan untuk kelas itu yang lolos policy. Akun lai
 | Masuk sebagai warga, onboarding belum selesai | Langkah onboarding pertama yang kosong |
 | Masuk sebagai warga, onboarding selesai | /warga |
 | Masuk sebagai bos, pengelola, admin | /bos-area, /pengelola, /admin |
-| Tamu membuka halaman berlogin | /masuk, lalu kembali ke halaman yang dituju |
+| Tamu membuka halaman berlogin | /masuk?tujuan=..., lalu kembali ke halaman yang dituju |
+| Tamu menekan Pesan lewat WhatsApp atau Laporkan Lapak | /masuk dengan tujuan halaman lapak |
+| Mendaftar kelas berbayar | /warga/pembayaran/{payment}, lalu kembali ke kelas setelah Lunas |
+| Pembayaran kedaluwarsa | Halaman kelas dengan pesan dan tombol Daftar Lagi |
 | Tamu menekan Daftar Kelas atau Tanya Bos Allo | /daftar dengan catatan tujuan |
 | Memindai QR sertifikat | /verifikasi/{code}, tanpa perlu masuk |
 | Penanda tangan belum punya spesimen membuka kelas | /tanda-tangan/spesimen, lalu kembali ke kelas |
@@ -317,7 +371,7 @@ Hanya penanda tangan yang ditetapkan untuk kelas itu yang lolos policy. Akun lai
 
 ## 4. Arah visual
 
-Seluruh tampilan dan animasi mengikuti referensi yang ditetapkan pemilik proyek: dribbble.com/shots/26954032-Creative-agency-web-ui-design. Penerapan dilakukan di Claude Code dengan taste skill (design-taste-frontend). Dokumen ini tidak menetapkan nilai warna atau nama font. Nilai itu diturunkan dari referensi pada Fase 0 dan dicatat di docs/DESAIN.md.
+Seluruh tampilan dan animasi mengikuti referensi yang ditetapkan pemilik proyek: dribbble.com/shots/26954032-Creative-agency-web-ui-design. Penerapan dilakukan di Claude Code dengan taste skill (design-taste-frontend). Nilai hasil turunan referensi dicatat di docs/DESAIN.md dan dirangkum di bawah: palet hijau sage dan kuning limau (diambil dari logo dan nuansa alam Gunungkidul), huruf Montserrat untuk judul dan Ubuntu untuk isi.
 
 > **Aturan pakai:** tampilan tidak menyimpan nilai hex. Semua warna lewat token Tailwind yang menunjuk variabel CSS, sehingga mengganti palet cukup di satu berkas.
 
@@ -340,17 +394,43 @@ Seluruh tampilan dan animasi mengikuti referensi yang ditetapkan pemilik proyek:
 
 Tema terang dan gelap memakai token yang sama dengan nilai berbeda, dikendalikan theme.js seperti proyek acuan. Kontras teks isi minimal 4,5 banding 1.
 
+#### 4.1b Nilai token (RGB, dipakai lewat rgb(var(--token)))
+
+| Token | Terang | Gelap |
+| --- | --- | --- |
+| --surface | 230 235 211 | 12 14 9 |
+| --surface-alt | 219 226 196 | 18 21 13 |
+| --surface-raised | 245 248 234 | 26 30 19 |
+| --fg | 20 26 12 | 244 251 200 |
+| --fg-body | 50 60 36 | 214 221 190 |
+| --fg-muted | 84 96 62 | 156 166 130 |
+| --line | 196 205 168 | 44 50 32 |
+| --brand | 62 77 30 | 233 245 166 |
+| --brand-fg | 244 251 200 | 20 26 12 |
+| --accent | 205 224 72 | sama |
+| --accent-text | 82 102 14 | 205 224 72 |
+| --success | 38 122 68 | 110 200 140 |
+| --warning | 150 96 12 | 232 180 80 |
+| --danger | 180 52 36 | 240 120 100 |
+| --info | 32 108 88 (sage, pengganti biru) | 128 206 170 |
+| --ink, --ink-raised, --ink-fg | 10 12 7, 24 27 18, 244 251 200 | sama (panel gelap di kedua tema) |
+| --hero-from, --hero-to | 139 161 58 ke 199 185 46 | sama |
+| --mint-from, --mint-to | 116 184 140 ke 190 222 140 | sama |
+| --ease-out | cubic-bezier(0.16, 1, 0.3, 1) | sama |
+
+Warna biru tidak dipakai agar seluruh antarmuka satu keluarga dengan logo. Keadaan info memakai hijau sage.
+
 ### 4.2 Tipografi, jarak, sudut
 
 | Elemen | Aturan |
 | --- | --- |
-| Font | Satu keluarga display dan satu keluarga isi mengikuti referensi, dimuat dengan display swap. Maksimal dua keluarga. |
+| Font | Montserrat Variable untuk judul, Ubuntu untuk isi, keduanya di-host sendiri lewat Fontsource dengan display swap. PDF memakai DejaVu Sans dan DejaVu Serif bawaan dompdf. |
 | Skala huruf | Display 48 sampai 72 px (beranda), H1 36, H2 28, H3 20, isi 16, kecil 14, label 12 huruf besar berjarak. |
 | Tinggi baris | Judul 1,1 sampai 1,2. Isi 1,6. |
 | Lebar teks | Paragraf maksimal sekitar 68 karakter. |
-| Kisi | Kontainer maksimal 1200 px, 12 kolom desktop, 4 kolom ponsel, celah 24 px. |
+| Kisi | Kontainer .container-page maksimal 1440 px dengan tepi 16, 24, dan 40 px. 12 kolom desktop, 4 kolom ponsel, celah 24 px. Kartu dalam satu baris disamakan tingginya. |
 | Jarak | Kelipatan 4 px. Antar seksi 96 px desktop, 56 px ponsel. |
-| Sudut | Tombol dan masukan mengikuti referensi (satu nilai untuk seluruh aplikasi). Kartu satu tingkat lebih besar. |
+| Sudut | Tombol dan masukan berbentuk pil. Kartu rounded-card 28 px. Panel besar dan hero rounded-panel 40 px. |
 | Bayangan | Dua tingkat saja: kartu dan lapisan melayang. |
 | Ikon | Satu set garis 24 px, tebal garis seragam. |
 
@@ -363,6 +443,9 @@ Tema terang dan gelap memakai token yang sama dengan nilai berbeda, dikendalikan
 | Seksi lengket bertahap | Lima tahap ekosistem di beranda | Kartu tahap bertumpuk saat digulir, pola home-scroll.js. |
 | Teks berjalan | Pita bidang usaha atau mitra | Berhenti saat disorot. |
 | Sorot tombol dan kartu | Semua tombol dan kartu tautan | 150 sampai 200 ms, tanpa lompatan tata letak. |
+| motion.js | Semua halaman publik | Elemen bertanda data-reveal muncul saat masuk layar lewat IntersectionObserver, berjalan di ponsel dan desktop, tidak mengecil ke tengah saat diperbesar. |
+| Tanda air logo | Kartu kelas, siniar, lapak, bos | Logo transparan di sudut kartu dan chip logo kecil, diam, tanpa animasi berulang. |
+| Avatar Bos Allo | Ruang Bos, dashboard | Video MP4 diam dan bicara bergantian, bukan GIF. |
 | Transisi halaman dashboard | Dashboard | Tidak ada. Dashboard mengutamakan kecepatan. |
 | Kurangi gerak | Semua | prefers-reduced-motion mematikan animasi gulir dan ketik. |
 
@@ -374,8 +457,8 @@ Detail kurva dan durasi disamakan dengan animasi pada referensi saat penerapan.
 | --- | --- | --- |
 | layouts/public | Halaman publik | Navbar transparan yang memadat saat digulir, isi, footer |
 | layouts/app | Warga | Navbar atas dengan menu modul, isi lebar terbatas, navigasi bawah di ponsel |
-| layouts/dashboard | Bos, Pengelola, Admin | Sidebar kiri dari config/menus.php, topbar, isi |
-| layouts/auth | Masuk, Daftar, sandi | Dua kolom: visual dan formulir. Satu kolom di ponsel |
+| layouts/dashboard | Bos, Pengelola, Admin | Sidebar kiri dari config/menus.php, topbar dengan tombol Ke Beranda, isi. Menu aktif ditentukan App\Support\Nav sehingga hanya satu menu yang menyala |
+| layouts/auth | Masuk, Daftar, sandi | Dua kolom: visual pose Bos Allo yang menetap (tidak ikut bergulir) dan kolom formulir yang bergulir sendiri. Satu kolom di ponsel |
 | layouts/stage | Ruang Bos, Warung Bos 3D | Layar penuh tanpa navbar, bilah atas tipis dengan tombol Keluar |
 | layouts/shop | Halaman lapak publik dan halaman verifikasi sertifikat | Ringan: tanpa skrip animasi, tanpa pustaka berat |
 | errors/layout | 403, 404, 419, 500, 503 | Pesan, penjelasan, satu tombol tindakan |
@@ -384,7 +467,8 @@ Detail kurva dan durasi disamakan dengan animasi pada referensi saat penerapan.
 
 | Area | Isi menu |
 | --- | --- |
-| Navbar publik | Kelas, Siniar, Lapak, Bos, Tentang. Kanan: Masuk (ghost), Daftar (primary). Footer: Verifikasi Sertifikat |
+| Navbar publik | Kelas, Siniar, Lapak, Bos, Tentang. Kanan: Masuk (ghost), Daftar (primary). Footer: Verifikasi Sertifikat, halaman informasi, tanpa keterangan lomba |
+| Halaman detail | Tiap halaman detail (kelas, siniar, lapak, sertifikat, pembayaran) punya x-back-link ke daftar induknya |
 | Navbar warga | Beranda, Ruang Bos, Belajar (Kelas, Sertifikat Saya, Siniar, Warung 3D), Rancang (Peluang, Rencana, Langkah, Cek Produk), Lapak Saya, lonceng, menu akun |
 | Navigasi bawah warga (ponsel) | Beranda, Ruang Bos, Belajar, Rancang, Lapak |
 | Sidebar Bos | Ringkasan, Permintaan Sesi, Jadwal dan Slot, Tanda Tangan Sertifikat, Profil Bos |
@@ -400,11 +484,15 @@ Dirancang dari 360 px. Titik henti Tailwind: sm 640, md 768, lg 1024, xl 1280. S
 
 | Komponen Blade | Fungsi | Catatan |
 | --- | --- | --- |
-| x-button, x-link-button | Tombol dan tautan bergaya tombol | Lihat bagian 7 |
+| x-logo | Logo alloBos (gambar) | Opsi compact untuk navbar sempit |
+| x-logo-mark, x-logo-chip | Tanda air logo di kartu dan chip logo kecil | Hiasan, aria-hidden |
+| x-back-link | Tautan kembali di halaman detail | Ikon panah dan nama halaman induk |
+| x-theme-toggle | Tombol ganti tema | Ikon berganti, pilihan disimpan |
+| x-button, x-link-button | Tombol dan tautan bergaya tombol | Lihat bagian 7. Mendukung ikon kiri dan iconRight |
 | x-card | Wadah isi | Opsi: polos, tautan, sorot |
-| x-field, x-text-input, x-textarea, x-select | Masukan formulir dengan label dan galat | Label selalu terlihat, bukan hanya placeholder |
-| x-badge | Status | Warna dari token status, selalu disertai teks |
-| x-demo-badge, x-ai-badge | Lencana Demo dan Perkiraan AI | Wajib di data contoh dan hasil AI pasar |
+| x-field, x-text-input, x-textarea, x-select | Masukan formulir dengan label dan galat | Label selalu terlihat. x-text-input mendukung ikon di kiri dan tombol mata untuk menampilkan sandi |
+| x-badge, x-status-badge, x-official-badge | Status dan lencana resmi IPI | Warna dari token status, selalu disertai teks |
+| x-demo-badge, x-ai-badge | Lencana Demo dan Perkiraan AI | Perkiraan AI wajib di hasil AI pasar. Demo hanya tampil saat APP_DEMO=true |
 | x-modal | Dialog konfirmasi | Fokus terkunci, tutup dengan Esc |
 | x-empty-state | Keadaan kosong | Satu kalimat dan satu tombol tindakan |
 | x-page-header | Judul halaman dashboard | Judul, keterangan, tombol tindakan utama di kanan |
@@ -412,7 +500,7 @@ Dirancang dari 360 px. Titik henti Tailwind: sm 640, md 768, lg 1024, xl 1280. S
 | x-chart | Grafik Chart.js | Warna dari token |
 | x-step-progress | Penunjuk langkah onboarding dan fase permainan | Angka dan nama langkah |
 | x-score-ring | Skor Siap Usaha | Angka besar, label tingkat, rincian saat diketuk |
-| x-boss-avatar | Bos Allo | Lihat bagian 8 |
+| x-boss-avatar | Bos Allo dalam video MP4 16:9 dengan poster WEBP | Lihat bagian 8 |
 | x-certificate-card | Kartu sertifikat di Sertifikat Saya | Nama kelas, tanggal, status, tombol unduh dan salin tautan |
 | x-verified-badge | Lencana terverifikasi di Lapak dan Jejak Usaha | Menaut ke halaman verifikasi, hanya untuk status Tercatat |
 | x-chain-proof | Bukti blockchain di halaman verifikasi | Jaringan, hash transaksi terpotong dengan tombol salin, nomor blok, tautan penjelajah blok |
@@ -510,7 +598,8 @@ Dirancang dari 360 px. Titik henti Tailwind: sm 640, md 768, lg 1024, xl 1280. S
 | --- | --- | --- | --- |
 | Mulai Bicara dengan Bos Allo | primary lg | POST /ruang-bos | Nonaktif bila kuota habis, alasan ditulis |
 | Pilihan mode Suara atau Teks | segmen | Mengubah mode sesi | Suara nonaktif bila peramban tidak mendukung |
-| Tahan untuk Bicara | icon xl | Mulai dan hentikan rekam ucapan | Berdenyut saat merekam, nonaktif saat Bos Allo berbicara |
+| Tahan untuk Bicara | icon xl | Rekam selama ditahan, kirim otomatis saat dilepas | Berdenyut saat merekam, nonaktif saat Bos Allo berbicara |
+| Putar Suara Bos Allo | secondary sm | Membuka izin audio peramban | Muncul hanya bila peramban memblokir putar otomatis |
 | Kirim | primary md | POST kirim (JSON) | Nonaktif bila teks kosong atau sedang menunggu jawaban |
 | Ulangi Rekaman | ghost sm | Menghapus transkrip sementara | Hanya mode suara |
 | Bisukan suara | icon | Menghentikan dan mematikan suara | Ikon berganti |
@@ -538,7 +627,12 @@ Dirancang dari 360 px. Titik henti Tailwind: sm 640, md 768, lg 1024, xl 1280. S
 
 | Tombol | Varian | Aksi | Keadaan khusus |
 | --- | --- | --- | --- |
-| Daftar Kelas | primary lg | POST daftar | Berganti Kuota Penuh (nonaktif) atau Sudah Terdaftar |
+| Daftar Kelas | primary lg | Ke halaman konfirmasi | Berganti Kuota Penuh (nonaktif), Sudah Terdaftar, atau Lanjutkan Pembayaran bila tagihan masih terbuka |
+| Konfirmasi Pendaftaran (gratis) atau Bayar dengan QRIS (berbayar) | primary lg penuh | POST daftar | Berganti Lanjutkan Pembayaran bila tagihan masih terbuka. Memuat: Mendaftar atau Menyiapkan pembayaran |
+| Kembali ke Detail Kelas | ghost md penuh | Ke /kelas/{slug} | Di halaman konfirmasi |
+| Buka Halaman Pembayaran | primary md penuh | Membuka halaman QRIS SumoPod | Selama Menunggu Bayar |
+| Buka Kelas Saya | primary md penuh | Ke /warga/kelas | Setelah Lunas |
+| Daftar Lagi | primary md penuh | Ke halaman konfirmasi | Setelah Gagal atau Kedaluwarsa |
 | Batalkan Pendaftaran | danger sm | Konfirmasi, POST batal | Hilang setelah kelas mulai |
 | Catat Hadir | primary md | POST hadir dengan kode | Aktif hanya pada waktu sesi |
 | Lihat Sertifikat | secondary md | Ke /warga/sertifikat/{certificate} | Muncul setelah sertifikat dibuat, berlabel statusnya |
@@ -551,6 +645,7 @@ Dirancang dari 360 px. Titik henti Tailwind: sm 640, md 768, lg 1024, xl 1280. S
 
 | Tombol | Varian | Aksi | Keadaan khusus |
 | --- | --- | --- | --- |
+| Lihat Sertifikat | secondary md | Ke pratinjau | Pratinjau diskalakan pas layar dengan scale-frame.js |
 | Unduh PDF | primary md | GET sertifikat/pdf | Nonaktif saat Menunggu Tanda Tangan, alasan ditulis |
 | Salin Tautan Verifikasi | secondary md | Menyalin /verifikasi/{code} | Berganti Tersalin 2 detik |
 | Lihat Bukti Blockchain | ghost sm | Membuka penjelajah blok di tab baru | Hanya status Tercatat |
@@ -576,13 +671,17 @@ Dirancang dari 360 px. Titik henti Tailwind: sm 640, md 768, lg 1024, xl 1280. S
 | Tombol | Varian | Aksi | Keadaan khusus |
 | --- | --- | --- | --- |
 | Buka Warung | primary lg | POST /warung | Bila ada permainan berjalan: Lanjutkan Warung |
+| Mulai Main | primary lg | Mengunci tetikus dan masuk ke warung | Petunjuk kontrol tampil sesuai perangkat |
 | Tambah dan Kurang stok | icon | Mengubah jumlah belanja | Tambah nonaktif bila kas tidak cukup |
 | Selesai Belanja | primary md | POST belanja |  |
+| Tata ke Rak (E) | aksi di dunia 3D | POST rak | Petunjuk tombol muncul saat melihat rak dalam jarak 3 meter |
 | Naik dan Turun harga | icon | Mengubah harga jual | Ada penunjuk harga wajar |
 | Pilihan promosi | segmen | Tanpa promosi, spanduk, diskon | Biaya tampil di tiap pilihan |
-| Buka Warung Hari Ini | primary lg | POST buka | Memuat: Warung sedang buka |
+| Buka Warung Hari Ini | primary lg | POST buka-warung | Pembeli mulai berdatangan |
+| Layani (E) | aksi di dunia 3D | POST layani | Muncul saat melihat pembeli di meja kasir |
+| Tutup Warung | primary md | POST tutup | Ringkasan hari tampil |
 | Lanjut ke Hari Berikutnya | primary md | POST lanjut | Di hari 7: Lihat Rapor |
-| Putar kamera, Perbesar | icon glass | Mengendalikan kamera |  |
+| Jeda (Esc) | icon glass | Membuka menu jeda | Juga tombol Start pada gamepad |
 | Mode Ringan | ghost sm | Beralih ke tampilan tanpa 3D | Pilihan disimpan |
 | Simpan Pelajaran ke Jejak Usaha | primary md | Menyimpan rapor | Di halaman rapor |
 | Main Lagi | secondary md | POST /warung |  |
@@ -594,6 +693,7 @@ Dirancang dari 360 px. Titik henti Tailwind: sm 640, md 768, lg 1024, xl 1280. S
 | Ambil Foto | primary md | Membuka kamera | Hanya di perangkat berkamera |
 | Pilih dari Galeri | secondary md | Membuka pemilih berkas |  |
 | Periksa Produk | primary md | POST cek-produk | Memuat: Memeriksa foto |
+| Periksa Ulang | secondary md | POST cek-produk/{check}/ulang | Muncul bila pemeriksaan belum selesai setelah 3 menit |
 | Perbaiki Nama Produk | ghost sm | PATCH cek |  |
 | Salin Deskripsi | secondary sm | Menyalin ke papan klip | Berganti Tersalin 2 detik |
 | Tambahkan ke Lapak | primary md | Ke formulir produk terisi | Bila belum punya lapak: Buat Lapak Dulu |
@@ -621,8 +721,9 @@ Dirancang dari 360 px. Titik henti Tailwind: sm 640, md 768, lg 1024, xl 1280. S
 | Ajukan Terbit | primary md | POST ajukan | Nonaktif tanpa produk berfoto, alasan ditulis |
 | Tutup Sementara, Buka Kembali | secondary md | POST tutup |  |
 | Salin Tautan Lapak | secondary sm | Menyalin alamat | Hanya lapak Terbit |
-| Pesan lewat WhatsApp | whatsapp lg | POST pesan, lalu ke WhatsApp | Nonaktif bila produk habis |
-| Laporkan Lapak | tautan teks | Membuka formulir lapor | Di kaki halaman lapak |
+| Pesan lewat WhatsApp | whatsapp lg | POST pesan, lalu ke WhatsApp | Nonaktif bila produk habis. Tamu diarahkan masuk dulu |
+| Laporkan Lapak | tautan teks | Membuka formulir lapor | Di kaki halaman lapak. Tamu diarahkan masuk dulu |
+| Unggah Sampul dan Foto Produk | secondary sm | Memilih gambar | JPG, PNG, WEBP maksimal 15 MB, pratinjau langsung |
 
 #### Dashboard Bos, Pengelola, Admin
 
@@ -643,17 +744,20 @@ Dirancang dari 360 px. Titik henti Tailwind: sm 640, md 768, lg 1024, xl 1280. S
 | Simpan Pengaturan AI | primary md | PATCH ai |  |
 | Uji Prompt | secondary md | POST uji | Menampilkan jawaban dan durasi |
 | Simpan sebagai Versi Baru | primary md | POST prompt |  |
-| Kirim Reset Sandi | secondary sm | POST reset-sandi |  |
+| Kirim Reset Sandi | secondary sm | POST reset-sandi | Email dikirim lewat Resend |
+| Ke Beranda | ghost sm | Ke / | Di topbar semua dashboard |
 
 ## 8. Spesifikasi Bos Allo
 
 | Aspek | Ketentuan |
 | --- | --- |
-| Aset | Dua GIF berlatar transparan dengan ukuran dan posisi sama: allo-diam.gif dan allo-bicara.gif, ditambah satu gambar diam WEBP untuk pratinjau dan mode kurangi gerak. |
-| Pergantian | Fungsi gifFor mengembalikan GIF bicara bila keadaan sama dengan speaking, selain itu GIF diam. Kedua GIF dimuat lebih dulu agar tidak berkedip. |
+| Aset | Dua video MP4 720p dengan ukuran dan posisi sama: allo-diam.mp4 dan allo-bicara.mp4 (hasil konversi dan peningkatan resolusi dari GIF agar tidak buram), ditambah allo-transparan.webp sebagai poster dan untuk mode kurangi gerak. |
+| Pergantian | avatar.js memutar video bicara selama audio Speechify berjalan, lalu kembali ke video diam. Kedua video dimuat lebih dulu agar tidak berkedip. Ukuran avatar besar: separuh layar di desktop. |
 | Keadaan | idle (diam), listening (diam dengan cincin denyut di tombol bicara), thinking (diam dengan teks Bos Allo sedang berpikir), speaking (bicara), error (diam dengan pesan). |
-| Suara keluar | speechSynthesis berbahasa id-ID. Pemilihan suara mengutamakan suara Indonesia yang tersedia. Peristiwa mulai dan selesai suara menggerakkan keadaan. |
-| Suara masuk | SpeechRecognition atau webkitSpeechRecognition, id-ID, hasil sementara ditampilkan. |
+| Suara keluar | Speechify (model simba-3.5, suara bima, id-ID, laki-laki). Audio diminta per id giliran sehingga suara selalu cocok dengan jawaban yang sedang tampil. Bila peramban memblokir putar otomatis, muncul tombol Putar Suara Bos Allo. Cadangan: teks saja. |
+| Sinkron teks dan suara | Teks jawaban ditampilkan bersamaan dengan mulainya audio, bukan sebelum. Giliran baru membatalkan audio lama. |
+| Suara masuk | SpeechRecognition atau webkitSpeechRecognition, id-ID, hasil sementara ditampilkan. Tahan untuk bicara, lepas untuk kirim. |
+| Isi jawaban | Gemini dengan skema berisi understood (ringkasan maksud warga), reply, dan saran langkah, berurutan lewat propertyOrdering. Riwayat yang dikirim adalah 10 giliran terakhir. Suhu 0,5. |
 | Tanpa dukungan suara | Mode teks. GIF bicara tampil selama teks jawaban diketik per kata. |
 | Tata letak | Desktop: Bos Allo di kiri, percakapan di kanan. Ponsel: Bos Allo di atas sepertiga layar, percakapan di bawah, tombol bicara menempel di bawah. |
 | Aksesibilitas | Jawaban selalu tersedia sebagai teks. Area percakapan memakai aria-live. Tombol bicara dapat dioperasikan papan ketik. |
@@ -664,10 +768,12 @@ Dirancang dari 360 px. Titik henti Tailwind: sm 640, md 768, lg 1024, xl 1280. S
 | Aspek | Ketentuan |
 | --- | --- |
 | Mesin | Three.js dimuat hanya di halaman permainan lewat impor dinamis. |
-| Adegan | Satu warung low-poly, jalan, tiga sampai lima pelanggan, langit siang dan senja. Gaya warna mengikuti token brand dan accent. |
-| Kamera | Perspektif miring dari atas, putar terbatas 90 derajat, perbesar dua tingkat. |
-| Antarmuka | Panel HTML di atas kanvas, bukan teks di dalam 3D, agar terbaca dan dapat diakses. |
-| Animasi | Pelanggan berjalan ke warung sesuai jumlah terjual, rak berkurang, papan harga berubah, hujan saat kejadian hujan. |
+| Sudut pandang | Orang pertama. Pemain berjalan di dalam warung (tinggi mata 1,65 m, jalan 2,6 m/detik, lari 4,4 m/detik) dengan tabrakan dinding dan rak. |
+| Kontrol | Papan ketik dan tetikus (WASD, E interaksi, F ambil, Shift lari, Tab isi, Esc jeda), gamepad standar (Xbox dan PlayStation, petunjuk tombol ikut menyesuaikan), dan sentuh (joystick virtual dan tombol aksi). Semua masukan dipetakan ke aksi yang sama. |
+| Adegan | Warung low-poly dengan rak, meja kasir, papan harga, dan jalan depan. Barang di rak memakai InstancedMesh. Gaya warna mengikuti token ink, lime, dan cream. |
+| Pelanggan | Pembeli datang sesuai rencana dari server, antre di kasir, dan pergi bila menunggu lebih dari 60 detik. |
+| Antarmuka | Panel HTML di atas kanvas (kas, hari, stok, petunjuk aksi), bukan teks di dalam 3D, agar terbaca dan dapat diakses. |
+| Alur server | Rencana dan penyelesaian: buka-warung menyusun daftar pembeli, layani dan pergi mencatat tiap pembeli secara idempoten, tutup menghitung hasil hari. Klik ganda atau jaringan putus tidak menggandakan penjualan. |
 | Anggaran | Aset total di bawah 3 MB, sasaran 30 bingkai per detik di ponsel kelas menengah, bayangan sederhana. |
 | Sumber kebenaran | Server. Kanvas hanya menampilkan hasil yang dikirim server. |
 | Mode Ringan | Ilustrasi diam dan panel yang sama. Aktif otomatis bila WebGL tidak tersedia. |
@@ -678,13 +784,15 @@ Dirancang dari 360 px. Titik henti Tailwind: sm 640, md 768, lg 1024, xl 1280. S
 | Aspek | Ketentuan |
 | --- | --- |
 | Ukuran | A4 mendatar, satu halaman, dibuat dengan dompdf dari resources/views/pdf/certificate.blade.php. |
-| Isi | Logo alloBos dan IPI, judul Sertifikat, nama penerima, nama kelas dan bidang, tanggal kelas, tempat, satu atau dua blok tanda tangan (gambar spesimen, nama, jabatan atau usaha), kode sertifikat, kode QR, kalimat cara verifikasi. |
+| Isi | Logo alloBos, judul Sertifikat, nama penerima, nama kelas dan bidang, tanggal kelas, tempat, satu atau dua blok tanda tangan (gambar spesimen, nama, jabatan), kode sertifikat, kode QR, kalimat cara verifikasi. Penanda tangan utama: Deni Fuadi, Pemilik PT Institusi Pengusaha Indonesia. Tanda tangannya diunggah sendiri lewat akunnya, tidak pernah dibuat-buat sistem. |
+| Desain | Gaya premium: latar sertifikat-latar.png dengan bingkai, nama penerima dalam huruf serif besar, garis pemisah, blok tanda tangan kiri dan kanan, QR dan kode di sudut bawah. |
+| Pratinjau | Halaman pratinjau menampilkan sertifikat yang sama dengan PDF, diskalakan pas layar oleh scale-frame.js, sebelum warga mengunduh. |
 | Kode sertifikat | Format ALB-TAHUN-6 karakter acak tanpa huruf yang mirip angka, misalnya ALB-2026-7KQ4MX. |
 | Kode QR | Berisi alamat /verifikasi/{code}. Ukuran cetak minimal 25 mm dengan tepi kosong. |
 | Gaya | Memakai token brand dan accent serta font dari referensi. Tanpa hiasan yang mengurangi keterbacaan saat dicetak hitam putih. |
 | Halaman verifikasi | Urutan: panel status besar, data sertifikat, penanda tangan, bukti blockchain, penjelasan singkat cara kerja verifikasi dalam dua kalimat. |
 | Warna status | Asli memakai success, Dicabut dan Tidak Cocok memakai danger, Belum Tercatat memakai warning, Tidak Ditemukan memakai netral. Status selalu ditulis dengan teks, bukan warna saja. |
-| Jaringan uji | Bila CHAIN_NAME adalah jaringan uji, x-chain-proof menampilkan keterangan Jaringan uji di samping nama jaringan. |
+| Jaringan uji | Sertifikat dicatat di Jaringan Uji alloBos (Anvil, chain id 31337) agar gratis dan stabil. x-chain-proof menampilkan keterangan Jaringan uji, hash transaksi, dan nomor blok. Kontrak yang sama dapat dipindah ke Polygon dengan mengganti CHAIN_RPC_URL. |
 | Lencana di Lapak | Satu baris di bawah nama lapak: ikon centang, teks Lulus kelas dan nama kelas, tautan Periksa. Maksimal tiga lencana, sisanya di tautan Lihat Semua. |
 | Tanda tangan di ponsel | x-signature-pad selebar layar dengan tinggi 180 px dan garis panduan. Layar tidak ikut bergulir saat menggambar. |
 
@@ -695,7 +803,7 @@ Dirancang dari 360 px. Titik henti Tailwind: sm 640, md 768, lg 1024, xl 1280. S
 - Tidak ada statistik atau testimoni karangan. Angka publik dihitung dari basis data.
 - Pesan galat menyebut kejadian dan langkah berikutnya.
 - Hasil AI tentang pasar dan peluang selalu disertai lencana Perkiraan AI.
-- Data contoh selalu disertai lencana Demo.
+- Lencana Demo hanya tampil bila APP_DEMO=true. Situs produksi tampil seperti situs umum, tanpa keterangan lomba atau karakter fiktif.
 - Istilah blockchain dijelaskan dengan bahasa awam: catatan publik yang tidak bisa diubah. Kata hash diganti sidik digital di antarmuka warga.
 
 ## 12. Daftar periksa sebelum rilis
@@ -708,5 +816,11 @@ Dirancang dari 360 px. Titik henti Tailwind: sm 640, md 768, lg 1024, xl 1280. S
 - Warung Bos 3D berjalan di mode 3D dan Mode Ringan.
 - QR sertifikat demo membuka halaman verifikasi berstatus Asli dan tautan penjelajah blok menampilkan transaksinya.
 - Kunci privat penerbit tidak ada di repositori dan riwayat commit.
-- Empat akun demo dapat masuk dan dashboard tiap peran terbuka.
+- Akun tiap peran (@allobos.com) dapat masuk dan dashboard tiap peran terbuka, dengan tombol Ke Beranda dan satu menu aktif.
+- Kelas gratis langsung terdaftar. Kelas berbayar membuat QRIS SumoPod sandbox, webhook salah token ditolak 401, webhook benar mengubah status menjadi Lunas.
+- Bos Allo menjawab sesuai pertanyaan, suara Speechify terdengar bersamaan dengan teksnya, dan tetap berjalan sebagai teks bila Speechify mati.
+- Email verifikasi dan reset sandi terkirim lewat Resend.
+- Unggah sampul lapak dan foto produk hingga 15 MB tersimpan dan tampil.
+- Cek Produk selesai lewat antrean, atau menawarkan Periksa Ulang setelah 3 menit.
+- Layanan chain bertahan setelah mulai ulang dan sertifikat demo tetap berstatus Asli.
 - README memuat akun demo, daftar pustaka, aset, dan pemakaian AI coding assistant.

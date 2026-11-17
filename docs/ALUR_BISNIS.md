@@ -4,7 +4,8 @@ Alur bisnis alloBos secara rinci: pelaku, perjalanan warga, alur tiap modul, sta
 
 - **Produk:** alloBos, pendamping usaha berbasis AI untuk warga Gunungkidul
 - **Penyusun:** Giska Saputra
-- **Versi:** Final 1.1, 17 November 2026 (menambah Sertifikat Terverifikasi berbasis Web3)
+- **Versi:** Final 2.0, 18 November 2026 (menambah pembayaran kelas QRIS, alur suara, Warung Bos 3D orang pertama)
+- **Aplikasi berjalan:** https://allobos.zite.my.id
 - **Dokumen terkait:** Konsep Ide, PRD, Design System
 
 ## 1. Pelaku dan pertukaran nilai
@@ -15,11 +16,12 @@ Alur bisnis alloBos secara rinci: pelaku, perjalanan warga, alur tiap modul, sta
 | Bos | Waktu dan pengalaman usaha | Jadwal rapi, konteks warga sebelum sesi, penilaian, jejaring |
 | Pengelola IPI | Program, pembicara, kurasi | Peserta kelas, data kebutuhan warga, jangkauan lebih luas |
 | Admin | Pemeliharaan sistem | Sistem yang tertib dan teraudit |
-| Pembeli | Pesanan dan pembayaran langsung ke penjual | Produk lokal dengan informasi jelas |
+| Pembeli | Pesanan dan pembayaran langsung ke penjual (perlu akun untuk memesan) | Produk lokal dengan informasi jelas |
 | Pihak luar (calon mitra, pemberi modal) | Kepercayaan dan kesempatan | Bukti pelatihan warga yang bisa diperiksa sendiri |
-| Bos Allo (AI) | Jawaban, rekomendasi, dokumen | Konteks dari profil dan riwayat warga |
+| Bos Allo (AI) | Jawaban, rekomendasi, dokumen, suara | Konteks dari profil dan riwayat warga |
+| Layanan pihak ketiga | Gemini (AI), Speechify (suara), Resend (email), SumoPod (QRIS), jaringan blockchain uji | Permintaan yang sudah disamarkan, biaya layanan pembayaran |
 
-Uang tidak berpindah di dalam aplikasi. Pembayaran pesanan lapak terjadi langsung antara pembeli dan penjual. Biaya kelas, bila ada, diurus IPI di luar aplikasi.
+Uang yang berpindah di dalam aplikasi hanya biaya kelas berbayar, dibayar warga lewat QRIS SumoPod (biaya layanan 0,7% ditambah Rp300 per transaksi, dana masuk saldo setelah sekitar dua hari). Pembayaran pesanan lapak tetap terjadi langsung antara pembeli dan penjual di luar aplikasi.
 
 ## 2. Perjalanan utama warga
 
@@ -31,7 +33,7 @@ Alur ujung ke ujung dari pengunjung menjadi pemilik lapak. Ini juga alur yang di
 | 2 | Warga | Mengisi lima langkah Profil Usaha | Menyimpan profil dan menghitung skor awal | Skor Siap Usaha awal |
 | 3 | Warga | Membuka Ruang Bos dan bercerita | Bos Allo menjawab dengan suara dan teks | Giliran percakapan |
 | 4 | Warga | Menekan Akhiri Sesi | Menyusun Catatan Konsultasi | Catatan dan saran modul |
-| 5 | Warga | Mendaftar kelas yang disarankan | Mencatat pendaftaran dan mengirim pengingat | Tempat di kelas |
+| 5 | Warga | Mendaftar kelas yang disarankan lewat halaman konfirmasi, membayar QRIS bila kelas berbayar | Mencatat pendaftaran setelah konfirmasi atau setelah pembayaran lunas, mengirim pengingat | Tempat di kelas |
 | 6 | Warga | Hadir dan memasukkan kode kehadiran | Mencatat kehadiran dan memperbarui skor | Progres kelas |
 | 7 | Pembicara | Menandatangani sertifikat kelas | Membuat PDF dan mencatat sidik digital ke blockchain | Sertifikat Terverifikasi |
 | 8 | Warga | Mendengar satu episode siniar dan menandainya | Menyimpan tanda dengar | Skor belajar naik |
@@ -42,7 +44,7 @@ Alur ujung ke ujung dari pengunjung menjadi pemilik lapak. Ini juga alur yang di
 | 13 | Warga | Memotret produk di Cek Produk | Menilai foto, kemasan, harga, Sinyal Pasar | Laporan dan deskripsi |
 | 14 | Warga | Membuat lapak dan menambah produk dari hasil cek | Mengisi nama, deskripsi, saran harga | Lapak berstatus Menunggu |
 | 15 | Pengelola IPI | Menyetujui lapak | Menerbitkan dan memberi tahu pemilik | Lapak publik |
-| 16 | Pembeli | Membuka lapak dan menekan Pesan lewat WhatsApp | Membuka WhatsApp dengan pesan terisi | Pesanan ke penjual |
+| 16 | Pembeli | Membuka lapak, masuk akun, menekan Pesan lewat WhatsApp | Membuka WhatsApp dengan pesan terisi | Pesanan ke penjual |
 | 17 | Warga | Bila butuh arahan lanjut, memesan Temu Bos | Mengirim permintaan ke Bos | Sesi dengan bos asli |
 
 ## 3. Alur per modul
@@ -51,7 +53,7 @@ Alur ujung ke ujung dari pengunjung menjadi pemilik lapak. Ini juga alur yang di
 
 | No | Pelaku | Aksi | Respons sistem | Hasil |
 | --- | --- | --- | --- | --- |
-| 1 | Pengunjung | Mengisi nama, WhatsApp, email, sandi, centang persetujuan | Validasi, membuat akun, mengirim email verifikasi | Akun belum terverifikasi |
+| 1 | Pengunjung | Mengisi nama, WhatsApp, email, sandi, centang persetujuan | Validasi, membuat akun, mengirim email verifikasi lewat Resend | Akun belum terverifikasi |
 | 2 | Warga | Membuka tautan verifikasi | Menandai email terverifikasi | Akses onboarding |
 | 3 | Warga | Memilih kapanewon | Menyimpan langkah 1 | Lokasi |
 | 4 | Warga | Memilih status: belum punya usaha atau sudah | Menampilkan pertanyaan lanjutan sesuai pilihan | Status usaha |
@@ -64,10 +66,10 @@ Alur ujung ke ujung dari pengunjung menjadi pemilik lapak. Ini juga alur yang di
 | No | Pelaku | Aksi | Respons sistem | Hasil |
 | --- | --- | --- | --- | --- |
 | 1 | Warga | Memilih topik dan mode, menekan Mulai Bicara dengan Bos Allo | Memeriksa kuota, membuat sesi, meminta izin mikrofon | Sesi Berjalan |
-| 2 | Bos Allo | Menyapa dan bertanya pembuka | GIF berbicara tampil, suara diputar | Giliran 1 |
-| 3 | Warga | Menekan Tahan untuk Bicara lalu berbicara | Menampilkan transkrip | Teks ucapan |
-| 4 | Warga | Menekan Kirim | Menyamarkan data pribadi, memanggil AI | GIF diam, tanda berpikir |
-| 5 | Bos Allo | Menjawab | Menyimpan giliran, membacakan jawaban | Saran dan pertanyaan lanjutan |
+| 2 | Bos Allo | Menyapa dan bertanya pembuka | Klip berbicara tampil dan suara Speechify diputar. Bila peramban menahan suara, tombol Dengarkan Bos Allo muncul | Giliran 1 |
+| 3 | Warga | Menahan tombol mikrofon lalu berbicara | Menampilkan transkrip | Teks ucapan |
+| 4 | Warga | Melepas tombol mikrofon (atau menekan Kirim pada mode teks) | Pertanyaan langsung terkirim, data pribadi disamarkan, Gemini dipanggil dengan sepuluh giliran terakhir | Status berpikir |
+| 5 | Bos Allo | Menjawab | Menyimpan giliran, meminta suara jawaban itu ke Speechify, lalu memutar suara dan memunculkan teks bersamaan | Saran dan pertanyaan lanjutan |
 | 6 | Warga | Mengulang tanya jawab | Mengurangi sisa giliran | Percakapan |
 | 7 | Warga | Menekan Akhiri Sesi | Memanggil AI untuk merangkum | Catatan Konsultasi |
 | 8 | Warga | Menekan Tambahkan ke Langkah 30 Hari | Menyalin langkah lanjut | Langkah baru |
@@ -76,6 +78,8 @@ Alur ujung ke ujung dari pengunjung menjadi pemilik lapak. Ini juga alur yang di
 
 - Mikrofon ditolak atau tidak didukung: beralih ke mode teks dengan penjelasan.
 - AI gagal menjawab: giliran tidak dihitung, tampil tombol Coba Lagi dan tombol Temu Bos.
+- Pesan terlalu singkat atau ambigu: Bos Allo bertanya balik dengan dua atau tiga contoh pilihan, bukan menebak.
+- Speechify tidak tersedia: peramban membacakan dengan suara Google Bahasa Indonesia, teks tetap tampil.
 - Kuota habis: sesi tidak dapat dimulai, pesan menyebut waktu kuota kembali.
 - Sesi ditinggal lebih dari 30 menit: ditutup otomatis dan dirangkum.
 
@@ -98,12 +102,31 @@ Alur ujung ke ujung dari pengunjung menjadi pemilik lapak. Ini juga alur yang di
 | --- | --- | --- | --- | --- |
 | 1 | Pengelola IPI | Membuat kelas, sesi, pembicara, kuota | Menyimpan sebagai Draf | Draf kelas |
 | 2 | Pengelola IPI | Menekan Terbitkan | Menampilkan kelas di publik | Kelas Dibuka |
-| 3 | Warga | Menekan Daftar Kelas | Memeriksa kuota, mencatat pendaftaran | Terdaftar |
+| 3 | Warga | Menekan Daftar Kelas, memeriksa halaman konfirmasi, mencentang kesanggupan hadir | Memeriksa kuota. Kelas gratis langsung dicatat, kelas berbayar masuk alur pembayaran (3.4b) | Terdaftar atau Menunggu Pembayaran |
 | 4 | Sistem | Sehari sebelum sesi | Mengirim pengingat | Pengingat |
 | 5 | Pengelola IPI | Membuka kode kehadiran saat sesi | Mengaktifkan kode untuk rentang waktu sesi | Kode aktif |
 | 6 | Warga | Memasukkan kode dan menekan Catat Hadir | Memeriksa kode dan waktu, mencatat hadir | Hadir |
 | 7 | Pengelola IPI | Menetapkan penanda tangan sertifikat | Menyimpan satu atau dua penanda tangan | Penanda tangan kelas |
 | 8 | Pengelola IPI | Menekan Tutup Kelas setelah sesi terakhir | Menghitung kelulusan hadir, membuat draf sertifikat | Kelas Selesai |
+
+### 3.4b Pembayaran kelas berbayar
+
+| No | Pelaku | Aksi | Respons sistem | Hasil |
+| --- | --- | --- | --- | --- |
+| 1 | Warga | Menekan Bayar dengan QRIS di halaman konfirmasi | Menahan kursi, membuat pesanan dengan nomor unik, meminta tautan QRIS ke SumoPod dengan batas satu jam | Pendaftaran Menunggu Pembayaran |
+| 2 | Warga | Memindai QRIS dengan aplikasi bank atau dompet digital | Tidak ada di alloBos | Pembayaran di SumoPod |
+| 3 | SumoPod | Mengirim webhook payment.completed | Memeriksa token atau tanda tangan Svix, mencocokkan jumlah, mengunci baris pesanan | Pesanan Lunas |
+| 4 | Sistem | Pesanan lunas | Mengubah pendaftaran menjadi Terdaftar, memperbarui status kuota, memberi tahu warga lewat aplikasi dan email | Tempat di kelas |
+| 5 | Warga | Kembali dari SumoPod ke alloBos | Menampilkan halaman status yang memuat ulang sendiri sampai webhook tiba | Pembayaran berhasil |
+
+#### Pengecualian pembayaran
+
+- Warga menekan bayar lagi sebelum membayar: tautan yang sama dibuka kembali, tidak ada pesanan ganda.
+- Pembayaran gagal atau melewati satu jam: pesanan Gagal atau Kedaluwarsa, kursi dilepas, warga bisa Daftar Lagi.
+- Webhook dengan token atau tanda tangan salah: ditolak 401 dan tidak mengubah apa pun.
+- Jumlah di webhook tidak sama dengan biaya kelas: pesanan tetap Menunggu dan dicatat untuk diperiksa.
+- Webhook dikirim lebih dari sekali: hanya yang pertama diproses.
+- SumoPod tidak bisa dihubungi saat membuat tautan: kursi dilepas dan warga melihat pesan untuk mencoba lagi.
 
 ### 3.5 Sertifikat Terverifikasi (Web3)
 
@@ -118,7 +141,7 @@ Alur ujung ke ujung dari pengunjung menjadi pemilik lapak. Ini juga alur yang di
 | 7 | Sistem | Mengirim transaksi | Memanggil issueBatch di kontrak pintar dengan dompet penerbit | Status Menunggu Pencatatan |
 | 8 | Blockchain | Transaksi masuk blok | Sistem menyimpan hash transaksi dan nomor blok | Status Tercatat |
 | 9 | Sistem | Pencatatan selesai | Memberi tahu warga, memperbarui skor | Notifikasi sertifikat |
-| 10 | Warga | Membuka Sertifikat Saya, menekan Unduh PDF atau Salin Tautan Verifikasi | Menyajikan berkas atau tautan | Sertifikat di tangan warga |
+| 10 | Warga | Membuka Sertifikat Saya, melihat pratinjau, menekan Unduh PDF atau Salin Tautan Verifikasi | Menampilkan pratinjau dengan templat yang sama, menyajikan berkas atau tautan | Sertifikat di tangan warga |
 | 11 | Warga | Menekan Tampilkan di Lapak | Menambah lencana di halaman lapak | Lencana terverifikasi |
 | 12 | Pihak luar | Memindai QR atau membuka tautan verifikasi | Menghitung ulang sidik digital, membaca kontrak pintar | Status Asli beserta bukti transaksi |
 
@@ -144,14 +167,20 @@ Alur ujung ke ujung dari pengunjung menjadi pemilik lapak. Ini juga alur yang di
 
 | No | Pelaku | Aksi | Respons sistem | Hasil |
 | --- | --- | --- | --- | --- |
-| 1 | Warga | Menekan Buka Warung | Membuat permainan sesuai bidang minat, modal awal | Hari 1 |
-| 2 | Warga | Belanja stok | Memeriksa kas, mengurangi modal | Stok terisi |
-| 3 | Warga | Mengatur harga dan promosi | Menyimpan keputusan | Keputusan hari ini |
-| 4 | Warga | Menekan Buka Warung Hari Ini | Meminta kejadian dari AI, menghitung permintaan di server | Animasi pelanggan |
-| 5 | Sistem | Menutup hari | Menyimpan catatan hari, menampilkan laporan | Laporan harian |
-| 6 | Warga | Menekan Lanjut ke Hari Berikutnya | Membuka hari berikut sampai hari 7 | Hari 2 sampai 7 |
-| 7 | Sistem | Setelah hari 7 | Menghitung nilai, meminta rapor dari AI | Rapor akhir |
-| 8 | Warga | Menekan Simpan Pelajaran ke Jejak Usaha | Menyimpan rapor, memperbarui skor | Nilai simulasi |
+| 1 | Warga | Menekan Buka Warung lalu Masuk ke Warung | Membuat permainan sesuai bidang minat, modal awal, kejadian hari 1 | Berdiri di dalam warung (orang pertama) |
+| 2 | Warga | Berjalan ke meja pemasok dan belanja | Memeriksa kas, menambah stok gudang | Peti berisi barang di rak gudang |
+| 3 | Warga | Mengatur harga di papan harga | Menyimpan harga | Harga hari ini |
+| 4 | Warga | Mengambil peti di gudang dan menaruhnya di rak pajang | Memindahkan satu peti (10 unit) ke rak, tahan kiriman ulang | Rak terisi |
+| 5 | Warga | Memilih promosi dan keputusan harian di papan pengumuman | Menyimpan pilihan sementara di peramban | Keputusan hari ini |
+| 6 | Warga | Membalik papan ke BUKA | Menghitung permintaan dan membagi ke paling banyak delapan pembeli di server | Pembeli berdatangan |
+| 7 | Warga | Melayani pembeli paling depan di kasir | Mengambil barang dari rak, mencatat uang masuk | Pembeli membayar dan pergi |
+| 8 | Sistem | Pembeli menunggu terlalu lama | Mencatat pembeli pergi, permintaannya dihitung tidak kebagian | Pelajaran stok dan kecepatan |
+| 9 | Warga | Membalik papan ke TUTUP | Menutup buku hari itu dari jumlah yang benar-benar terjual, menampilkan laporan | Laporan harian |
+| 10 | Warga | Menekan Lanjut ke Hari Berikutnya | Membuka hari berikut sampai hari 7 | Hari 2 sampai 7 |
+| 11 | Sistem | Setelah hari 7 | Menghitung nilai, meminta rapor dari AI | Rapor akhir |
+| 12 | Warga | Menekan Simpan Pelajaran ke Jejak Usaha | Menyimpan rapor, memperbarui skor | Nilai simulasi |
+
+Mode Ringan menjalankan aturan yang sama tanpa 3D: belanja, harga, keputusan, lalu seluruh permintaan dilayani sebanyak stok.
 
 **Rumus inti simulasi.** Permintaan dasar per barang dikalikan faktor harga (makin jauh di atas harga wajar makin turun), faktor promosi, dan faktor kejadian. Terjual adalah nilai terkecil antara permintaan dan stok. Laba harian adalah omzet dikurangi HPP barang terjual, biaya promosi, dan biaya tetap. Nilai akhir menggabungkan laba, sisa stok terbuang, dan hari dengan kas negatif.
 
@@ -160,10 +189,12 @@ Alur ujung ke ujung dari pengunjung menjadi pemilik lapak. Ini juga alur yang di
 | No | Pelaku | Aksi | Respons sistem | Hasil |
 | --- | --- | --- | --- | --- |
 | 1 | Warga | Menekan Ambil Foto atau Pilih dari Galeri | Memvalidasi dan mengompres gambar | Pratinjau foto |
-| 2 | Warga | Menekan Periksa Produk | Menjalankan AI penglihatan lewat antrean | Status Diperiksa |
+| 2 | Warga | Menekan Periksa Produk | Menyimpan foto (sampai 15 MB, dikecilkan ke WEBP) dan menjalankan AI penglihatan lewat antrean | Status Diperiksa |
 | 3 | Sistem | AI selesai | Menyimpan hasil dan memberi tahu | Laporan Cek Produk |
 | 4 | Warga | Memperbaiki nama produk bila salah | Menyimpan koreksi | Nama benar |
 | 5 | Warga | Menekan Tambahkan ke Lapak | Membuka formulir produk terisi | Produk baru di lapak |
+
+Pengecualian: bila pemeriksaan tertahan lebih dari tiga menit (antrean berhenti atau jaringan putus), status menjadi Gagal dengan penjelasan dan tombol Periksa Ulang memeriksa foto yang sama tanpa unggah lagi.
 
 ### 3.9 Peluang dan Rencana Usaha
 
@@ -186,9 +217,10 @@ Alur ujung ke ujung dari pengunjung menjadi pemilik lapak. Ini juga alur yang di
 | 3 | Warga | Menekan Ajukan Terbit | Mengubah status menjadi Menunggu, memberi tahu Pengelola | Antre moderasi |
 | 4 | Pengelola IPI | Menekan Setujui atau Tolak dengan alasan | Menerbitkan atau mengembalikan ke Draf | Lapak Terbit atau perbaikan |
 | 5 | Pembeli | Membuka lapak | Mencatat kunjungan | Halaman lapak |
-| 6 | Pembeli | Menekan Pesan lewat WhatsApp | Mencatat klik, membuka WhatsApp dengan pesan terisi | Percakapan pesanan |
+| 6 | Pembeli | Menekan Pesan lewat WhatsApp (pengunjung diminta masuk dulu lalu kembali ke lapak) | Mencatat klik, membuka WhatsApp dengan pesan terisi | Percakapan pesanan |
 | 7 | Warga | Melayani pesanan dan menerima pembayaran | Tidak ada | Transaksi di luar aplikasi |
 | 8 | Warga | Menandai produk Habis bila stok kosong | Menonaktifkan tombol pesan produk itu | Informasi stok benar |
+| 9 | Pengguna masuk | Menekan Laporkan Lapak dan menulis alasan | Menyimpan laporan untuk Pengelola | Laporan moderasi |
 
 ### 3.11 Kurasi Bos oleh IPI
 
@@ -224,6 +256,10 @@ Empat standar kurasi mengikuti IPI: bisnis aktif saat ini, rekam jejak jelas, pe
 | Dibuka atau Penuh | Sesi pertama dimulai | Berjalan | Sistem |
 | Berjalan | Pengelola menutup kelas | Selesai | Pengelola |
 | Berjalan | Pengelola menutup kelas tanpa penanda tangan | Ditolak, tetap Berjalan | Sistem |
+| (baru) | Kelas gratis dikonfirmasi | Terdaftar | Warga |
+| (baru) | Kelas berbayar dikonfirmasi | Menunggu Pembayaran | Warga |
+| Menunggu Pembayaran | Webhook SumoPod lunas dengan jumlah cocok | Terdaftar | Sistem |
+| Menunggu Pembayaran | Pembayaran gagal atau lewat satu jam | Batal (kursi dilepas) | Sistem |
 | Terdaftar (peserta) | Hadir memenuhi syarat | Lulus Hadir | Sistem |
 | Terdaftar (peserta) | Peserta membatalkan sebelum kelas mulai | Batal | Warga |
 
@@ -238,6 +274,15 @@ Empat standar kurasi mengikuti IPI: bisnis aktif saat ini, rekam jejak jelas, pe
 | Menunggu Pencatatan | Transaksi masuk blok | Tercatat | Sistem |
 | Menunggu Pencatatan | Transaksi gagal tiga kali | Menunggu Pencatatan (perlu Catat Ulang) | Sistem |
 | Tercatat | Pengelola mencabut dengan alasan | Dicabut | Pengelola |
+
+### 4.3b Pembayaran
+
+| Dari | Pemicu | Ke | Pelaku |
+| --- | --- | --- | --- |
+| (baru) | Warga menekan Bayar dengan QRIS | Menunggu | Warga |
+| Menunggu | Webhook payment.completed terverifikasi | Lunas | SumoPod |
+| Menunggu | Webhook payment.failed | Gagal | SumoPod |
+| Menunggu | Webhook payment.expired atau lewat batas waktu | Kedaluwarsa | SumoPod atau Sistem |
 
 ### 4.4 Lapak
 
@@ -278,7 +323,7 @@ Empat standar kurasi mengikuti IPI: bisnis aktif saat ini, rekam jejak jelas, pe
 | AB-12 | Nilai simulasi yang masuk skor adalah nilai terbaik, bukan terakhir. |
 | AB-13 | Skor Siap Usaha dihitung ulang setiap ada bukti baru dan cuplikannya disimpan. |
 | AB-14 | Hanya Pengelola IPI dan Admin yang dapat menerbitkan kelas, pembicara, dan episode siniar. |
-| AB-15 | Data berlabel Demo tidak dihitung dalam statistik publik. |
+| AB-15 | Statistik publik dihitung dari basis data. Saat mode demo menyala (APP_DEMO=true), data contoh tidak ikut dihitung. |
 | AB-16 | Transkrip Ruang Bos disimpan 180 hari lalu dihapus. Catatan Konsultasi tetap tersimpan. |
 | AB-17 | Setiap kelas wajib punya minimal satu penanda tangan sebelum ditutup. Penanda tangan adalah pembicara kelas itu atau pimpinan IPI. |
 | AB-18 | Tanda tangan sertifikat membutuhkan konfirmasi kata sandi dan tidak dapat diwakilkan ke akun lain. |
@@ -287,6 +332,13 @@ Empat standar kurasi mengikuti IPI: bisnis aktif saat ini, rekam jejak jelas, pe
 | AB-21 | Sertifikat yang sudah tercatat tidak dapat diubah. Koreksi dilakukan dengan mencabut lalu menerbitkan sertifikat baru. |
 | AB-22 | Hanya sertifikat berstatus Tercatat yang dihitung dalam Skor Siap Usaha dan dapat ditampilkan di Lapak. |
 | AB-23 | Pencabutan wajib beralasan dan hanya oleh Pengelola IPI atau Admin. |
+| AB-24 | Pendaftaran kelas selalu melalui halaman konfirmasi dengan centang kesanggupan hadir. |
+| AB-25 | Kelas berbayar menahan kursi paling lama satu jam. Kursi menjadi milik warga hanya setelah pembayaran lunas. |
+| AB-26 | Status lunas hanya ditetapkan webhook SumoPod yang terverifikasi dan jumlahnya cocok. Halaman kembali dari SumoPod tidak mengubah status. |
+| AB-27 | Pendaftar yang belum membayar tidak menerima pengingat, tidak bisa mencatat hadir, dan tidak masuk agenda. |
+| AB-28 | Memesan dan melaporkan lapak membutuhkan akun. Melihat katalog dan memverifikasi sertifikat tidak. |
+| AB-29 | Tanda tangan orang sungguhan hanya berasal dari spesimen yang ia simpan sendiri. |
+| AB-30 | Data sertifikat yang berubah setelah tercatat (misalnya penanda tangan diganti) wajib dihitung ulang sidiknya dan dicatat ulang, karena verifikasi akan menampilkan Tidak Cocok. |
 
 ## 6. Notifikasi
 
@@ -295,7 +347,7 @@ Empat standar kurasi mengikuti IPI: bisnis aktif saat ini, rekam jejak jelas, pe
 | Permintaan sesi baru | Bos | Aplikasi, email |
 | Sesi disetujui, ditolak, dibatalkan | Warga | Aplikasi, email |
 | Pengingat sesi dan kelas | Warga, Bos | Aplikasi, email |
-| Pendaftaran kelas berhasil | Warga | Aplikasi |
+| Pendaftaran kelas berhasil (gratis atau setelah lunas) | Warga | Aplikasi, email |
 | Sertifikat menunggu tanda tangan | Penanda tangan | Aplikasi, email |
 | Sertifikat tercatat dan siap diunduh | Warga | Aplikasi, email |
 | Sertifikat dicabut | Warga | Aplikasi, email |
@@ -305,6 +357,8 @@ Empat standar kurasi mengikuti IPI: bisnis aktif saat ini, rekam jejak jelas, pe
 | Lapak menunggu moderasi | Pengelola IPI | Aplikasi |
 | Profil Bos diajukan | Pengelola IPI | Aplikasi |
 | Episode siniar baru sesuai minat | Warga | Aplikasi |
+
+Email dikirim lewat Resend SMTP dari noreply@zite.my.id dengan antrean, sehingga lambatnya layanan email tidak memperlambat halaman.
 
 ## 7. Alur data antar modul
 
@@ -318,6 +372,8 @@ Empat standar kurasi mengikuti IPI: bisnis aktif saat ini, rekam jejak jelas, pe
 | Peluang Usaha | Rencana Usaha | Usaha tujuan |
 | Rencana Usaha | Cek Produk | Kategori produk dan harga hasil HPP sebagai pembanding |
 | Cek Produk | Lapak | Nama, deskripsi, saran harga |
+| Kelas Bos | Pembayaran | Biaya kelas dan pendaftaran yang menunggu bayar |
+| Pembayaran | Kelas Bos, Jejak Usaha | Status lunas yang mengubah pendaftaran menjadi Terdaftar |
 | Kelas Bos | Sertifikat | Daftar lulus hadir dan penanda tangan |
 | Sertifikat | Blockchain | Sidik digital dan status cabut |
 | Sertifikat | Lapak, Jejak Usaha | Lencana terverifikasi dan bukti belajar |
@@ -329,7 +385,7 @@ Empat standar kurasi mengikuti IPI: bisnis aktif saat ini, rekam jejak jelas, pe
 Bagian ini adalah rencana, bukan klaim capaian.
 
 - **Gratis untuk warga.** Konsultasi AI, siniar, simulasi, rencana, dan lapak tidak dipungut biaya.
-- **Kelas berbayar dikelola IPI.** alloBos menjadi pintu pendaftaran program IPI. Pembayaran tetap di kanal IPI.
-- **Sertifikat di jaringan utama.** Setelah lomba, pencatatan dapat dipindah dari jaringan uji ke jaringan utama berbiaya rendah dengan mengganti konfigurasi.
-- **Biaya operasional.** Server dan pemakaian layanan AI ditanggung mitra. Kuota per pengguna menjaga biaya tetap terkendali.
+- **Kelas berbayar lewat QRIS.** alloBos menjadi pintu pendaftaran dan pembayaran program IPI. Masa lomba memakai SumoPod sandbox. Setelah lomba cukup mengaktifkan Live Access SumoPod dan mengganti alamat API, dan pemasukan kelas menutup biaya server dan layanan.
+- **Sertifikat di jaringan publik.** Masa lomba memakai Jaringan Uji alloBos di server. Setelah lomba, pencatatan dapat dipindah ke Polygon Amoy atau jaringan utama berbiaya rendah dengan mengganti alamat RPC dan kunci penerbit.
+- **Biaya operasional.** Server dan pemakaian layanan AI ditanggung mitra dan pemasukan kelas. Kuota per pengguna, model Gemini Flash Lite, suara yang disimpan per teks, dan gambar yang dikecilkan menjaga biaya tetap terkendali.
 - **Perluasan.** Pola yang sama dapat dipakai kabupaten lain dengan mengganti data kapanewon, bidang unggulan, dan mitra pelatihan.

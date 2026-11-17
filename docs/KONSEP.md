@@ -6,14 +6,16 @@ Pendamping usaha berbasis AI untuk warga Gunungkidul, dari bertanya sampai membu
 - **Subtema:** 3. Ekonomi dan Pemberdayaan Masyarakat
 - **Mitra:** Institusi Pengusaha Indonesia (IPI), Gunungkidul, DIY
 - **Penyusun:** Giska Saputra
-- **Versi:** Final 1.1, 17 November 2026 (menambah Sertifikat Terverifikasi berbasis Web3)
+- **Versi:** Final 2.0, 18 November 2026 (menyesuaikan sistem yang sudah berjalan: kelas berbayar QRIS, suara AI, Warung Bos 3D orang pertama, sertifikat premium, deploy produksi)
+- **Aplikasi berjalan:** https://allobos.zite.my.id
+- **Kode sumber:** https://github.com/GiskaSaputra/allobos (privat)
 - **Dokumen terkait:** PRD, Business Flow, Design System
 
 ## 1. Ringkasan
 
 alloBos adalah aplikasi web yang mendampingi warga Gunungkidul membangun usaha, dari tahap belum tahu mau usaha apa sampai punya lapak online yang bisa dipesan. Polanya seperti layanan konsultasi dokter daring, tetapi untuk urusan usaha: warga bertanya kepada Bos Allo (bos virtual berbasis AI yang bisa diajak bicara), lalu bila perlu bertemu bos asli, yaitu pengusaha aktif yang dikurasi Institusi Pengusaha Indonesia (IPI).
 
-Konsultasi hanya pintu masuk. Di belakangnya ada kelas pelatihan nyata dari IPI dengan sertifikat yang ditandatangani pembicara dan tercatat di blockchain, siniar dari YouTube, simulasi warung 3D untuk berlatih mengambil keputusan, pemeriksaan produk lewat foto, penemu peluang usaha, dan katalog lapak. Semua aktivitas itu tercatat sebagai Jejak Usaha dan dihitung menjadi Skor Siap Usaha.
+Konsultasi hanya pintu masuk. Di belakangnya ada kelas pelatihan nyata dari IPI (gratis maupun berbayar lewat QRIS) dengan sertifikat yang ditandatangani pembicara dan pimpinan IPI lalu tercatat di blockchain, siniar dari YouTube, simulasi warung 3D untuk berlatih mengambil keputusan, pemeriksaan produk lewat foto, penemu peluang usaha, dan katalog lapak. Semua aktivitas itu tercatat sebagai Jejak Usaha dan dihitung menjadi Skor Siap Usaha.
 
 > **Kalimat inti:** Tanya bos, belajar, lalu buka usaha. Satu aplikasi untuk seluruh perjalanan, dengan AI sebagai pendamping harian dan pengusaha asli sebagai rujukan.
 
@@ -49,7 +51,9 @@ Seluruh fitur disusun sebagai satu perjalanan. Setiap tahap menghasilkan data ya
 
 #### 4.1 Ruang Bos (fitur AI utama)
 
-Konsultasi tatap muka dengan Bos Allo, maskot orisinal alloBos. Tampilan memakai dua GIF, diam dan berbicara, dengan pola yang sama seperti Vira dan Vito di proyek acuan: GIF berganti ke versi berbicara selama suara diputar. Warga dapat berbicara lewat mikrofon atau mengetik. Jawaban dibacakan dengan suara dan ditampilkan sebagai teks. Bos Allo mengenal profil warga, sehingga saran menyebut modal, lokasi, dan bidang usaha orang itu. Setiap sesi ditutup dengan Catatan Konsultasi terstruktur.
+Konsultasi tatap muka dengan Bos Allo, maskot orisinal alloBos yang tampil besar seperti panggilan video. Tampilan memakai dua klip video (diam dan berbicara, 1280x720) yang berganti selama suara diputar, dengan bingkai menyala dan gelombang suara saat Bos Allo bicara. Warga menahan tombol mikrofon untuk bicara dan pertanyaan langsung terkirim saat tombol dilepas, atau mengetik.
+
+Jawaban disusun Gemini, lalu dibacakan dengan suara manusia bahasa Indonesia dari Speechify (suara Bima). Teks jawaban muncul tepat saat suara mulai terdengar dan kecepatannya mengikuti panjang suara, sehingga suara dan teks selesai bersamaan. Bila Speechify tidak tersedia, peramban membacakan dengan suara Google Bahasa Indonesia. Bos Allo mengenal profil warga dan sepuluh giliran percakapan terakhir, menjawab langsung pesan terbaru, dan bertanya balik bila pesan terlalu singkat. Setiap sesi ditutup dengan Catatan Konsultasi terstruktur yang bisa diunduh PDF dan dijadikan Langkah 30 Hari.
 
 #### 4.2 Temu Bos
 
@@ -57,11 +61,13 @@ Pemesanan sesi mentoring dengan pengusaha asli. Bos membuka slot waktu, warga me
 
 #### 4.3 Kelas Bos
 
-Program pelatihan nyata hasil kolaborasi dengan IPI: seminar, workshop, bootcamp, dan mentoring, dikelompokkan menurut 13 bidang usaha dan 5 bidang pendukung IPI. Setiap kelas menampilkan pembicara asli, jadwal, lokasi, kuota, dan materi. Warga mendaftar, hadir dengan kode kehadiran, dan progresnya tercatat. Warga yang memenuhi syarat hadir menerima Sertifikat Terverifikasi.
+Program pelatihan nyata hasil kolaborasi dengan IPI: seminar, workshop, bootcamp, dan mentoring, dikelompokkan menurut 13 bidang usaha dan 5 bidang pendukung IPI. Setiap kelas menampilkan pembicara asli, jadwal, lokasi, kuota, biaya, dan materi. Kelas bisa gratis atau berbayar.
+
+Pendaftaran selalu lewat halaman konfirmasi (jadwal, lokasi, biaya, dan centang kesanggupan hadir). Kelas gratis langsung terdaftar. Kelas berbayar menahan kursi selama satu jam dan membuka pembayaran QRIS lewat SumoPod. Kursi baru resmi menjadi milik warga setelah SumoPod mengonfirmasi pembayaran lewat webhook yang tanda tangannya diperiksa. Pembayaran gagal atau kedaluwarsa otomatis melepas kursi. Warga hadir dengan kode kehadiran, progresnya tercatat, dan yang memenuhi syarat menerima Sertifikat Terverifikasi.
 
 #### 4.4 Sertifikat Terverifikasi (Web3)
 
-Setelah kelas ditutup, sistem menyusun sertifikat untuk setiap warga yang hadir minimal 75% sesi. Sertifikat ditandatangani oleh pembicara kelas atau pimpinan IPI: penanda tangan menyimpan spesimen tanda tangannya satu kali, lalu menekan satu tombol untuk menandatangani seluruh sertifikat kelas itu. Sistem membuat PDF berisi nama, kelas, tanggal, tanda tangan, kode unik, dan kode QR.
+Setelah kelas ditutup, sistem menyusun sertifikat untuk setiap warga yang hadir minimal 75% sesi. Sertifikat ditandatangani oleh pembicara kelas dan pimpinan IPI (Deni Fuadi, pimpinan PT Institusi Pengusaha Indonesia): penanda tangan menyimpan spesimen tanda tangannya satu kali, lalu menekan satu tombol untuk menandatangani seluruh sertifikat kelas itu. Sistem membuat PDF A4 lanskap berdesain premium: bingkai ganda, ornamen sudut dan pita diagonal hijau zaitun dan lime, tanda air logo, logo alloBos di atas, medali berikon alloBos, nama penerima, kelas, tanggal, tanda tangan, kode unik, dan kode QR. Warga melihat pratinjau sertifikat di halaman sebelum mengunduh.
 
 Sidik digital (hash) setiap sertifikat dicatat di blockchain lewat kontrak pintar. Siapa pun dapat memindai QR atau membuka halaman verifikasi untuk memastikan sertifikat asli, belum diubah, dan belum dicabut, tanpa perlu menghubungi IPI. Data pribadi tidak ditulis ke blockchain, hanya sidik digitalnya. Warga tidak perlu punya dompet kripto.
 
@@ -73,11 +79,13 @@ Kumpulan episode siniar yang bersumber dari URL YouTube. Pengelola IPI menempelk
 
 #### 4.6 Warung Bos 3D
 
-Game simulasi menjalankan warung dalam tampilan 3D low-poly berbasis Three.js. Pemain mengelola warung selama tujuh hari permainan: belanja stok, menentukan harga, memilih promosi, lalu melihat pelanggan datang. AI memunculkan kejadian yang sesuai dengan profil usaha pemain, misalnya hujan seharian, pesaing baru, atau pesanan besar. Perhitungan laba dilakukan di server. Di akhir, pemain menerima rapor dan tiga pelajaran dari AI.
+Game simulasi menjalankan warung simbah dari sudut pandang orang pertama dalam dunia 3D low-poly berbasis Three.js. Pemain berjalan di dalam warung (papan ketik dan tetikus, gamepad, atau layar sentuh) dan memakai tujuh stasiun: meja pemasok untuk belanja, rak gudang berisi peti, rak pajang, papan harga, papan pengumuman untuk promosi dan keputusan harian, papan BUKA dan TUTUP, serta kasir. Pemain membawa peti dari gudang ke rak, membuka warung, lalu melayani pembeli yang antre di kasir. Pembeli yang menunggu terlalu lama pergi, barang yang tidak ada di rak tidak bisa dibeli.
+
+Tujuh babak bertema (hujan, pesaing baru, rombongan bus, harga bahan naik, ulasan pelanggan, hari pasaran) dengan kejadian dari AI. Seluruh perhitungan uang dilakukan di server dan tahan kiriman ulang. Mode Ringan tanpa 3D tersedia untuk ponsel berat. Di akhir, pemain menerima rapor dan tiga pelajaran dari AI.
 
 #### 4.7 Cek Produk
 
-Warga mengunggah foto produk. AI penglihatan mengenali produknya, menilai foto dan kemasan, menyarankan kisaran harga, dan memberi Sinyal Pasar (naik, stabil, atau turun) disertai alasan dan sumber dari penelusuran web bila fitur itu diaktifkan. Hasil diberi label jelas sebagai perkiraan AI, bukan data penjualan. Deskripsi yang dihasilkan dapat langsung dipakai di Lapak.
+Warga memotret atau mengunggah foto produk (sampai 15 MB, dikecilkan otomatis). Pemeriksaan berjalan di antrean latar sehingga halaman tidak macet, dan bila tertahan lebih dari tiga menit warga bisa Periksa Ulang tanpa mengunggah lagi. AI penglihatan mengenali produknya, menilai foto dan kemasan, menyarankan kisaran harga, dan memberi Sinyal Pasar (naik, stabil, atau turun) disertai alasan dan sumber dari penelusuran web bila fitur itu diaktifkan. Hasil diberi label jelas sebagai perkiraan AI, bukan data penjualan. Deskripsi yang dihasilkan dapat langsung dipakai di Lapak.
 
 #### 4.8 Peluang Usaha dan Rencana Usaha
 
@@ -85,7 +93,7 @@ Setelah berkonsultasi dan belajar, warga meminta AI membuka peluang: tiga rekome
 
 #### 4.9 Lapak
 
-Katalog milik warga dengan alamat publik. Berisi profil usaha, daftar produk dengan foto, harga, dan deskripsi, lencana Sertifikat Terverifikasi milik pemilik, serta tombol pesan yang membuka WhatsApp penjual dengan pesan terisi. Halaman dirancang ringan agar cepat dibuka pembeli.
+Katalog milik warga dengan alamat publik. Berisi profil usaha, foto sampul, daftar produk dengan foto, harga, dan deskripsi, lencana Sertifikat Terverifikasi milik pemilik, serta tombol pesan yang membuka WhatsApp penjual dengan pesan terisi. Katalog dan detail lapak bisa dilihat siapa saja, sedangkan memesan dan melaporkan lapak perlu masuk akun supaya tercatat siapa pelakunya. Lapak baru diperiksa Pengelola IPI sebelum terbit. Warga juga bisa menjelajahi lapak warga lain untuk inspirasi. Halaman dirancang ringan agar cepat dibuka pembeli.
 
 #### 4.10 Jejak Usaha dan personalisasi
 
@@ -102,7 +110,7 @@ Dashboard pribadi yang menampilkan Skor Siap Usaha 0 sampai 100, langkah berikut
 
 ## 5. Peran AI
 
-AI wajib ada menurut ketentuan lomba, dan di alloBos AI bekerja di tujuh titik. Semua keluaran berbentuk JSON terstruktur agar dapat disimpan, ditampilkan rapi, dan dihitung.
+AI wajib ada menurut ketentuan lomba, dan di alloBos AI bekerja di tujuh titik ditambah suara. Semua keluaran berbentuk JSON terstruktur dengan skema dan urutan isian yang tetap agar dapat disimpan, ditampilkan rapi, dan dihitung. Model bawaan Gemini 3.1 Flash Lite dengan lima kunci API bergiliran: kunci yang terkena batas langsung dilewati, dan bila model utama tidak tersedia, model cadangan dicoba. Ketujuh titik sudah diuji dengan Gemini sungguhan.
 
 | Titik AI | Masukan | Keluaran | Jenis |
 | --- | --- | --- | --- |
@@ -113,10 +121,33 @@ AI wajib ada menurut ketentuan lomba, dan di alloBos AI bekerja di tujuh titik. 
 | Ringkasan Siniar | URL YouTube atau catatan pengelola | Ringkasan dan 3 pelajaran | Peringkasan |
 | Kejadian Warung | Profil usaha, kondisi permainan | Kejadian harian dan dampaknya | Generasi skenario |
 | Rapor Warung | Catatan keputusan 7 hari | Keputusan terbaik, terburuk, 3 pelajaran | Evaluasi |
+| Suara Bos Allo | Teks jawaban Bos Allo | Berkas suara MP3 bahasa Indonesia (Speechify, suara Bima) | Teks ke suara |
 
 ### 5.1 Peran Web3
 
-Web3 dipakai untuk satu hal yang memang membutuhkannya: bukti yang dapat diperiksa pihak luar tanpa harus percaya pada server alloBos. Kontrak pintar menyimpan sidik digital sertifikat, penerbit, waktu terbit, dan status cabut. Halaman verifikasi membandingkan sidik digital sertifikat dengan catatan di blockchain.
+Web3 dipakai untuk satu hal yang memang membutuhkannya: bukti yang dapat diperiksa pihak luar tanpa harus percaya pada data di server alloBos. Kontrak pintar AlloBosCertificate (Solidity) menyimpan sidik digital sertifikat, penerbit, waktu terbit, dan status cabut. Halaman verifikasi membandingkan sidik digital sertifikat dengan catatan di blockchain.
+
+Pada masa lomba pencatatan memakai Jaringan Uji alloBos, jaringan blockchain uji milik sendiri (Anvil) yang berjalan di server dan datanya tetap tersimpan walau server dinyalakan ulang. Pilihan ini diambil karena faucet jaringan uji publik Polygon Amoy sekarang mensyaratkan saldo ETH jaringan utama, sehingga tidak bisa gratis. Kode dan pengaturannya sudah siap pindah ke Polygon Amoy atau Polygon utama cukup dengan mengganti alamat RPC dan kunci penerbit.
+
+### 5.2 Teknologi dan layanan yang dipakai
+
+| Kebutuhan | Teknologi atau layanan | Keterangan |
+| --- | --- | --- |
+| Kerangka aplikasi | Laravel 12 (PHP 8.4), Blade, Livewire 3, Alpine | Controller tipis, service per domain, enum status, policy |
+| Tampilan | Tailwind CSS 3 dengan token warna, Vite, Montserrat dan Ubuntu, ikon Phosphor | Ramah ponsel mulai 360 px, tema terang dan gelap |
+| Basis data dan antrean | MySQL 8.4, antrean basis data Laravel, penjadwal | Pekerjaan AI, PDF, email, dan pencatatan blockchain berjalan di latar |
+| Kecerdasan buatan | Google Gemini API (Gemini 3.1 Flash Lite, cadangan Flash Lite Latest dan Flash Latest) | Lima kunci bergiliran, keluaran JSON berskema, penglihatan untuk Cek Produk, penelusuran web untuk Sinyal Pasar |
+| Suara Bos Allo | Speechify Text to Speech API (model simba-3.5, suara Bima) | Suara disimpan per teks supaya Ulangi Jawaban tidak memakai kuota lagi |
+| Pengenalan suara warga | Web Speech API di peramban (id-ID) | Tahan untuk bicara, lepas untuk mengirim |
+| Email | Resend SMTP, pengirim noreply@zite.my.id | Verifikasi email, pemberitahuan kelas, pembayaran, dan sesi |
+| Pembayaran | SumoPod Managed Payment, QRIS (sandbox pada masa lomba) | Webhook diverifikasi dengan token dan tanda tangan Svix (HMAC SHA-256) |
+| Blockchain | Solidity, Hardhat (uji kontrak), ethers.js, Anvil (Foundry) | Jaringan Uji alloBos di server, siap pindah ke Polygon Amoy |
+| Game 3D | Three.js, Gamepad API, Pointer Lock API | Dunia warung dibangun dari geometri di kode, tanpa model luar |
+| Dokumen | dompdf (PDF), endroid/qr-code (QR), PhpSpreadsheet (XLSX) | Sertifikat, Catatan Konsultasi, Rencana Usaha, rekap peserta |
+| Grafik | Chart.js | Wawasan Pengelola dan Jejak Usaha |
+| Siniar | YouTube oEmbed dan pemutar youtube-nocookie | Judul dan sampul otomatis, video diringkas Gemini |
+| Infrastruktur | Docker Compose (app, queue, scheduler, mysql, chain), VPS Ubuntu, nginx, Let's Encrypt | Domain allobos.zite.my.id dengan HTTPS |
+| Kualitas | PHPUnit (lebih dari 99 tes), Pint, GitHub Actions | Tes untuk tiap alur utama, AI dan blockchain dipalsukan di tes |
 
 ## 6. Pengguna
 
@@ -126,12 +157,13 @@ Web3 dipakai untuk satu hal yang memang membutuhkannya: bukti yang dapat diperik
 | Bos | Pengusaha aktif yang dikurasi IPI | Membuka slot, menerima sesi, menulis catatan, mengisi kelas, menandatangani sertifikat kelas yang ia isi |
 | Pengelola IPI | Tim Institusi Pengusaha Indonesia | Mengelola kelas, pembicara, siniar, kurasi Bos, moderasi lapak, menetapkan penanda tangan, menandatangani atas nama pimpinan IPI, mencabut sertifikat |
 | Admin | Pengelola sistem | Pengguna, pengaturan AI dan prompt, halaman publik, audit |
-| Pengunjung | Siapa pun tanpa akun | Melihat beranda, kelas, siniar, dan lapak, memesan lewat WhatsApp, memverifikasi sertifikat |
+| Pengunjung | Siapa pun tanpa akun | Melihat beranda, kelas, siniar, bos, dan lapak, serta memverifikasi sertifikat. Memesan dan melaporkan lapak perlu masuk akun |
 
 ## 7. Peran mitra IPI
 
 - **Sumber pengetahuan.** Kerangka 13 bidang usaha dan 5 bidang pendukung IPI menjadi taksonomi kelas, rekomendasi, dan bahan Bos Allo.
-- **Penyedia pelatihan nyata.** Kelas Bos memuat program IPI yang sungguh diselenggarakan, dengan pusat bootcamp di Resort Villa Satu Indonesia.
+- **Penyedia pelatihan nyata.** Kelas Bos memuat program IPI yang sungguh diselenggarakan, dengan pusat bootcamp di Resort Villa Satu Indonesia. Kelas berbayar menjadi sumber pemasukan yang menjaga program tetap berjalan.
+- **Penanda tangan sertifikat.** Pimpinan PT Institusi Pengusaha Indonesia, Deni Fuadi, menandatangani sertifikat bersama pembicara kelas lewat akunnya sendiri.
 - **Kurator Bos.** Standar kurasi IPI dipakai untuk menyetujui Bos: bisnis aktif, rekam jejak jelas, pengalaman riil, dapat ditelusuri.
 - **Penerima manfaat tetap warga.** IPI adalah mitra pelaksana. Halaman dan teks alloBos berbicara kepada warga, bukan mempromosikan lembaga.
 
@@ -143,36 +175,41 @@ Web3 dipakai untuk satu hal yang memang membutuhkannya: bukti yang dapat diperik
 | Pelatihan UMKM sekali datang | Pendampingan berlanjut setiap hari lewat Bos Allo, Langkah 30 Hari, dan Skor Siap Usaha. |
 | Sertifikat pelatihan biasa | Ditandatangani pembicara, tercatat di blockchain, dan dapat diverifikasi siapa pun lewat QR. |
 | Marketplace besar | Lapak sederhana tanpa biaya dan tanpa syarat rumit, dipesan lewat WhatsApp yang sudah dipakai warga. |
+| Pendaftaran pelatihan manual | Kuota, pembayaran QRIS, kehadiran, dan sertifikat tercatat otomatis dalam satu alur. |
 | Aplikasi belajar bisnis | Ada latihan aman lewat simulasi warung 3D sebelum mempertaruhkan modal nyata. |
 
 ## 9. Kesesuaian dengan kriteria IT RUSH 2026
 
 | Kriteria | Bobot | Jawaban alloBos |
 | --- | --- | --- |
-| Fungsionalitas dan kualitas teknis | 25% | Seluruh alur dapat dicoba juri sendiri dengan akun demo empat peran. Fitur yang butuh manusia (Temu Bos, Kelas Bos) memiliki data nyata dari IPI dan data contoh berlabel Demo. |
+| Fungsionalitas dan kualitas teknis | 25% | Aplikasi sudah berjalan di https://allobos.zite.my.id. Seluruh alur dapat dicoba juri sendiri dengan akun demo tiap peran. AI, suara, email, pembayaran QRIS sandbox, dan pencatatan blockchain terhubung ke layanan sungguhan. |
 | Inovasi dan ketepatan solusi | 20% | Bos virtual bersuara untuk warga berpendidikan rendah, simulasi warung 3D, sertifikat kelas yang terverifikasi di blockchain, dan keluaran AI terstruktur yang menyambung sampai lapak. |
 | Relevansi tema dan dampak | 15% | Subtema 3. Masalah berbasis data Gunungkidul, mitra pelaksana nyata. |
 | UI dan UX | 15% | Arah visual mengikuti referensi Dribbble yang ditetapkan, diterapkan dengan taste skill, ramah ponsel. |
-| Kualitas source code | 15% | Arsitektur berlapis dari proyek acuan: controller tipis, service per domain, enum status, satu pintu AI, tes otomatis. |
+| Kualitas source code | 15% | Arsitektur berlapis: controller tipis, service per domain, enum status, satu pintu AI (GeminiClient), satu pintu blockchain (ChainClient), lebih dari 99 tes otomatis, Pint, dan CI. |
 | Dokumentasi | 10% | Proposal, video demo 3 sampai 5 menit, README berisi akun demo dan daftar pemakaian AI coding assistant. |
 
 ## 10. Batasan dan etika
 
 - Sinyal Pasar dan rekomendasi usaha adalah perkiraan AI. Label ini selalu tampil di samping hasilnya.
 - Tidak ada statistik, testimoni, atau nama pembicara karangan. Angka di halaman publik dihitung dari basis data.
-- Data contoh diberi lencana Demo di antarmuka dan dicatat di README.
-- Bos Allo adalah karakter fiktif dan tidak meniru orang nyata.
+- Data contoh dicatat di README dan basis data (penanda is_demo). Lencana Demo di antarmuka bisa dinyalakan dengan APP_DEMO=true.
+- Bos Allo adalah pendamping virtual berbasis AI dengan karakter orisinal yang tidak meniru orang nyata.
+- Tanda tangan orang sungguhan tidak pernah dibuat-buat oleh sistem. Pimpinan IPI menandatangani sendiri dari akunnya.
+- Pembayaran hanya dinyatakan lunas oleh webhook SumoPod yang tanda tangannya cocok dan jumlahnya sesuai, bukan oleh halaman kembali di peramban.
 - Bos Allo tidak memberi nasihat hukum, pajak, atau pinjaman secara pasti. Untuk hal itu ia menyarankan Temu Bos atau lembaga resmi.
 - Data pribadi warga disamarkan sebelum dikirim ke layanan AI.
 - Blockchain hanya menyimpan sidik digital sertifikat. Nama dan data pribadi tetap di server alloBos.
-- Pada masa lomba pencatatan memakai jaringan uji (testnet) tanpa biaya. Halaman verifikasi menyebut nama jaringan yang dipakai secara terbuka.
+- Pada masa lomba pencatatan memakai jaringan uji tanpa biaya (Jaringan Uji alloBos). Halaman verifikasi menyebut nama jaringan yang dipakai secara terbuka.
 
 ## 11. Hal yang perlu dikonfirmasi
 
 - Izin tertulis IPI untuk pemakaian nama, logo, daftar program, dan nama pembicara.
-- Aset dua GIF Bos Allo (diam dan berbicara) dengan latar transparan.
-- Siapa yang menandatangani sertifikat tiap kelas: pembicara, pimpinan IPI, atau keduanya.
-- Jaringan blockchain yang dipakai dan dompet penerbit beserta saldo jaringan ujinya.
+- Sudah: aset Bos Allo (dua klip diam dan berbicara, enam pose transparan, logo alloBos).
+- Sudah: sertifikat ditandatangani pembicara kelas dan pimpinan IPI (Deni Fuadi).
+- Sudah: jaringan blockchain (Jaringan Uji alloBos di server). Pindah ke Polygon Amoy menunggu dompet dengan saldo POL uji.
+- Sudah: layanan pihak ketiga terpasang di server (Gemini, Speechify, Resend, SumoPod sandbox).
+- Pindah SumoPod dari sandbox ke mode live setelah pendaftaran Live Access disetujui.
 - Status kepesertaan mahasiswa D3 pada ketentuan peserta butir IV.4 ke narahubung lomba.
 - Angka resmi jumlah UMKM dan kemiskinan Gunungkidul dari BPS untuk proposal.
 
