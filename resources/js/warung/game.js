@@ -32,6 +32,15 @@ export async function createGame(canvas, { reduce, poseKey, touchRoot, hooks }) 
         onArrive: (npc) => hooks.arrive?.(npc),
     });
 
+    // Aset luar dimuat di belakang. Permainan sudah bisa dimainkan dengan dunia dasar sambil menunggu.
+    import('./assets').then(({ loadAssets }) => loadAssets(renderer)).then((assets) => {
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 0.85;
+        world.dress(assets);
+        customers.useAssets(assets);
+        hooks.assets?.(true);
+    }).catch(() => hooks.assets?.(false));
+
     let active = true;
     let running = true;
     let serving = false;

@@ -186,7 +186,7 @@ Laravel 12 monolit dengan Blade, Livewire 3, Alpine, Tailwind 3, Vite. Controlle
 | Aset | Sumber |
 | --- | --- |
 | GIF Bos Allo (diam dan bicara) | Disediakan pemilik proyek. `allo-transparan.webp` dibuat dari bingkai pertama GIF diam |
-| Adegan Warung Bos 3D | Dibangun dari geometri di kode (`resources/js/warung/`), tanpa model atau tekstur luar |
+| Adegan Warung Bos 3D | Dasar dari geometri di kode (`resources/js/warung/`). Model dan langit CC0 dari Kenney (Food, Nature, Furniture Kit), Quaternius (tokoh beranimasi, lewat Poly Pizza), dan Poly Haven (langit). Rincian di `public/models/warung/LISENSI.txt` |
 | Gambar produk dan sampul lapak demo | Dibuat otomatis dengan GD oleh `DemoSeeder` |
 | Video episode siniar demo | Video publik YouTube dari kanal kasisolusi dan Pojok Umkm, diputar lewat pemutar YouTube. Hak cipta milik pemilik kanal. Ringkasan disusun dari keterangan video dan berlabel Demo |
 | Arah visual | Referensi Dribbble "Creative agency web ui design" oleh Roohi Koohi, diamati untuk palet, bentuk, dan gerak. Tidak ada gambar atau logo referensi yang dipakai |

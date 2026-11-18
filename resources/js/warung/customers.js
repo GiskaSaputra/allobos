@@ -14,6 +14,7 @@ export function createCustomers(world, { reduce, names, onMiss, onArrive }) {
     const headGeo = new THREE.SphereGeometry(0.19, 10, 8);
     let spawnTimer = 0;
     let pace = 7;
+    let assets = null;
 
     function orderText(items) {
         return Object.entries(items).map(([k, q]) => `${names[k] ?? k} ${q}`).join(', ');
@@ -21,13 +22,21 @@ export function createCustomers(world, { reduce, names, onMiss, onArrive }) {
 
     function makeNpc(data, index) {
         const group = new THREE.Group();
-        const color = new THREE.Color(...SHIRTS[(data.id + index) % SHIRTS.length]);
-        const torso = new THREE.Mesh(bodyGeo, new THREE.MeshStandardMaterial({ color, flatShading: true }));
-        torso.position.y = 0.6;
-        torso.castShadow = true;
-        const head = new THREE.Mesh(headGeo, new THREE.MeshStandardMaterial({ color: new THREE.Color(0.78, 0.58, 0.42), flatShading: true }));
-        head.position.y = 1.28;
-        head.castShadow = true;
+        // Tokoh beranimasi bila aset termuat, selain itu badan sederhana dari geometri.
+        const person = assets ? assets.character(data.id + index) : null;
+        if (person) {
+            group.add(person.root);
+            person.play('walk');
+        } else {
+            const color = new THREE.Color(...SHIRTS[(data.id + index) % SHIRTS.length]);
+            const torso = new THREE.Mesh(bodyGeo, new THREE.MeshStandardMaterial({ color, flatShading: true }));
+            torso.position.y = 0.6;
+            torso.castShadow = true;
+            const head = new THREE.Mesh(headGeo, new THREE.MeshStandardMaterial({ color: new THREE.Color(0.78, 0.58, 0.42), flatShading: true }));
+            head.position.y = 1.28;
+            head.castShadow = true;
+            group.add(torso, head);
+        }
         const bubble = canvasPlane(2.2, 0.5,(ctx, w, h, text = '', ratio = 1, mood = 'tunggu') => {
             if (!text) return;
             roundRect(ctx, 0, 0, w, h * 0.8, h * 0.25, 'rgb(244 251 200)');
@@ -45,14 +54,14 @@ export function createCustomers(world, { reduce, names, onMiss, onArrive }) {
         const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: bubble.material.map, depthWrite: false }));
         sprite.userData.redraw = bubble.userData.redraw;
         sprite.scale.set(1.8, 0.41, 1);
-        sprite.position.y = 1.8;
+        sprite.position.y = person ? 2.05 : 1.8;
         sprite.visible = false;
-        group.add(torso, head, sprite);
+        group.add(sprite);
         const from = data.id % 2 ? world.spots.spawnR : world.spots.spawnL;
         group.position.copy(from);
         world.scene.add(group);
         return {
-            data, group, state: 'SPAWNING', path: [], patience: PATIENCE, timer: 0, sayTimer: 0, bob: Math.random() * 6,
+            data, group, person, state: 'SPAWNING', path: [], patience: PATIENCE, timer: 0, sayTimer: 0, bob: Math.random() * 6,
             say(text, mood) { sprite.visible = !!text; sprite.userData.redraw(text, this.patience / PATIENCE, mood); },
         };
     }
@@ -72,6 +81,7 @@ export function createCustomers(world, { reduce, names, onMiss, onArrive }) {
 
     function step(npc, dt) {
         const target = npc.path[0];
+        npc.person?.play(target ? 'walk' : 'idle');
         if (!target) return true;
         const pos = npc.group.position;
         const delta = new THREE.Vector3(target.x - pos.x, 0, target.z - pos.z);
@@ -86,11 +96,13 @@ export function createCustomers(world, { reduce, names, onMiss, onArrive }) {
         pos.add(delta);
         npc.group.rotation.y = Math.atan2(delta.x, delta.z);
         npc.bob += dt * 10;
-        if (!reduce) npc.group.children[0].position.y = 0.6 + Math.abs(Math.sin(npc.bob)) * 0.04;
+        if (!reduce && !npc.person) npc.group.children[0].position.y = 0.6 + Math.abs(Math.sin(npc.bob)) * 0.04;
         return false;
     }
 
     return {
+        /** Pembeli yang muncul setelah ini memakai tokoh dari aset. */
+        useAssets(loaded) { assets = loaded; },
         /** Menyamakan dengan daftar pembeli dari server. Pembeli yang sudah selesai tidak dimunculkan lagi. */
         load(customers, { bus = false } = {}) {
             list.forEach((n) => world.scene.remove(n.group));
@@ -129,6 +141,7 @@ export function createCustomers(world, { reduce, names, onMiss, onArrive }) {
             const q = queue();
             list.forEach((npc) => {
                 if (npc.pending) return;
+                npc.person?.mixer.update(dt);
                 const arrived = step(npc, dt);
                 if (['QUEUING', 'ORDERING', 'WAITING'].includes(npc.state)) {
                     // Hanya pembeli paling depan yang menampilkan pesanan, supaya gelembung tidak bertumpuk.

@@ -1,0 +1,12 @@
+Aset Warung Bos 3D. Semua berlisensi CC0 1.0 (domain publik): https://creativecommons.org/publicdomain/zero/1.0/
+
+makanan/  Kenney, Food Kit          https://kenney.nl/assets/food-kit
+alam/     Kenney, Nature Kit        https://kenney.nl/assets/nature-kit
+perabot/  Kenney, Furniture Kit     https://kenney.nl/assets/furniture-kit
+tokoh/    Quaternius, Animated Woman dan Character Animated, lewat Poly Pizza
+          https://poly.pizza/m/9kF7eTDbhO
+          https://poly.pizza/m/DgOCW9ZCRJ
+langit/   Poly Haven, kloofendal_48d_partly_cloudy_puresky (day.jpg, day_1k.hdr) dan belfast_sunset_puresky (dusk.jpg)
+          https://polyhaven.com/a/kloofendal_48d_partly_cloudy_puresky
+          https://polyhaven.com/a/belfast_sunset_puresky
+          Gambar langit diperkecil ke 4096x2048 agar ringan.

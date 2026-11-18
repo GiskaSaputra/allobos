@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 
-// Dunia warung dibangun dari geometri di kode, tanpa model atau tekstur luar.
+// Dunia warung dibangun dari geometri di kode sebagai dasar dan cadangan. Setelah aset CC0 termuat, dress() mengganti
+// langit, alam, perabot, barang di rak, dan tokoh. Tabrakan dan titik interaksi tetap dari geometri dasar.
 // Tata letak (meter): bagian dalam x -5..5, z -4..3. Meja depan di z 3, jalan di z 9.
 
 function token(name, fallback) {
@@ -342,6 +343,7 @@ export function createWorld({ reduce }) {
             crates[item.key] = crate;
 
             const zone = new THREE.Group();
+            zone.userData.qty = 0;
             zone.position.set(-1.65 + i * 1.1, 0.04, 0);
             const pad = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.02, 0.56), mat(color.clone().lerp(c.inkFg, 0.6)));
             const goods = new THREE.InstancedMesh(goodGeo, mat(color), 40);
@@ -358,27 +360,139 @@ export function createWorld({ reduce }) {
             interactive(zone, { kind: 'zone', item: item.key, label: `Rak ${item.name}` });
             zones[item.key] = zone;
         });
+        if (assets) dressGoods();
     }
     function setShelf(key, qty) {
-        const goods = zones[key]?.userData.goods;
+        const zone = zones[key];
+        const goods = zone?.userData.goods;
         if (!goods) return;
+        zone.userData.qty = qty;
+        // Geometri dasar berpusat di tengah kotak, geometri model beralas di nol.
+        const base = zone.userData.goodsBase ?? 0.1;
+        const layer = zone.userData.goodsHeight ?? 0.17;
         goods.count = Math.min(40, qty);
         for (let i = 0; i < goods.count; i++) {
-            m4.makeTranslation(-0.4 + (i % 6) * 0.16, 0.1 + Math.floor(i / 18) * 0.17, -0.16 + (Math.floor(i / 6) % 3) * 0.16);
+            m4.makeTranslation(-0.4 + (i % 6) * 0.16, base + Math.floor(i / 18) * layer, -0.16 + (Math.floor(i / 6) % 3) * 0.16);
             goods.setMatrixAt(i, m4);
         }
         goods.instanceMatrix.needsUpdate = true;
     }
 
+    // Model barang per kunci barang di GameRules. Barang tanpa padanan tetap memakai kotak warna.
+    const GOODS_MODEL = {
+        keripik: 'bag-flat', tiwul: 'rice-ball', gethuk: 'pudding', es_teh: 'cup-tea', air: 'soda-bottle', mi: 'chinese',
+        roti: 'loaf', telur: 'egg', belalang: 'honey', peyek: 'cookie', kaos: 'bag', topeng: 'carton-small',
+    };
+    let assets = null;
+
+    function dressGoods() {
+        Object.entries(zones).forEach(([key, zone]) => {
+            const name = GOODS_MODEL[key];
+            if (!name || zone.userData.dressed) return;
+            let g = assets.goods(name, 0.13);
+            if (g.height > 0.16) g = assets.goods(name, 0.13 * (0.16 / g.height));
+            const old = zone.userData.goods;
+            // Material disalin supaya sorotan rak ini tidak menular ke rak dan peti lain.
+            const goods = new THREE.InstancedMesh(g.geometry, g.material.clone(), 40);
+            goods.count = 0;
+            goods.frustumCulled = false;
+            goods.castShadow = true;
+            zone.remove(old);
+            zone.add(goods);
+            Object.assign(zone.userData, { goods, goodsBase: 0.03, goodsHeight: g.height + 0.01, dressed: true });
+            setShelf(key, zone.userData.qty ?? 0);
+
+            const crate = crates[key];
+            if (crate) {
+                const sample = assets.prop(name, 0.16);
+                sample.position.set(0, 0.2, 0);
+                sample.traverse((o) => { if (o.isMesh) o.material = o.material.clone(); });
+                crate.children[1].visible = false;
+                crate.add(sample);
+            }
+        });
+    }
+
+    /** Memasang aset luar. Dipanggil sekali setelah loadAssets berhasil. */
+    function dress(loaded) {
+        assets = loaded;
+        scene.environment = assets.env;
+        scene.environmentIntensity = 0.55;
+        scene.background = assets.sky.day;
+        scene.backgroundBlurriness = 0;
+        scene.fog = new THREE.Fog(new THREE.Color(0.78, 0.84, 0.86), 35, 110);
+        // Langit foto sudah memberi cahaya lingkungan, jadi lampu belahan dibuat netral supaya warna model tidak kebiruan.
+        hemi.color.setRGB(1, 1, 1);
+        hemi.groundColor.setRGB(0.35, 0.45, 0.25);
+        ground.material.color.setRGB(0.2, 0.36, 0.12);
+        // Tone mapping membuat warna dasar tampak pucat, jadi lantai dan dinding digelapkan sedikit.
+        floor.material.color.setRGB(0.4, 0.28, 0.18);
+        solids.forEach((m) => { if (m.material.color.equals(p.wall)) m.material.color.setRGB(0.82, 0.76, 0.62); });
+        hills.material.color.setRGB(0.3, 0.46, 0.22);
+        trunks.visible = false;
+        crowns.visible = false;
+
+        const put = (name, height, x, z, { y = 0, rotate = 0, collide = 0, parent = scene } = {}) => {
+            const o = assets.prop(name, height);
+            o.position.set(x, y, z);
+            o.rotation.y = rotate;
+            parent.add(o);
+            if (collide) colliders.push({ minX: x - collide, maxX: x + collide, minZ: z - collide, maxZ: z + collide });
+            return o;
+        };
+
+        // Bukit karst tetap dari geometri dasar. Pepohonan dari empat jenis pohon.
+        // Palet daun Kenney cenderung toska. Warnanya digeser ke hijau daun supaya cocok dengan pedesaan.
+        const leafy = (o) => {
+            o.traverse((m) => {
+                if (!m.isMesh) return;
+                m.material = m.material.clone();
+                const hsl = m.material.color.getHSL({});
+                if (hsl.h > 0.35 && hsl.h < 0.55) m.material.color.setHSL(0.27, Math.min(0.55, hsl.s), hsl.l * 0.85);
+            });
+            return o;
+        };
+        const trees = ['tree_oak', 'tree_default', 'tree_palmTall', 'tree_detailed'];
+        treeSpots.forEach(([x, z], i) => leafy(put(trees[i % trees.length], 4 + (i % 3) * 0.9, x, z, { rotate: i })));
+        const scatter = [[-7, 5.4], [7.5, 4.8], [-6.5, -5.5], [6.8, -5.8], [-11, 0], [11, -1], [-3, 12.5], [3.5, 13], [-9.5, 12], [10, 12.5], [-13, 7], [13.5, 7]];
+        scatter.forEach(([x, z], i) => leafy(put(['plant_bushLarge', 'plant_bush', 'grass_large', 'flower_yellowA', 'flower_redA'][i % 5], i % 5 < 2 ? 0.9 : 0.35, x, z, { rotate: i * 0.7 })));
+
+        // Perabot di dalam dan depan warung. Benda besar ikut menjadi penghalang.
+        put('kitchenFridgeSmall', 1.4, -4.55, -1.8, { rotate: Math.PI / 2, collide: 0.4 });
+        put('cardboardBoxClosed', 0.45, 4.55, -1.5, { rotate: 0.2, collide: 0.3 });
+        put('cardboardBoxOpen', 0.4, 4.6, -2.3, { rotate: -0.3, collide: 0.3 });
+        put('cardboardBoxClosed', 0.4, 4.55, -1.5, { y: 0.45, rotate: 0.6 });
+        put('pottedPlant', 0.9, 4.6, -3.6, { collide: 0.3 });
+        put('trashcan', 0.6, -4.6, 1.9, { collide: 0.25 });
+        put('radio', 0.2, -3.3, 2.95, { y: 1.08, rotate: Math.PI });
+        put('lampSquareCeiling', 0.35, 0, -0.5, { y: 2.85 });
+        put('lampSquareCeiling', 0.35, 0, 2.2, { y: 2.85 });
+        put('bench', 0.5, -4.2, 6.1, { rotate: Math.PI });
+        put('pottedPlant', 0.9, -5.6, 4.9);
+        put('pottedPlant', 0.9, 5.6, 4.9);
+        put('stoolBar', 0.75, 4.2, 4.3);
+
+        setTime(currentTime);
+        if (Object.keys(zones).length) dressGoods();
+    }
+
+    let currentTime = 0.25;
     function setTime(t) {
+        currentTime = t;
         const dusk = Math.max(0, (t - 0.6) / 0.4);
         const sky = p.skyDay.clone().lerp(p.skyDusk, dusk);
-        scene.background.copy(sky);
-        scene.fog.color.copy(sky);
+        if (assets) {
+            scene.background = dusk > 0.5 ? assets.sky.dusk : assets.sky.day;
+            scene.environmentIntensity = 0.55 - dusk * 0.3;
+            scene.fog.color.copy(new THREE.Color(0.78, 0.84, 0.86).lerp(p.skyDusk, dusk));
+        } else {
+            scene.background.copy(sky);
+            scene.fog.color.copy(sky);
+        }
         const a = Math.PI * (0.15 + t * 0.7);
         sun.position.set(Math.cos(a) * 18, Math.sin(a) * 16 + 3, 10);
-        sun.intensity = 1.6 - dusk * 1.0;
-        hemi.intensity = 1.0 - dusk * 0.45;
+        sun.intensity = (1.6 - dusk * 1.0) * (assets ? 0.75 : 1);
+        hemi.intensity = (1.0 - dusk * 0.45) * (assets ? 0.45 : 1);
         indoor.intensity = 6 + dusk * 8;
     }
     setTime(0.25);
@@ -396,6 +510,7 @@ export function createWorld({ reduce }) {
         bounds: { minX: -5.1, maxX: 5.1, minZ: -4.1, maxZ: 2.65 },
         setupItems,
         setTime,
+        dress,
         sync(view) {
             setupItems(view.items);
             view.items.forEach((item) => {

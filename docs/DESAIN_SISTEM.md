@@ -770,7 +770,8 @@ Dirancang dari 360 px. Titik henti Tailwind: sm 640, md 768, lg 1024, xl 1280. S
 | Mesin | Three.js dimuat hanya di halaman permainan lewat impor dinamis. |
 | Sudut pandang | Orang pertama. Pemain berjalan di dalam warung (tinggi mata 1,65 m, jalan 2,6 m/detik, lari 4,4 m/detik) dengan tabrakan dinding dan rak. |
 | Kontrol | Papan ketik dan tetikus (WASD, E interaksi, F ambil, Shift lari, Tab isi, Esc jeda), gamepad standar (Xbox dan PlayStation, petunjuk tombol ikut menyesuaikan), dan sentuh (joystick virtual dan tombol aksi). Semua masukan dipetakan ke aksi yang sama. |
-| Adegan | Warung low-poly dengan rak, meja kasir, papan harga, dan jalan depan. Barang di rak memakai InstancedMesh. Gaya warna mengikuti token ink, lime, dan cream. |
+| Adegan | Warung low-poly dengan rak, meja kasir, papan harga, dan jalan depan. Bangunan dan tabrakan dari geometri di kode. Setelah aset termuat, langit foto Poly Haven (siang dan senja), pohon dan tanaman Kenney Nature Kit, perabot Kenney Furniture Kit, dan barang dagangan Kenney Food Kit dipasang. Barang di rak memakai InstancedMesh dari model makanan. Semua aset CC0, total sekitar 4 MB. |
+| Pembeli | Tokoh Quaternius beranimasi (jalan dan diam) lewat AnimationMixer. Bila aset gagal dimuat, pembeli dan dunia tetap memakai bentuk dasar sehingga permainan tidak terhenti. |
 | Pelanggan | Pembeli datang sesuai rencana dari server, antre di kasir, dan pergi bila menunggu lebih dari 60 detik. |
 | Antarmuka | Panel HTML di atas kanvas (kas, hari, stok, petunjuk aksi), bukan teks di dalam 3D, agar terbaca dan dapat diakses. |
 | Alur server | Rencana dan penyelesaian: buka-warung menyusun daftar pembeli, layani dan pergi mencatat tiap pembeli secara idempoten, tutup menghitung hasil hari. Klik ganda atau jaringan putus tidak menggandakan penjualan. |
