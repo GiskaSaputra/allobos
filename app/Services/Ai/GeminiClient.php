@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Http;
 /** Satu pintu ke Gemini: JSON berskema, kuota, log, penyamaran data, kunci bergiliran. */
 class GeminiClient
 {
+    private int $timeout = 30;
+
     public function __construct(
         private readonly AiSettings $settings,
         private readonly PromptRegistry $prompts,
@@ -42,6 +44,7 @@ class GeminiClient
         $payload = $this->payload($config, $options['prompt'] ?? $this->prompts->active($feature), $this->redactor->redact($content, $user), $schema, $options['image'] ?? null, $options['video_url'] ?? null);
         $started = microtime(true);
         $tokens = 0;
+        $this->timeout = (int) config("ai.features.{$feature}.timeout", config('ai.timeout'));
 
         try {
             $data = $this->ask($config['model'], $payload, $schema, $tokens);
@@ -133,7 +136,7 @@ class GeminiClient
 
     /**
      * Mencoba tiap kunci bergiliran, lalu model cadangan.
-     * Kunci yang terkena batas (401, 403, 429, 503) dilewati. Model yang hilang atau galat (404, 500) diganti model berikutnya.
+     * Kunci yang terkena batas (401, 403, 429) dilewati. Model yang hilang, galat, atau padat (404, 500, 503) diganti model berikutnya.
      */
     private function send(string $model, array $payload): array
     {
@@ -147,7 +150,7 @@ class GeminiClient
                 $index = ($start + $offset) % count($keys);
 
                 try {
-                    $response = Http::timeout(config('ai.timeout'))
+                    $response = Http::timeout($this->timeout)
                         ->withHeaders(['x-goog-api-key' => $keys[$index]])
                         ->post(config('ai.endpoint')."/models/{$name}:generateContent", $payload);
                 } catch (ConnectionException) {
@@ -163,7 +166,8 @@ class GeminiClient
                 }
 
                 $last = 'kode '.$response->status();
-                if (in_array($response->status(), [404, 500], true)) {
+                // 503 berarti modelnya yang sedang padat, bukan kuncinya, jadi langsung pindah model.
+                if (in_array($response->status(), [404, 500, 503], true)) {
                     continue 2;
                 }
                 if (! in_array($response->status(), [401, 403, 429, 503], true)) {
