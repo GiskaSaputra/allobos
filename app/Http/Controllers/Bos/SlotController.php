@@ -30,6 +30,7 @@ class SlotController extends Controller
             'duration_minutes' => ['required', 'integer', Rule::in([30, 45, 60, 90, 120])],
             'mode' => ['required', Rule::in(array_keys(BossSlot::MODES))],
         ]);
+        $data['duration_minutes'] = (int) $data['duration_minutes'];
         $start = Carbon::parse($data['date'].' '.$data['time']);
         if ($start->isPast()) {
             return back()->withInput()->with('error', 'Waktu slot sudah lewat. Pilih waktu yang akan datang.');

@@ -38,7 +38,7 @@
             @endif
         </x-card>
 
-        <x-card class="space-y-4" x-data="{ rows: @js(array_values($sessions)) }">
+        <x-card class="space-y-4" x-data="{ rows: {{ \Illuminate\Support\Js::from(array_values($sessions)) }} }">
             <h2 class="text-xl">Jadwal sesi</h2>
             @error('sessions')<p class="text-sm text-danger">{{ $message }}</p>@enderror
             <template x-for="(row, i) in rows" :key="i">

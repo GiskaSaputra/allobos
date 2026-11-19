@@ -16,7 +16,7 @@ class BossSlot extends Model
 
     protected function casts(): array
     {
-        return ['starts_at' => 'datetime'];
+        return ['starts_at' => 'datetime', 'duration_minutes' => 'integer'];
     }
 
     public function boss(): BelongsTo

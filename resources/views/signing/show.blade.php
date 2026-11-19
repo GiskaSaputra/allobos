@@ -43,7 +43,7 @@
                     <x-button variant="primary" size="lg" full loading="Menandatangani">Tanda Tangani {{ $pending->count() }} Sertifikat</x-button>
                 </form>
             @endif
-            <x-card class="space-y-3" x-data="walletSign(@js(route('signing.wallet', $program)), @js($walletMessage))" x-show="available" x-cloak>
+            <x-card class="space-y-3" x-data="walletSign({{ \Illuminate\Support\Js::from(route('signing.wallet', $program)) }}, {{ \Illuminate\Support\Js::from($walletMessage) }})" x-show="available" x-cloak>
                 <h2 class="text-xl">Tanda tangan dompet (opsional)</h2>
                 <p class="text-sm text-fg-muted">Bukti tambahan: dompet peramban menandatangani id kelas dan sidik gabungan sertifikat. Tanpa dompet, alur tetap berjalan.</p>
                 @if ($signer->wallet_address)

@@ -26,7 +26,9 @@ class Pemberitahuan extends Notification implements ShouldQueue
 
     public function toMail(object $notifiable): MailMessage
     {
-        $message = (new MailMessage)->subject($this->title)->greeting('Halo '.$notifiable->firstName())->line($this->body);
+        // Penerima undangan belum punya akun, jadi belum ada nama untuk sapaan.
+        $greeting = method_exists($notifiable, 'firstName') ? 'Halo '.$notifiable->firstName() : 'Halo';
+        $message = (new MailMessage)->subject($this->title)->greeting($greeting)->line($this->body);
 
         return ($this->url ? $message->action('Buka alloBos', $this->url) : $message)->salutation('Salam, tim alloBos');
     }
