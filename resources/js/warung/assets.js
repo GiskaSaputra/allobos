@@ -10,7 +10,7 @@ const PROPS = {
     alam: ['tree_oak', 'tree_default', 'tree_palmTall', 'tree_detailed', 'plant_bushLarge', 'plant_bush', 'grass_large', 'flower_yellowA', 'flower_redA'],
     perabot: ['kitchenFridgeSmall', 'cardboardBoxClosed', 'cardboardBoxOpen', 'pottedPlant', 'plantSmall2', 'stoolBar', 'bench', 'radio', 'lampSquareCeiling', 'trashcan', 'bookcaseOpen'],
 };
-const CHARACTERS = ['woman', 'character'];
+const CHARACTERS = ['woman', 'man', 'farmer', 'womancasual', 'character', 'casual'];
 
 /** Ukuran terbesar sebuah objek dalam meter. */
 function extent(object) {
@@ -56,13 +56,22 @@ export async function loadAssets(renderer) {
         return t;
     });
 
+    const surface = (url) => new THREE.TextureLoader().loadAsync(url).then((t) => {
+        t.wrapS = t.wrapT = THREE.RepeatWrapping;
+        t.colorSpace = THREE.SRGBColorSpace;
+        t.anisotropy = renderer.capabilities.getMaxAnisotropy();
+        return t;
+    });
+
     const entries = Object.entries(PROPS).flatMap(([dir, names]) => names.map((name) => [name, `${BASE}/${dir}/${name}.glb`]));
-    const [models, people, day, dusk, hdr] = await Promise.all([
+    const [models, people, day, dusk, hdr, wall, floor] = await Promise.all([
         Promise.all(entries.map(([name, url]) => load(url).then((g) => [name, g.scene]))),
         Promise.all(CHARACTERS.map((name) => load(`${BASE}/tokoh/${name}.glb`))),
         texture(`${BASE}/langit/day.jpg`),
         texture(`${BASE}/langit/dusk.jpg`),
         new HDRLoader().loadAsync(`${BASE}/langit/day_1k.hdr`),
+        surface(`${BASE}/tekstur/dinding.jpg`),
+        surface(`${BASE}/tekstur/lantai.jpg`),
     ]);
 
     const pmrem = new THREE.PMREMGenerator(renderer);
@@ -74,6 +83,7 @@ export async function loadAssets(renderer) {
 
     return {
         sky: { day, dusk },
+        texture: { wall, floor },
         env,
         has: (name) => name in scenes,
         prop(name, height) {
@@ -106,8 +116,8 @@ export async function loadAssets(renderer) {
             const mixer = new THREE.AnimationMixer(root);
             const clip = (pattern) => source.animations.find((a) => pattern.test(a.name.split('|').pop()));
             const actions = {
-                walk: mixer.clipAction(clip(/^Walk(ing)?$/i) ?? source.animations[0]),
-                idle: mixer.clipAction(clip(/^Idle$/i) ?? source.animations[0]),
+                walk: mixer.clipAction(clip(/(^|_)Walk(ing)?$/i) ?? source.animations[0]),
+                idle: mixer.clipAction(clip(/(^|_)Idle$/i) ?? source.animations[0]),
             };
             let current = null;
             return {

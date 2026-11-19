@@ -3,9 +3,16 @@ Aset Warung Bos 3D. Semua berlisensi CC0 1.0 (domain publik): https://creativeco
 makanan/  Kenney, Food Kit          https://kenney.nl/assets/food-kit
 alam/     Kenney, Nature Kit        https://kenney.nl/assets/nature-kit
 perabot/  Kenney, Furniture Kit     https://kenney.nl/assets/furniture-kit
-tokoh/    Quaternius, Animated Woman dan Character Animated, lewat Poly Pizza
-          https://poly.pizza/m/9kF7eTDbhO
-          https://poly.pizza/m/DgOCW9ZCRJ
+tokoh/    Quaternius, lewat Poly Pizza
+          woman.glb        Animated Woman     https://poly.pizza/m/9kF7eTDbhO
+          character.glb    Character Animated https://poly.pizza/m/DgOCW9ZCRJ
+          man.glb          Man                https://poly.pizza/m/HMnuH5geEG
+          womancasual.glb  Woman Casual       https://poly.pizza/m/jpKRgGDxhk
+          casual.glb       Casual Character   https://poly.pizza/m/kZ3DmIoGip
+          farmer.glb       Farmer             https://poly.pizza/m/7pn3R6hPvE
+tekstur/  Poly Haven, wood_floor_worn (lantai.jpg) dan bamboo_wall (dinding.jpg), warna dasar 1k
+          https://polyhaven.com/a/wood_floor_worn
+          https://polyhaven.com/a/bamboo_wall
 langit/   Poly Haven, kloofendal_48d_partly_cloudy_puresky (day.jpg, day_1k.hdr) dan belfast_sunset_puresky (dusk.jpg)
           https://polyhaven.com/a/kloofendal_48d_partly_cloudy_puresky
           https://polyhaven.com/a/belfast_sunset_puresky

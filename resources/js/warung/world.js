@@ -227,8 +227,11 @@ export function createWorld({ reduce }) {
         roundRect(ctx, 0, 0, w, h, 20, 'rgb(196 160 112)');
         roundRect(ctx, w * 0.05, h * 0.07, w * 0.9, h * 0.86, 14, CREAM);
         ctx.fillStyle = INK;
+        // Judul panjang dikecilkan sampai muat di dalam bingkai.
         ctx.font = `700 ${h * 0.1}px Montserrat Variable, sans-serif`;
-        ctx.fillText(title.slice(0, 26), w * 0.1, h * 0.22);
+        const fit = (w * 0.8) / ctx.measureText(title).width;
+        if (fit < 1) ctx.font = `700 ${h * 0.1 * fit}px Montserrat Variable, sans-serif`;
+        ctx.fillText(title, w * 0.1, h * 0.22);
         ctx.font = `500 ${h * 0.075}px Ubuntu, sans-serif`;
         const rows = lines.flatMap((line) => wrap(ctx, `- ${line}`, w * 0.8)).slice(0, 5);
         rows.forEach((row, i) => ctx.fillText(row, w * 0.1, h * (0.38 + i * 0.12)));
@@ -426,8 +429,20 @@ export function createWorld({ reduce }) {
         hemi.groundColor.setRGB(0.35, 0.45, 0.25);
         ground.material.color.setRGB(0.2, 0.36, 0.12);
         // Tone mapping membuat warna dasar tampak pucat, jadi lantai dan dinding digelapkan sedikit.
-        floor.material.color.setRGB(0.4, 0.28, 0.18);
-        solids.forEach((m) => { if (m.material.color.equals(p.wall)) m.material.color.setRGB(0.82, 0.76, 0.62); });
+        // Tekstur diulang per 2 m supaya serat kayu dan anyaman bambu tidak melar di bidang yang panjang.
+        const tile = (mesh, source, width, height, tint) => {
+            const map = source.clone();
+            map.repeat.set(width / 2, height / 2);
+            mesh.material.map = map;
+            mesh.material.color.setRGB(tint, tint, tint);
+            mesh.material.needsUpdate = true;
+        };
+        tile(floor, assets.texture.floor, 10.4, 7.6, 0.8);
+        solids.forEach((m) => {
+            if (!m.material.color.equals(p.wall)) return;
+            const { width, height, depth } = m.geometry.parameters;
+            tile(m, assets.texture.wall, Math.max(width, depth), height, 0.9);
+        });
         hills.material.color.setRGB(0.3, 0.46, 0.22);
         trunks.visible = false;
         crowns.visible = false;

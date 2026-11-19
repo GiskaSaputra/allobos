@@ -8,6 +8,8 @@ export async function postJson(url, body = {}) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-CSRF-TOKEN': csrf() },
         body: JSON.stringify(body),
+    }).catch(() => {
+        throw new Error('Tidak tersambung ke server. Periksa sambungan internet lalu coba lagi.');
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
