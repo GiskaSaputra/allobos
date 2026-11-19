@@ -22,8 +22,10 @@ class MentoringTest extends TestCase
         [$bos, $profile] = $this->activeBoss();
         $warga = $this->onboardedWarga();
 
-        $this->actingAs($bos)->post(route('bos.slots.store'), ['date' => now()->addDays(2)->format('Y-m-d'), 'time' => '10:00', 'duration_minutes' => 60, 'mode' => 'daring'])->assertSessionHas('status');
+        // Nilai formulir peramban selalu berupa teks.
+        $this->actingAs($bos)->post(route('bos.slots.store'), ['date' => now()->addDays(2)->format('Y-m-d'), 'time' => '10:00', 'duration_minutes' => '60', 'mode' => 'daring'])->assertSessionHas('status');
         $slot = BossSlot::firstOrFail();
+        $this->post(route('bos.slots.store'), ['date' => now()->addDays(2)->format('Y-m-d'), 'time' => '10:30', 'duration_minutes' => '30', 'mode' => 'daring'])->assertSessionHas('error');
 
         $this->actingAs($warga)->get(route('warga.mentoring.index'))->assertOk()->assertSee($bos->name);
         $this->get(route('warga.mentoring.boss', $profile))->assertOk()->assertSee('Ajukan Sesi');
