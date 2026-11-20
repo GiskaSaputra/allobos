@@ -41,7 +41,8 @@ return [
         ['Beranda', 'warga.dashboard', 'phosphor-house', []],
         ['Ruang Bos', 'boss-room.setup', 'phosphor-chat-circle-dots', []],
         ['Belajar', 'warga.programs.index', 'phosphor-book-open', [
-            ['Kelas', 'warga.programs.index'],
+            ['Kelas Saya', 'warga.programs.index'],
+            ['Jelajahi Kelas', 'programs.index'],
             ['Sertifikat Saya', 'warga.certificates.index'],
             ['Siniar', 'podcasts.index'],
             ['Warung 3D', 'game.index'],

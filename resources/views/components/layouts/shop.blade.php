@@ -1,5 +1,11 @@
 @props(['title' => null, 'description' => null])
-{{-- Ringan untuk pembeli dan pemeriksa sertifikat: hanya CSS, tanpa pustaka skrip. --}}
+{{-- Ringan untuk pembeli dan pemeriksa sertifikat: hanya CSS, tanpa pustaka skrip. Warga yang sudah masuk tetap di tampilan dashboard. --}}
+@if (auth()->user()?->active_role === App\Enums\RoleName::Warga && auth()->user()->profile?->onboarded_at)
+<x-layouts.app :title="$title">
+    {{ $slot }}
+    @isset($footer)<div class="mt-10 border-t border-line pt-6 text-xs text-fg-muted">{{ $footer }}</div>@endisset
+</x-layouts.app>
+@else
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -31,3 +37,4 @@
     </script>
 </body>
 </html>
+@endif
