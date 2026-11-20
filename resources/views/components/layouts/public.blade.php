@@ -1,4 +1,8 @@
 @props(['title' => null, 'description' => null])
+{{-- Warga yang sudah masuk tetap berada di tampilan dashboard saat membuka halaman umum, kecuali beranda publik. --}}
+@if (! request()->routeIs('home') && auth()->user()?->active_role === App\Enums\RoleName::Warga && auth()->user()->profile?->onboarded_at)
+<x-layouts.app :title="$title" flush>{{ $slot }}</x-layouts.app>
+@else
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -91,3 +95,4 @@
     @stack('scripts')
 </body>
 </html>
+@endif

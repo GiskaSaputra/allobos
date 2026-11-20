@@ -1,4 +1,4 @@
-@props(['title' => null, 'wide' => false])
+@props(['title' => null, 'wide' => false, 'flush' => false])
 @php($menu = config('menus.warga'))
 <!DOCTYPE html>
 <html lang="id">
@@ -42,7 +42,8 @@
 
     <x-flash />
 
-    <main id="isi" @class(['container-page py-6 sm:py-10', 'max-w-[1200px]' => $wide])>
+    {{-- flush: halaman umum yang sudah membawa container sendiri per bagian. --}}
+    <main id="isi" @class(['container-page py-6 sm:py-10' => ! $flush, 'pb-6 sm:pb-10' => $flush, 'max-w-[1200px]' => $wide])>
         {{ $slot }}
     </main>
 

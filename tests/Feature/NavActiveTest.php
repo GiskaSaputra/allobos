@@ -26,6 +26,19 @@ class NavActiveTest extends TestCase
         }
     }
 
+    public function test_warga_tetap_di_tampilan_dashboard_saat_membuka_halaman_umum(): void
+    {
+        foreach (['podcasts.index', 'shops.index', 'programs.index', 'bosses.index'] as $route) {
+            $this->get(route($route))->assertOk()->assertSee('aria-label="Navigasi utama"', false)->assertDontSee('aria-label="Modul warga"', false);
+        }
+
+        $this->actingAs($this->onboardedWarga());
+        foreach (['podcasts.index', 'shops.index', 'programs.index', 'bosses.index'] as $route) {
+            $this->get(route($route))->assertOk()->assertSee('aria-label="Modul warga"', false)->assertDontSee('aria-label="Navigasi utama"', false);
+        }
+        $this->get(route('home'))->assertOk()->assertSee('aria-label="Navigasi utama"', false);
+    }
+
     public function test_halaman_turunan_menyalakan_menu_induknya(): void
     {
         $this->actingAs($this->userWithRole(RoleName::Admin));
