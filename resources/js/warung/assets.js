@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { HDRLoader } from 'three/addons/loaders/HDRLoader.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 
 // Aset CC0: Kenney (makanan, alam, perabot), Quaternius (tokoh), Poly Haven (langit). Rincian di public/models/warung/LISENSI.txt.
@@ -48,7 +48,8 @@ function shadowed(object) {
  * untuk InstancedMesh, character(i) membuat tokoh beranimasi, sky dan env untuk latar.
  */
 export async function loadAssets(renderer) {
-    const gltf = new GLTFLoader();
+    // Tokoh dikompres meshopt supaya unduhan awal kecil di sambungan lambat.
+    const gltf = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
     const load = (url) => gltf.loadAsync(url);
     const texture = (url) => new THREE.TextureLoader().loadAsync(url).then((t) => {
         t.mapping = THREE.EquirectangularReflectionMapping;
@@ -64,19 +65,18 @@ export async function loadAssets(renderer) {
     });
 
     const entries = Object.entries(PROPS).flatMap(([dir, names]) => names.map((name) => [name, `${BASE}/${dir}/${name}.glb`]));
-    const [models, people, day, dusk, hdr, wall, floor] = await Promise.all([
+    const [models, people, day, dusk, wall, floor] = await Promise.all([
         Promise.all(entries.map(([name, url]) => load(url).then((g) => [name, g.scene]))),
         Promise.all(CHARACTERS.map((name) => load(`${BASE}/tokoh/${name}.glb`))),
         texture(`${BASE}/langit/day.jpg`),
         texture(`${BASE}/langit/dusk.jpg`),
-        new HDRLoader().loadAsync(`${BASE}/langit/day_1k.hdr`),
         surface(`${BASE}/tekstur/dinding.jpg`),
         surface(`${BASE}/tekstur/lantai.jpg`),
     ]);
 
     const pmrem = new THREE.PMREMGenerator(renderer);
-    const env = pmrem.fromEquirectangular(hdr).texture;
-    hdr.dispose();
+    // Cahaya lingkungan diambil dari foto langit siang yang sudah diunduh, tanpa berkas HDR terpisah.
+    const env = pmrem.fromEquirectangular(day).texture;
     pmrem.dispose();
 
     const scenes = Object.fromEntries(models);

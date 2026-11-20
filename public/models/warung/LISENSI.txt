@@ -13,7 +13,8 @@ tokoh/    Quaternius, lewat Poly Pizza
 tekstur/  Poly Haven, wood_floor_worn (lantai.jpg) dan bamboo_wall (dinding.jpg), warna dasar 1k
           https://polyhaven.com/a/wood_floor_worn
           https://polyhaven.com/a/bamboo_wall
-langit/   Poly Haven, kloofendal_48d_partly_cloudy_puresky (day.jpg, day_1k.hdr) dan belfast_sunset_puresky (dusk.jpg)
+langit/   Poly Haven, kloofendal_48d_partly_cloudy_puresky (day.jpg, juga dipakai sebagai cahaya lingkungan) dan belfast_sunset_puresky (dusk.jpg)
           https://polyhaven.com/a/kloofendal_48d_partly_cloudy_puresky
           https://polyhaven.com/a/belfast_sunset_puresky
           Gambar langit diperkecil ke 4096x2048 agar ringan.
+          Tokoh dirampingkan: hanya klip jalan dan diam, dikompres meshopt. Tekstur diperkecil ke 512x512.
