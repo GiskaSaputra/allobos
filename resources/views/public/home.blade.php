@@ -93,6 +93,28 @@
         </div>
     </section>
 
+    <section class="container-page mt-20" aria-labelledby="judul-warung">
+        @php($warungUrl = match (true) { auth()->user()?->active_role === App\Enums\RoleName::Warga => route('game.index'), auth()->check() => route('dashboard'), default => route('register', ['tujuan' => '/warung']) })
+        {{-- Ponsel: gambar di atas, teks di bawah. Layar lebar: teks menumpang di sisi kiri gambar. --}}
+        <a href="{{ $warungUrl }}" class="group relative isolate grid overflow-hidden rounded-[28px] border border-line bg-ink shadow-card sm:rounded-panel md:min-h-[480px]" data-reveal>
+            <div class="relative aspect-[16/9] overflow-hidden md:absolute md:inset-0 md:-z-10 md:aspect-auto">
+                <img src="{{ asset('image/warung-3d.jpg') }}" alt="Bagian dalam Warung Bos 3D: etalase berisi keripik, tiwul, gethuk, dan es teh, papan harga di dinding, dan tanda Buka di meja depan" width="1280" height="608" loading="lazy" class="h-full w-full object-cover transition duration-700 ease-out group-hover:scale-[1.03] md:object-[75%_center]">
+                <div aria-hidden="true" class="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-ink to-transparent md:inset-0 md:h-auto md:bg-gradient-to-r md:from-ink md:from-20% md:via-ink/50 md:via-45% md:to-transparent md:to-70%"></div>
+            </div>
+            <div class="flex max-w-xl flex-col gap-4 p-6 pt-2 sm:p-10 md:justify-center">
+                <p class="inline-flex w-fit items-center gap-2 rounded-full bg-accent px-3 py-1.5 text-sm font-semibold text-accent-fg"><x-phosphor-cube class="h-4 w-4" aria-hidden="true" />Simulasi 3D</p>
+                <h2 id="judul-warung" class="text-3xl text-ink-fg sm:text-5xl">Latihan jaga warung di <em class="font-bold text-accent">Warung Bos 3D</em></h2>
+                <p class="text-ink-muted sm:text-lg">Kamu mewarisi warung simbah yang hampir tutup. Belanja ke pemasok, pajang barang di rak, atur harga, lalu layani pembeli selama tujuh hari. Salah hitung di sini tidak merugikan modal sungguhan.</p>
+                <ul class="flex flex-wrap gap-2 text-sm text-ink-fg">
+                    @foreach (['Tujuh babak', 'Bisa dari ponsel', 'Masuk Skor Siap Usaha'] as $point)
+                        <li class="rounded-full border border-ink-fg/25 bg-ink/50 px-3 py-1">{{ $point }}</li>
+                    @endforeach
+                </ul>
+                <span class="btn btn-accent btn-lg mt-2 w-fit">Masuk ke Warung<x-phosphor-arrow-right class="h-5 w-5 transition group-hover:translate-x-1" aria-hidden="true" /></span>
+            </div>
+        </a>
+    </section>
+
     @if ($programs->isNotEmpty())
         <section class="container-page mt-20">
             <h2 class="text-3xl sm:text-4xl" data-reveal>Kelas dari pengusaha asli</h2>
