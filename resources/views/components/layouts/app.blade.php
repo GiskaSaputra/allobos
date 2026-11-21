@@ -8,6 +8,7 @@
     @stack('head')
 </head>
 <body class="bg-surface pb-20 lg:pb-0">
+    @include('partials.splash')
     <a href="#isi" class="sr-only z-flash rounded-full bg-brand px-4 py-2 text-brand-fg focus:not-sr-only focus:fixed focus:left-4 focus:top-4">Lewati ke isi</a>
     <header class="sticky top-0 z-nav border-b border-line bg-surface/90 backdrop-blur-md">
         <div class="container-page flex h-16 items-center justify-between gap-3">

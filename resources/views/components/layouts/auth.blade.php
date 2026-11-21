@@ -5,6 +5,7 @@
     @include('partials.head', ['description' => null])
 </head>
 <body class="h-[100dvh] overflow-hidden bg-surface">
+    @include('partials.splash')
     <x-flash />
     {{-- Latar dan panel gambar tetap di tempat. Hanya kolom formulir yang bisa digulir. --}}
     <main class="grid h-full lg:grid-cols-[1.08fr_1fr]">

@@ -8,6 +8,7 @@
     @stack('head')
 </head>
 <body class="bg-surface" x-data="{ drawer: false }" @keydown.escape.window="drawer = false">
+    @include('partials.splash')
     <a href="#isi" class="sr-only z-flash rounded-full bg-brand px-4 py-2 text-brand-fg focus:not-sr-only focus:fixed focus:left-4 focus:top-4">Lewati ke isi</a>
     <div x-cloak x-show="drawer" class="fixed inset-0 z-drawer bg-ink/50 lg:hidden" @click="drawer = false"></div>
     <aside :class="drawer ? 'translate-x-0' : '-translate-x-full'" class="fixed inset-y-0 left-0 z-drawer flex w-[272px] -translate-x-full flex-col border-r border-line bg-surface-raised transition-transform duration-300 ease-out lg:translate-x-0" aria-label="Menu {{ auth()->user()->active_role->label() }}">
