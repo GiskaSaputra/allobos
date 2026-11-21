@@ -11,6 +11,7 @@
     @stack('head')
 </head>
 <body class="bg-surface" data-motion>
+    @include('partials.splash')
     <a href="#isi" class="sr-only z-flash rounded-full bg-brand px-4 py-2 text-brand-fg focus:not-sr-only focus:fixed focus:left-4 focus:top-4">Lewati ke isi</a>
     <div id="nav-sentinel" class="absolute top-0 h-6 w-px" aria-hidden="true"></div>
 
@@ -19,7 +20,7 @@
             <a href="{{ route('home') }}" aria-label="alloBos, ke beranda"><x-logo /></a>
 
             <nav aria-label="Navigasi utama" class="hidden rounded-full border border-line bg-surface-raised/70 p-1 lg:flex">
-                @foreach ([['Kelas', 'programs.index'], ['Siniar', 'podcasts.index'], ['Lapak', 'shops.index'], ['Bos', 'bosses.index'], ['Tentang', 'pages.tentang']] as [$label, $route])
+                @foreach ([['Kelas', 'programs.index'], ['Siniar', 'podcasts.index'], ['Lapak', 'shops.index'], ['Bos', 'bosses.index'], ['Verifikasi', 'certificates.verify.form'], ['Tentang', 'pages.tentang']] as [$label, $route])
                     @if (Route::has($route))
                         <a href="{{ route($route) }}" @class(['rounded-full px-4 py-2 text-sm font-medium transition duration-200', 'bg-brand text-brand-fg' => request()->routeIs($route.'*'), 'text-fg-body hover:bg-fg/10' => ! request()->routeIs($route.'*')])>{{ $label }}</a>
                     @endif

@@ -13,10 +13,14 @@
     @stack('head')
 </head>
 <body class="bg-surface" data-motion>
+    @include('partials.splash')
     <header class="border-b border-line">
         <div class="container-page flex h-14 items-center justify-between">
             <a href="{{ route('home') }}" aria-label="alloBos, ke beranda"><x-logo /></a>
-            <a href="{{ route('home') }}" class="text-sm text-fg-muted hover:text-fg">Tentang alloBos</a>
+            <nav aria-label="Navigasi utama" class="flex items-center gap-4 text-sm">
+                <a href="{{ route('certificates.verify.form') }}" @class(['hover:text-fg', 'font-medium text-fg' => request()->routeIs('certificates.verify*'), 'text-fg-muted' => ! request()->routeIs('certificates.verify*')])>Verifikasi Sertifikat</a>
+                <a href="{{ route('home') }}" class="hidden text-fg-muted hover:text-fg sm:inline">Tentang alloBos</a>
+            </nav>
         </div>
     </header>
     <main id="isi" class="container-page py-8">{{ $slot }}</main>

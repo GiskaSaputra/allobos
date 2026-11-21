@@ -1,5 +1,12 @@
 <x-layouts.shop title="Verifikasi Sertifikat" description="Periksa keaslian Sertifikat Terverifikasi alloBos.">
     <div class="mx-auto max-w-xl space-y-6 py-6">
+        @if (auth()->user()?->active_role === App\Enums\RoleName::Warga)
+            <x-back-link :href="route('warga.certificates.index')">Kembali ke Sertifikat Saya</x-back-link>
+        @elseif (auth()->check())
+            <x-back-link :href="route('dashboard')">Kembali ke Dashboard</x-back-link>
+        @else
+            <x-back-link :href="route('home')">Kembali ke Beranda</x-back-link>
+        @endif
         <h1 class="text-4xl">Verifikasi sertifikat</h1>
         <p class="text-fg-body">Ketik kode yang tertulis di bawah kode QR sertifikat. Pemeriksaan membaca catatan blockchain secara langsung, tanpa perlu menghubungi penyelenggara.</p>
         <form method="POST" action="{{ route('certificates.verify.lookup') }}" class="card space-y-4">

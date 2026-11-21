@@ -44,6 +44,7 @@ return [
             ['Kelas Saya', 'warga.programs.index'],
             ['Jelajahi Kelas', 'programs.index'],
             ['Sertifikat Saya', 'warga.certificates.index'],
+            ['Verifikasi Sertifikat', 'certificates.verify.form'],
             ['Siniar', 'podcasts.index'],
             ['Warung 3D', 'game.index'],
             ['Temu Bos', 'warga.mentoring.index'],
